@@ -1,0 +1,1 @@
+- Run tools in parallel when possible
