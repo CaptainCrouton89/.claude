@@ -3,7 +3,8 @@
     "allow": [
       "mcp__scrape__get-markdown",
       "mcp__perplexity__ask-perplexity",
-      "mcp__zen__chat"
+      "mcp__zen__chat",
+      "Bash(sudo rm:*)"
     ],
     "deny": []
   }

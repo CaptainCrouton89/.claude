@@ -13,15 +13,13 @@ Generate a custom .mcp.json file with selected MCP servers:
 Available MCPs:
 
 - `boilerplate` - Basic MCP server template
-- `maps-mcp` - Google Maps integration
-- `google-image-search-mcp` - Image search via SERP API
+- `google-mcp` - Google Maps, Finances, and Flights
 - `mcp-reddit` - Reddit integration
-- `images` - Image generation and editing
+- `images` - Image generation, google image search, and image editing
 - `videos` - Video generation and editing
 - `speech` - Speech synthesis and transcription
 - `sql` - Supabase database integration
-- `scrape` - Web scraping
-- `perplexity` - Perplexity API integration for search
+- `search` - Web search, scraping, and research tools
 - `static-analysis` - Code analysis and linting tools
 - `zen` - Multi-model AI collaboration platform
 - `context7` - Documentation search tool
