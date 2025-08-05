@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Agent Architecture Style Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 40px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            color: #7f8c8d;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        .framework {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .framework.shepherding { border-left-color: #e74c3c; }
+        .framework.healthflow { border-left-color: #2ecc71; }
+        .framework.hycodepolicy { border-left-color: #f39c12; }
+        .framework.meta-rag { border-left-color: #9b59b6; }
+
+        .innovation {
+            background: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            display: block;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        .phase {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Multi-Agent Architecture Style Guide</h1>
+
+    <h2>Framework Overview</h2>
+    <p>Four revolutionary multi-agent architectures for sophisticated AI coordination:</p>
+
+    <div class="framework shepherding">
+        <h3>Hierarchical Multi-Agent Shepherding</h3>
+        <div class="innovation">Emergent coordination without centralized control</div>
+        <p><strong>Key Features:</strong> Two-tier policy architecture, decentralized coordination, linear scaling</p>
+        
+        <code>class HighLevelPolicy(nn.Module):
+    def forward(self, global_state, target_states):
+        # Attention-based target selection
+        return target_probs</code>
+
+        <p><strong>Phases:</strong> 
+        <span class="phase">High-Level Policy</span>
+        <span class="phase">Low-Level Control</span>
+        </p>
+    </div>
+
+    <div class="framework healthflow">
+        <h3>HealthFlow</h3>
+        <div class="innovation">Self-evolving meta-planning agents</div>
+        <p><strong>Key Features:</strong> Strategic knowledge base, continuous learning, healthcare specialization</p>
+        
+        <code>class MetaEvolutionEngine:
+    async def evolve_from_experience(self, trace):
+        # Learn strategic patterns from execution
+        return updated_policies</code>
+
+        <p><strong>Phases:</strong>
+        <span class="phase">Meta-Evolution</span>
+        <span class="phase">Strategic KB</span>
+        <span class="phase">Orchestration</span>
+        </p>
+    </div>
+
+    <div class="framework hycodepolicy">
+        <h3>HyCodePolicy</h3>
+        <div class="innovation">Closed-loop programming with multimodal monitoring</div>
+        <p><strong>Key Features:</strong> Code synthesis, fault localization, automated repair, geometric grounding</p>
+        
+        <code>class HyCodePolicyFramework:
+    async def execute_programming_cycle(self, instruction):
+        # Synthesis → Monitor → Localize → Repair
+        return repaired_program</code>
+
+        <p><strong>Phases:</strong>
+        <span class="phase">Code Synthesis</span>
+        <span class="phase">Execution Monitor</span>
+        <span class="phase">Fault Localization</span>
+        <span class="phase">Program Repair</span>
+        </p>
+    </div>
+
+    <div class="framework meta-rag">
+        <h3>Meta-RAG Multi-Agent</h3>
+        <div class="innovation">Heterogeneous agent specialization</div>
+        <p><strong>Key Features:</strong> Specialized retrieval, cross-validation, dynamic scaling, coordination protocols</p>
+        
+        <code>class MetaRAGOrchestrator:
+    async def localize_bug(self, bug_report):
+        # Parallel retrieval → Analysis → Validation → Synthesis
+        return bug_localization</code>
+
+        <p><strong>Phases:</strong>
+        <span class="phase">Evidence Retrieval</span>
+        <span class="phase">Multi-Agent Analysis</span>
+        <span class="phase">Cross-Validation</span>
+        <span class="phase">Synthesis</span>
+        </p>
+    </div>
+
+    <h2>Implementation Strategy</h2>
+    <ul>
+        <li><strong>Modularity:</strong> Independent, testable components</li>
+        <li><strong>Observability:</strong> Comprehensive monitoring</li>
+        <li><strong>Fault Tolerance:</strong> Graceful degradation</li>
+        <li><strong>Scalability:</strong> Horizontal scaling support</li>
+    </ul>
+
+</body>
+</html>

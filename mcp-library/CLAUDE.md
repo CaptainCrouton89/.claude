@@ -23,3 +23,4 @@ Available MCPs:
 - `static-analysis` - Code analysis and linting tools
 - `zen` - Multi-model AI collaboration platform
 - `context7` - Documentation search tool
+- `serena` - Powerful coding agent with semantic retrieval and editing capabilities

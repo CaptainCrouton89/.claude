@@ -4,7 +4,11 @@
       "mcp__scrape__get-markdown",
       "mcp__perplexity__ask-perplexity",
       "mcp__zen__chat",
-      "Bash(sudo rm:*)"
+      "Bash(sudo rm:*)",
+      "Bash(find:*)",
+      "Bash(source:*)",
+      "Bash(sed:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }
