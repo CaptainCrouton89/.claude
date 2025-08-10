@@ -1,0 +1,18 @@
+{
+  "switch_to_custom": {
+    "triggered": false,
+    "timestamp": null
+  },
+  "exceed_max_limit": {
+    "triggered": true,
+    "timestamp": "2025-08-08T13:57:10.224507"
+  },
+  "tokens_will_run_out": {
+    "triggered": false,
+    "timestamp": null
+  },
+  "cost_will_exceed": {
+    "triggered": true,
+    "timestamp": "2025-08-08T15:00:34.167020"
+  }
+}

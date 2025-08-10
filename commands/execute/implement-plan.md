@@ -10,10 +10,13 @@ Specifically, the `parallel-plan.md` file contains the exact steps to take, and 
 
    Each agent should:
    - Only implement the specific step assigned.
-   - Be provided with links to the `parallel-plan.md` and other documentation.
+   - Be provided with links to the `parallel-plan.md`, the `shared.md` and other documentation.
    - Begin by reading and understanding the relevant sections.
+   - Perform the task completely
    - Run `get_compilation_errors` on any files they edit, before returning.
    - Return a summary of changes made.
+
+It is critical that these agents be used in batches—deploy all the agents in a batch in the same function call.
 4. After each batch of agents finishes, identify which tasks can be run next. There may be multiple tasks that have all of their dependent tasks done. In this case, run those tasks in parallel as well.
 
 Upon completing the plan, simply say "Done. Run /report for analysis."

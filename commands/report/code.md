@@ -1,6 +1,6 @@
 Write a report of what changes you made. It should obey the following structure:
 
-Filename: [name of original plan].report.md
+Filename: plans/[plan-directory]/report.md
 Content:
 
 ```
@@ -20,7 +20,7 @@ All files changed, with brief descriptions of the changes
 
 ## New Features
 
-A list of features, each consisting of a short name and then a 2-3 sentence description of the new feature and how it works. Include all features, new or changed.
+A list of features, each consisting of a short name and then a one-sentence description of the new feature and how it works. Include all features, new or changed.
 
 ## Additional Notes
 
@@ -28,6 +28,8 @@ A list of additional relevant information that you believe is important, or conc
 
 ## E2E Tests To Perform
 
-A list of functionalities to test, and how to test them. Write this for QA so they know exactly what to test and how.
+A list of functionalities to test, and how to test them. Write this for QA so they know exactly what to test and how. 
 
 ```
+
+Keep the report concise.
