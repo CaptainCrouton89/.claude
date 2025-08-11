@@ -1,1 +1,4 @@
-- Run tools in parallel when possible
+- Run agents in parallel when possible
+- Never use `any` type; use types. Look up types rather than guessing
+- Do not consider backwards compatibility—it's okay to break code
+- Throw errors early and often; do not use fallbacks
