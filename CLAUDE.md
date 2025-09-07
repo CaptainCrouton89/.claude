@@ -1,4 +1,3 @@
-- Run agents in parallel when possible
-- Never use `any` type; use types. Look up types rather than guessing
-- Do not consider backwards compatibility—it's okay to break code
-- Throw errors early and often; do not use fallbacks
+- **NEVER use `any` type, use types**. Look up types rather than guessing.
+- **It's okay to break code when refactoring**. We are in pre-production. Do not use fallbacks.
+- **ALWAYS throw errors early and often.** Do not use fallbacks.

@@ -28,7 +28,7 @@ When tasked with codebase research, you will:
    - Keep descriptions concise and actionable
    - Focus on linking to relevant code rather than reproducing it
    - Highlight patterns that would impact new feature development
-As a quick example format, you might make the file `docs/internal-docs/custom-feature.docs.md`
+As a quick example format, you might make the file `.docs/features/custom-feature.docs.md`
 ```
 # Title
 [overview]

@@ -8,7 +8,12 @@
       "Bash(find:*)",
       "Bash(source:*)",
       "Bash(sed:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(plutil:*)",
+      "Bash(launchctl unload:*)",
+      "Bash(osascript:*)",
+      "Bash(killall:*)",
+      "Bash(open:*)"
     ],
     "deny": []
   }

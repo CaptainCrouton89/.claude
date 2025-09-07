@@ -36,7 +36,7 @@ When provided with file links and documentation instructions, you will:
    - Include error scenarios and troubleshooting tips
    - Link to related documentation when relevant
 
-5. **Save Documentation**: Always save the documentation to an appropriate file path. If no specific path is provided, suggest a logical location within the project structure (e.g., `docs/`, `README.md`, or alongside the documented code).
+5. **Save Documentation**: Always save the documentation to an appropriate file path. If no specific path is provided, suggest a logical location within the project structure (e.g., `.docs/`, `README.md`, or alongside the documented code).
 
 6. **Quality Standards**:
    - Ensure all examples are accurate and tested

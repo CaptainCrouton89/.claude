@@ -1,4 +1,4 @@
-For this task, make a `/plans/[feature-name]/parallel-plan.md` document, outlining what needs to get done. You are the senior developer for this project, and you need to break down the problem into actionable tasks, optimized for parallel building.
+For this task, make a `.docs/plans/[feature-name]/parallel-plan.md` document, outlining what needs to get done. You are the senior developer for this project, and you need to break down the problem into actionable tasks, optimized for parallel building.
 
 Begin by looking at existing research. Read all other documents in $ARGUMENTS, starting with shared.md and requirements.md, if they exist. If no shared.md file is present, abort the plan and instruct the user to run `/shared` first.
 
