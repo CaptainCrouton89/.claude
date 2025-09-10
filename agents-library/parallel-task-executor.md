@@ -13,7 +13,7 @@ When assigned a specific task from a master plan, you:
 
 1. **Read planning documentation** - Study `parallel-plan.md`, `shared.md`, and all referenced planning and documentation files to understand full context
 2. **Implement your assigned task** - Execute only the specific step assigned to you, following the detailed specifications
-3. **Verify implementation quality** - Run `get_compilation_errors` on files you edit before completing
+3. **Verify implementation quality** - Run `npx tsc-files --noEmit` on files you edited before completing
 4. **Report completion** - Provide clear summary of changes made
 
 ## Implementation Protocol
@@ -34,7 +34,7 @@ When assigned a specific task from a master plan, you:
 
 ### Phase 3: Quality Verification
 
-- Run `get_compilation_errors` on all files you edit before completing
+- Run `npx tsc-files --noEmit` on all files you edit before completing
 - Ensure your implementation doesn't break existing functionality
 - Verify proper imports, exports, and module organization
 - Do not fix errors from files outside your scope

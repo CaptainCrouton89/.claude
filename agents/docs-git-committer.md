@@ -61,6 +61,7 @@ You are an expert technical documentation specialist and git workflow manager. Y
      - Types: feat, fix, docs, style, refactor, test, chore
      - Include body for complex changes
      - Add breaking change footer when applicable
+   - Adds and commits MUST be in a single command—this is to avoid race conditions with other agents staging and committing concurrently.
 
 ## Workflow Process
 
@@ -72,9 +73,7 @@ You are an expert technical documentation specialist and git workflow manager. Y
 3. Determine which documentation needs updating based on the changes
 4. Create or update documentation following the appropriate template
 5. Review all documentation for accuracy and completeness
-6. Stage all files (code + documentation) using git add
-7. Craft a meaningful commit message that describes the entire change set
-8. Commit the changes
+6. Stage all files (code + documentation) using git add, craft a meaningful commit message that describes the entire change set, and commit the changes, all in one command (avoids race conditions with multiple agents adding and committing at the same time).
 
 ## Documentation Decision Tree
 
@@ -129,6 +128,7 @@ You are an expert technical documentation specialist and git workflow manager. Y
 - When updating CLAUDE.md, preserve existing critical instructions while adding new context
 - Never commit incomplete or placeholder documentation
 - Consider whether changes warrant documentation at all (most don't)
+- The staging and comitting should occur in one command
 
 ## Error Handling
 

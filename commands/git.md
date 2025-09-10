@@ -1,9 +1,22 @@
 I have just finished one or more features. It's time to push commits and to update the documentation.
 
 1. Examine git changes
-2. Analyze changes and use parallel agents (all in same invocation) for documentation updates:
+2. Decide approach based on scope:
 
-   - For **each** new feature or significant change, spawn an @agent-docs-git-committer. That agent should be instructed to:
+   **For small changes (handle directly without agents):**
+
+   - Single feature implementation
+   - Fewer than 3 files changed
+   - Multiple minor/trivial changes
+     → Add files and write commit message yourself
+
+   **For larger changes (use parallel agents):**
+
+   - Multiple features or significant changes
+   - 3+ files with substantial modifications
+     → Use parallel agents (all in same invocation) for documentation updates:
+
+   - For **each** new feature or significant change, spawn a task with the docs-git-committer. That agent should be instructed to:
      a. Review the changes in detail
      b. Update or create documentation following the appropriate templates:
      - Feature docs: `.docs/features/[name].doc.md` using `~/.claude/file-templates/feature-doc.template.md`
