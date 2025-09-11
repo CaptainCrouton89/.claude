@@ -47,13 +47,14 @@ def main():
         
         # MODIFIED: The prompt now includes specific syntax instructions.
         reflection_prompt = """<system-reminder>
-**Parallelize the Plan If Possible**
+**Parallelize the Plan**
 
 The initial plan has been drafted. Now, **think** to optimize its execution.
 
-1.  **Analyze Dependencies**: Critically review the list of tasks.
-2.  **Group for Parallelism**: Identify any tasks that are independent and can be executed concurrently. Group them into a parallel stage.
-3.  **Format for Parallel Execution**: Place multiple `<invoke name="Task">` calls inside a **single** `<function_calls>` block in your response, using the optimal agent for each task.
+1. **Analyze Dependencies**: Critically review the list of tasks.
+2. **Group for Parallelism**: Identify any tasks that are independent and can be executed concurrently. Group them into a parallel stage.
+3. **Format for Parallel Execution**: Place multiple `<invoke name="Task">` calls inside a **single** `<function_calls>` block in your response, using the optimal agent for each task.
+4. **Delegate Every Step**: Even stages that have just one step should be delegated to an agent, unless it is a trivial step. This avoids clogging your context window.
 
 <example>
 Assistant: I will now run [list of tasks] in parallel.
@@ -68,6 +69,11 @@ Assistant: I will now run [list of tasks] in parallel.
     <parameter name="prompt">Details for the second task...</parameter>
   </invoke>
 </function_calls>
+
+I will now run [list of tasks] in parallel.
+
+...more parallel tasks
+
 </example>
 
 Please present your analysis of parallel stages and then proceed with the first stage.

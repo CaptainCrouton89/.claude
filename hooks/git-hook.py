@@ -31,6 +31,9 @@ def main():
         git_diff_cached = run_git_command('git diff --cached')
         git_diff = run_git_command('git diff')
         
+        # Get git status short
+        git_status_short = run_git_command('git status --short')
+        
         # Build the enhanced prompt with git information
         enhanced_prompt = f"""{prompt}
 
@@ -47,6 +50,11 @@ Staged changes (git diff --cached):
 Unstaged changes (git diff):
 ```
 {git_diff if git_diff else '(No unstaged changes)'}
+```
+
+Git status (short):
+```
+{git_status_short if git_status_short else '(No changes)'}
 ```
 """
         

@@ -156,9 +156,16 @@ def main():
     
     # Handle warnings (show but don't block)
     if warning_issues:
-        warning_message = f"Code quality warnings for {file_path}:\n\n"
+        warning_message = f"Code quality issues detected in {file_path}:\n\n"
         for i, issue in enumerate(warning_issues, 1):
             warning_message += f"{i}. {issue}\n"
+
+        warning_message = f"""<system-reminder>
+        
+{warning_message}
+        
+It is strongly advised to address these issues and try again.
+</system-reminder>"""
         
         # Use JSON output to show warnings without blocking
         output = {
