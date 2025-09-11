@@ -32,17 +32,19 @@ DEBUG_PROMPT = """
 <system-reminder>The user has mentioned a key word or phrase that triggers this reminder. 
 
 <debugging-workflow>
-1. **Identify 5-8 most likely root causes** - List potential reasons for the issue
-2. **Choose the 3 most likely causes** - Prioritize based on probability and impact
-3. **For each of the 3 causes, validate by adding targeted logging/debugging**
-4. **Let the user test** - Have them run the code with the new logging
-5. **Fix when solution is found** - Implement the actual fix once root cause is confirmed
-6. **Remove debugging logs** - Clean up temporary debugging code
+1. **Understand the codebase** - Read relevant files/tables/documents to understand the codebase
+2. **Identify 5-8 most likely root causes** - List potential reasons for the issue
+3. **Choose the 3 most likely causes** - Prioritize based on probability and impact
+4. **Decide whether to implement or debug** - If the cause is obvious, implement the fix and inform the user. If the cause is not obvious, continue this workflow.
+
+Steps for Non-obvious Causes:
+5. **For each of the 3 causes, validate by adding targeted logging/debugging**
+6. **Let the user test** - Have them run the code with the new logging
+7. **Fix when solution is found** - Implement the actual fix once root cause is confirmed
+8. **Remove debugging logs** - Clean up temporary debugging code
 
 Include relevant debugging commands/tools and explain your reasoning for each step.
 </debugging-workflow>
-
-This workflow ensures optimal debugging and problem-solving.
 
 </system-reminder>
 """
@@ -90,18 +92,11 @@ This workflow ensures efficient investigation based on task complexity.
 PROMPT_IMPROVEMENT_PROMPT = """
 <system-reminder>The user has mentioned improving or enhancing prompts/prompting.
 
-CRITICAL: You MUST first read ~/.claude/guides/prompting-guide.md for comprehensive guidance on writing effective prompts. This guide contains essential best practices, patterns, and examples that you must understand before providing any prompt improvement advice.
-
-If you haven't read this guide yet in this conversation, read it immediately before proceeding with any prompt-related suggestions.
-
-The prompting guide contains:
-- Core principles of effective prompting
-- Common mistakes to avoid  
-- Proven patterns and templates
-- Context management strategies
-- Advanced techniques for complex tasks
+CRITICAL: You MUST first read ~/.claude/guides/prompting-guide.md for comprehensive guidance on writing effective prompts. If you haven't read this guide yet in this conversation, read it immediately before proceeding with any prompt-related suggestions.
 
 Only after reading and understanding this guide should you provide prompt improvement recommendations.
+
+If the user is not looking to improve a prompt, or you have already read the guide, ignore this reminder.
 </system-reminder>
 """
 
