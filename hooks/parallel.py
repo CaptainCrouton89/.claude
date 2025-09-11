@@ -46,8 +46,8 @@ def main():
         logging.info("New plan detected. Injecting reflection prompt.")
         
         # MODIFIED: The prompt now includes specific syntax instructions.
-        reflection_prompt = """
-**Supervisor's Prompt: Review and Parallelize the Plan**
+        reflection_prompt = """<system-reminder>
+**Parallelize the Plan If Possible**
 
 The initial plan has been drafted. Now, **think** to optimize its execution.
 
@@ -55,8 +55,9 @@ The initial plan has been drafted. Now, **think** to optimize its execution.
 2.  **Group for Parallelism**: Identify any tasks that are independent and can be executed concurrently. Group them into a parallel stage.
 3.  **Format for Parallel Execution**: Place multiple `<invoke name="Task">` calls inside a **single** `<function_calls>` block in your response, using the optimal agent for each task.
 
-Reminder of example format for running two tasks in parallel:
-```xml
+<example>
+Assistant: I will now run [list of tasks] in parallel.
+
 <function_calls>
   <invoke name="Task">
     <parameter name="description">First parallel task...</parameter>
@@ -67,8 +68,10 @@ Reminder of example format for running two tasks in parallel:
     <parameter name="prompt">Details for the second task...</parameter>
   </invoke>
 </function_calls>
-Please present your analysis of parallel stages and then proceed with the first stage using the correct format.
-"""
+</example>
+
+Please present your analysis of parallel stages and then proceed with the first stage.
+</system-reminder>"""
 
         response = {
             "hookSpecificOutput": {

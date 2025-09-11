@@ -6,3 +6,4 @@ shell-snapshots/
 statsig/
 todos/
 mcp.json
+.update.lock
