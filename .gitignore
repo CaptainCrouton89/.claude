@@ -11,3 +11,4 @@ settings.json
 settings.local.json
 update.lock
 __store.db
+mcp-library/.mcp.json
