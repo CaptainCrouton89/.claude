@@ -26,6 +26,9 @@ def main():
     
     # Check if this is exactly the /git command
     if prompt.strip() == '/git':
+        # Get recent commit messages as style guide
+        recent_commits = run_git_command('git log --oneline -8')
+        
         # Run git commands in sequence
         git_status = run_git_command('git status')
         git_diff_cached = run_git_command('git diff --cached')
@@ -37,22 +40,30 @@ def main():
         # Build the enhanced prompt with git information
         enhanced_prompt = f"""{prompt}
 
-Current git status:
+## Commit Message Style Guide
+Recent commits for style reference:
+```
+{recent_commits}
+```
+
+## Current Git State
+
+### Status:
 ```
 {git_status}
 ```
 
-Staged changes (git diff --cached):
+### Staged changes (git diff --cached):
 ```
 {git_diff_cached if git_diff_cached else '(No staged changes)'}
 ```
 
-Unstaged changes (git diff):
+### Unstaged changes (git diff):
 ```
 {git_diff if git_diff else '(No unstaged changes)'}
 ```
 
-Git status (short):
+### Status summary:
 ```
 {git_status_short if git_status_short else '(No changes)'}
 ```

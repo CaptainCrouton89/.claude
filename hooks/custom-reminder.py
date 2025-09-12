@@ -8,7 +8,7 @@ import sys
 
 # Debugging trigger patterns
 DEBUG_PATTERNS = [
-    r'\b(debug|debugging|bug|error|issue|problem|fix|broken|crash|fail)\b',
+    r'\b(debug|debugging|bug)\b',
     r'\b(why.*not work|what.*wrong|not working)\b',
     r'\b(stack trace|error message|exception|\^\^\^)\b'
 ]
@@ -53,33 +53,15 @@ INVESTIGATION_PROMPT = """
 <system-reminder>The user has mentioned a key word or phrase that triggers this reminder.
 
 <investigation-workflow>
-1. **Assess scope and context**
-   - If files/context provided: Read them directly to understand the code
-   - If large codebase with unclear starting point: Use code-finder agent
-   - If simple/obvious location: Use direct tools (Read, Grep, Glob)
+1. **Assess scope**: Read provided files directly. Use code-finder for unknown/large codebases, direct tools (Read/Grep/Glob) for simple searches.
 
-2. **When to use code-finder agent**:
-   - Complex investigations across unknown codebase sections
-   - No clear starting point or files provided
-   - Need to discover patterns/implementations across many files
-   - Looking for specific functionality with unclear location
-   
-3. **When NOT to use code-finder**:
-   - Simple searches in known files (use Read/Grep directly)
-   - When specific file paths are provided
-   - For trivial lookups that can be done with single Grep/Glob
+2. **Use code-finder when**: Complex investigations, no clear starting point, discovering patterns across many files, unclear functionality location.
 
-4. **Investigation flow**:
-   - Start with provided context/files if any
-   - Use code-finder for broad discovery only when needed
-   - Focus on understanding before suggesting changes
-   - Answer the question first, implement only if asked
+3. **Use direct tools when**: Simple searches in known files, specific paths provided, trivial lookups.
 
-5. **Using multiple agents for complex tasks**:
-   - Split complex investigations into non-overlapping domains
-   - Each agent gets distinct search areas to avoid duplication
-   - Launch parallel agents in single function_calls block with multiple Task invocations
-   - Example: One agent searches backend/, another frontend/, third checks tests/
+4. **Flow**: Start with context → code-finder for broad discovery → understand before suggesting → answer first, implement if asked.
+
+5. **Multiple agents**: Split non-overlapping domains, launch parallel in single function_calls block. Example: backend/, frontend/, tests/ agents.
 
 Example: "Investigate and make plan out Stripe integration" → Use multiple code-finder tasks
 Example: "Where is combat implemented?" → Use code-finder task

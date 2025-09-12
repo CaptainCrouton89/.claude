@@ -54,7 +54,7 @@ The initial plan has been drafted. Now, **think** to optimize its execution.
 1. **Analyze Dependencies**: Critically review the list of tasks.
 2. **Group for Parallelism**: Identify any tasks that are independent and can be executed concurrently. Group them into a parallel stage.
 3. **Format for Parallel Execution**: Place multiple `<invoke name="Task">` calls inside a **single** `<function_calls>` block in your response, using the optimal agent for each task.
-4. **Delegate Every Step**: Even stages that have just one step should be delegated to an agent, unless it is a trivial step. This avoids clogging your context window.
+4. **Delegate Every Step**: Even stages that have just one step should be delegated to an agent, unless it is a trivial step. This avoids clogging your context window. And remember, no more than one task per agent.
 
 <example>
 Assistant: I will now run [list of tasks] in parallel.
@@ -76,7 +76,8 @@ I will now run [list of tasks] in parallel.
 
 </example>
 
-Please present your analysis of parallel stages and then proceed with the first stage.
+Please present your analysis of parallel stages and then proceed with the first stage. Remember, you MUST delegate steps to agents.
+
 </system-reminder>"""
 
         response = {
