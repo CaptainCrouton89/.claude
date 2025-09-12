@@ -12,3 +12,4 @@ settings.local.json
 update.lock
 __store.db
 mcp-library/.mcp.json
+hooks/pushover-notification.py
