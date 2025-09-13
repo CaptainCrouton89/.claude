@@ -12,3 +12,6 @@ settings.local.json
 update.lock
 __store.db
 mcp-library/.mcp.json
+claude-cli/
+new-system-prompt-exact.md
+system-prompt.md
