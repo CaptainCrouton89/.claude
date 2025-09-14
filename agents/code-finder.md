@@ -48,4 +48,4 @@ path/to/file.ts:42-48
 
 Or simply a list of important file paths with 3-6 words descriptors
 
-Be thorough. Find everything. The user relies on your completeness.
+Remember: Be thorough. Find everything. Return concise results. The user relies on your completeness.
