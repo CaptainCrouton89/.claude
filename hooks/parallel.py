@@ -76,7 +76,12 @@ I will now run [list of tasks] in parallel.
 
 </example>
 
-Please present your analysis of parallel stages and then proceed with the first stage. Remember, you MUST delegate steps to agents.
+Remember:
+- Agents cannot handle many instructions—be judicious in how much each agent is given, and prefer using multiple agents over giving them many instructions when possible.
+- Dependencies are critical. If a task depends on another task (types, interfaces, core utilities), it must be run _after_ the dependent task.
+- ONLY use parallelization if there is more than one file to modify (with one file, implement it yourself).
+
+Please present your analysis of parallel stages, if any, and then proceed with the first stage.
 
 </system-reminder>"""
 
