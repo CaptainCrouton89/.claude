@@ -13,7 +13,7 @@ Specifically, the `parallel-plan.md` file contains the exact steps to take, and 
    - Be provided with links to the `parallel-plan.md`, the `shared.md` and other documentation.
    - Begin by reading and understanding the relevant sections.
    - Perform the task completely
-   - Run `get_compilation_errors` on any files they edit, before returning.
+   - Run mcp__ide__getDiagnostics on any files they edit, before returning, and make sure there are no errors.
    - Return a summary of changes made.
 
 It is critical that these agents be used in batches—deploy all the agents in a batch in the same function call.
