@@ -40,7 +40,7 @@ DEBUG_PROMPT = """
 <system-reminder>The user has mentioned a key word or phrase that triggers this reminder. 
 
 <debugging-workflow>
-1. **Understand the codebase** - Read relevant files/tables/documents to understand the codebase
+1. **Understand the codebase** - Read relevant files/tables/documents to understand the codebase, and look up documentation for external libraries.
 2. **Identify 5-8 most likely root causes** - List potential reasons for the issue
 3. **Choose the 3 most likely causes** - Prioritize based on probability and impact
 4. **Decide whether to implement or debug** - If the cause is obvious, implement the fix and inform the user. If the cause is not obvious, continue this workflow.
@@ -50,6 +50,11 @@ Steps for Non-obvious Causes:
 6. **Let the user test** - Have them run the code with the new logging
 7. **Fix when solution is found** - Implement the actual fix once root cause is confirmed
 8. **Remove debugging logs** - Clean up temporary debugging code
+
+Remember:
+- Reading the entire file usually uncovers more information than just a snippet
+- Without complete context, edgecases will be missed
+- Making assumptions leads to poor analysis—stepping through code and logic sequentially is the best way to find the root cause
 
 Include relevant debugging commands/tools and explain your reasoning for each step.
 </debugging-workflow>
