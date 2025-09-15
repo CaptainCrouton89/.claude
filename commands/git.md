@@ -32,3 +32,5 @@ I have just finished one or more features. It's time to push commits and to upda
 4. Push changes after all add + commits have been made (including any doc updates)
 
 After making your changes, briefly list the commits made, and link to any documentation files that got updated.
+
+Remember—each collection of changes gets its own docs-committer agent task.
