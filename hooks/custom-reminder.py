@@ -28,6 +28,14 @@ PROMPT_IMPROVEMENT_PATTERNS = [
     r'\b(prompt|prompting).*\b(better|optimize|refine)\b'
 ]
 
+# Parallelization trigger patterns
+PARALLEL_PATTERNS = [
+    r'\b(parallel|parallelize|parallelization|concurrently|simultaneously)\b',
+    r'\bin parallel\b',
+    r'\bat the same time\b',
+    r'\bconcurrent execution\b'
+]
+
 DEBUG_PROMPT = """
 <system-reminder>The user has mentioned a key word or phrase that triggers this reminder. 
 
@@ -82,6 +90,33 @@ If the user is not looking to improve a prompt, or you have already read the gui
 </system-reminder>
 """
 
+PARALLEL_PROMPT = """
+<system-reminder>The user has mentioned parallel execution or parallelization.
+
+<parallelization-guide>
+**How and When to Parallelize Tasks:**
+
+Parallelizing tasks means delegating implementations and changes to multiple agents at the same time. Agents have their own context, meaning they are more likely to succeed and won't clog up context windows.
+
+In order to parallelize, you should break it into groups of tasks that don't depend on each other's outputs. Then, think some more, and then delegate the next batch of one or more agents.
+
+1. **Identify Independent Tasks**: Look for tasks that don't depend on each other's outputs
+2. **Use Single function_calls Block**: Place multiple tool invocations in ONE block:
+   <function_calls>
+     <invoke name="Task">...</invoke>
+     <invoke name="Task">...</invoke>
+     <invoke name="Bash">...</invoke>
+   </function_calls>
+3. Use the right agent for each task.
+4. After each batch of agents, ultrathink about which tasks can be done next, based on the dependencies. 
+
+Remember: EVERYTHING needs to get done, and all tasks should be given to agents. The dependency order is critical, so don't put tasks that depend on each other (such as db and type updates combining with tasks that rely on them) in the same batch.
+
+</parallelization-guide>
+
+</system-reminder>
+"""
+
 def check_patterns(text, patterns):
     """Check if any pattern matches the text (case insensitive)."""
     for pattern in patterns:
@@ -110,6 +145,11 @@ if check_patterns(prompt, INVESTIGATION_PATTERNS):
 # Check for prompt improvement triggers
 if check_patterns(prompt, PROMPT_IMPROVEMENT_PATTERNS):
     print(PROMPT_IMPROVEMENT_PROMPT)
+    sys.exit(0)
+
+# Check for parallelization triggers
+if check_patterns(prompt, PARALLEL_PATTERNS):
+    print(PARALLEL_PROMPT)
     sys.exit(0)
 
 # No triggers matched, allow normal processing
