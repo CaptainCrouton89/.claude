@@ -78,6 +78,7 @@ I will now run [list of tasks] in parallel.
 
 Remember:
 - Agents cannot handle many instructions—be judicious in how much each agent is given, and prefer using multiple agents over giving them many instructions when possible.
+- Agents you create do not have the same knowledge that you do. Either give them that knowledge, or tell them which files to read in order to get them up to speed.
 - Dependencies are critical. If a task depends on another task (types, interfaces, core utilities), it must be run _after_ the dependent task.
 - ONLY use parallelization if there is more than one file to modify (with one file, implement it yourself).
 

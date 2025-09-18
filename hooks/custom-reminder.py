@@ -115,6 +115,12 @@ In order to parallelize, you should break it into groups of tasks that don't dep
 3. Use the right agent for each task.
 4. After each batch of agents, ultrathink about which tasks can be done next, based on the dependencies. 
 
+General Advice:
+- Agents you create do not have the same knowledge that you do. Either give them that knowledge, or tell them which files to read in order to get them up to speed.
+- Dependencies are critical. If a task depends on another task (types, interfaces, core utilities), it must be run _after_ the dependent task.
+- Agents cannot handle many instructions—be judicious in how much each agent is given, and prefer using multiple agents over giving them many instructions when possible.
+
+
 Remember: EVERYTHING needs to get done, and all tasks should be given to agents. The dependency order is critical, so don't put tasks that depend on each other (such as db and type updates combining with tasks that rely on them) in the same batch.
 
 </parallelization-guide>
