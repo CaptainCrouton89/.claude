@@ -14,7 +14,7 @@ I have just finished one or more features. It's time to push commits and to upda
 
    - Multiple features or significant changes
    - 3+ files with substantial modifications
-     → Use parallel agents (all in same invocation) for documentation updates:
+     → Use parallel agents (multiple tasks in the same function_calls block) for documentation updates:
 
    - For **each** new feature or significant change, spawn a task with the docs-git-committer. That agent should be instructed to:
      a. Review the changes in detail
