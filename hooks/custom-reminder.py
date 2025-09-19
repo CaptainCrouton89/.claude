@@ -5,6 +5,15 @@ Hook that adds debugging or investigation prompts based on trigger words in user
 import json
 import re
 import sys
+from pathlib import Path
+
+# Load the shared parallel execution guide
+PARALLEL_GUIDE_PATH = Path.home() / ".claude" / "guides" / "parallel.md"
+try:
+    with open(PARALLEL_GUIDE_PATH, 'r') as f:
+        parallel_guide_content = f.read()
+except Exception as e:
+    parallel_guide_content = f"Error loading parallel guide: {e}"
 
 # Debugging trigger patterns
 DEBUG_PATTERNS = [
@@ -163,27 +172,12 @@ Remember: A plan fails when it makes assumptions. Investigate thoroughly, refere
 </system-reminder>
 """
 
-PARALLEL_PROMPT = """
+PARALLEL_PROMPT = f"""
 <system-reminder>The user has mentioned parallel execution or parallelization.
 
-CRITICAL: You should immediately read ~/.claude/guides/parallel.md for comprehensive guidance on parallel execution and agent management.
-
-The parallel execution guide contains:
-- Core philosophy and principles of parallelization
-- Dependency management strategies
-- Execution phases and strategies
-- Agent management best practices and limitations
-- Decision framework for when to parallelize
-- Common patterns and anti-patterns
-- Proper syntax for parallel execution
-
-Quick reminders from the guide:
-1. **Identify Independent Tasks**: Analyze dependencies before grouping
-2. **Use Single function_calls Block**: All parallel invocations in ONE block
-3. **Respect Agent Limits**: One primary task per agent with sufficient context
-4. **Think Between Batches**: Reassess after each stage completes
-
-Read the full guide at ~/.claude/guides/parallel.md for detailed instructions and examples.
+<parallelization-guide>
+{parallel_guide_content}
+</parallelization-guide>
 
 </system-reminder>
 """

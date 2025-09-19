@@ -4,10 +4,12 @@ import json
 import logging
 import os
 import sys
+from pathlib import Path
 
 # --- Logging Configuration ---
 LOG_FILE = "/tmp/claude_supervisor.log"
-STATE_FILE = "/tmp/claude_todo_hook.state" 
+STATE_FILE = "/tmp/claude_todo_hook.state"
+PARALLEL_GUIDE_PATH = Path.home() / ".claude" / "guides" / "parallel.md" 
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,45 +46,32 @@ def main():
             sys.exit(0)
             
         logging.info("New plan detected. Injecting reflection prompt.")
-        
-        # MODIFIED: The prompt now includes specific syntax instructions.
-        reflection_prompt = """<system-reminder>
+
+        # Load the shared parallel execution guide
+        try:
+            with open(PARALLEL_GUIDE_PATH, 'r') as f:
+                parallel_guide_content = f.read()
+            logging.info(f"Successfully loaded parallel guide from {PARALLEL_GUIDE_PATH}")
+        except FileNotFoundError:
+            logging.error(f"Parallel guide not found at {PARALLEL_GUIDE_PATH}")
+            parallel_guide_content = "Error: Could not load parallel execution guide."
+        except Exception as e:
+            logging.error(f"Error loading parallel guide: {e}")
+            parallel_guide_content = f"Error loading parallel guide: {e}"
+
+        reflection_prompt = f"""<system-reminder>
 **Parallelize the Plan**
 
-The initial plan has been drafted. Now, **think** to optimize its execution.
+The initial plan has been drafted. Now, review and apply these parallelization principles:
 
-1. **Analyze Dependencies**: Critically review the list of tasks.
-2. **Group for Parallelism**: Identify any tasks that are independent and can be executed concurrently. Group them into a parallel stage.
-3. **Format for Parallel Execution**: Place multiple `<invoke name="Task">` calls inside a **single** `<function_calls>` block in your response, using the optimal agent for each task.
-4. **Delegate Every Step**: Even stages that have just one step should be delegated to an agent, unless it is a trivial step. This avoids clogging your context window. And remember, no more than one task per agent.
+{parallel_guide_content}
 
-<example>
-Assistant: I will now run [list of tasks] in parallel.
+CRITICAL ADDITIONAL REQUIREMENTS FOR THIS CONTEXT:
+- ONLY use parallelization if there is more than one file to modify (with one file, implement it yourself)
+- Delegate EVERY step, even single-task stages (unless trivial) to avoid clogging your context window
+- No more than one primary task per agent
 
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">First parallel task...</parameter>
-    <parameter name="prompt">Details for the first task...</parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Second parallel task...</parameter>
-    <parameter name="prompt">Details for the second task...</parameter>
-  </invoke>
-</function_calls>
-
-I will now run [list of tasks] in parallel.
-
-...more parallel tasks
-
-</example>
-
-Remember:
-- Agents cannot handle many instructions—be judicious in how much each agent is given, and prefer using multiple agents over giving them many instructions when possible.
-- Agents you create do not have the same knowledge that you do. Either give them that knowledge, or tell them which files to read in order to get them up to speed.
-- Dependencies are critical. If a task depends on another task (types, interfaces, core utilities), it must be run _after_ the dependent task.
-- ONLY use parallelization if there is more than one file to modify (with one file, implement it yourself).
-
-Please present your analysis of parallel stages, if any, and then proceed with the first stage.
+Please present your analysis of parallel stages based on the guide above, then proceed with the first stage.
 
 </system-reminder>"""
 
