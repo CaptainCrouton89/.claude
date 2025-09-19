@@ -28,6 +28,14 @@ PROMPT_IMPROVEMENT_PATTERNS = [
     r'\b(prompt|prompting).*\b(better|optimize|refine)\b'
 ]
 
+# Planning trigger patterns
+PLANNING_PATTERNS = [
+    r'\b(make|create|develop|write|build).*\bplan\b',
+    r'\bplan\s+(out|for|the)\b',
+    r'\bplanning\s+(out|for|the)\b',
+    r'\b(implementation|feature|system)\s+plan\b'
+]
+
 # Parallelization trigger patterns
 PARALLEL_PATTERNS = [
     r'\b(parallel|parallelize|parallelization|concurrently|simultaneously)\b',
@@ -66,17 +74,18 @@ INVESTIGATION_PROMPT = """
 <system-reminder>The user has mentioned a key word or phrase that triggers this reminder.
 
 <investigation-workflow>
-1. **Assess scope**: Read provided files directly. Use code-finder for unknown/large codebases, direct tools (Read/Grep/Glob) for simple searches.
+1. **Assess scope**: Read provided files directly. Use code-finder or code-finder-advanced for unknown/large codebases, direct tools (Read/Grep/Glob) for simple searches.
 
-2. **Use code-finder when**: Complex investigations, no clear starting point, discovering patterns across many files, unclear functionality location.
+2. **Use code-finder or code-finder-advanced when**: Complex investigations, no clear starting point, discovering patterns across many files, unclear functionality location.
 
 3. **Use direct tools when**: Simple searches in known files, specific paths provided, trivial lookups.
 
-4. **Flow**: Start with context → code-finder for broad discovery → understand before suggesting → answer first, implement if asked.
+4. **Flow**: Start with context → code-finder or code-finder-advanced for broad discovery → understand before suggesting → answer first, implement if asked.
 
 5. **Multiple agents**: Split non-overlapping domains, launch parallel in single function_calls block. Example: backend/, frontend/, tests/ agents.
 
-Example: "Investigate and make plan out Stripe integration" → Use multiple code-finder tasks
+Example: "How does authentication integrate with each of our services, and how could we refactor it with middleware?" → Use parallel code-finder-advanced tasks
+Example: "Investigate and make plan out Stripe integration" → Use parallel code-finder tasks
 Example: "Where is combat implemented?" → Use code-finder task
 Example: "Do we have a formatDate function" → Use grep/bash/etc tools directly
 </investigation-workflow>
@@ -95,35 +104,86 @@ If the user is not looking to improve a prompt, or you have already read the gui
 </system-reminder>
 """
 
+PLANNING_PROMPT = """
+<system-reminder>The user has mentioned creating or making a plan. Here's some advice for making plans:
+
+<planning-workflow>
+**Effective Implementation Planning Guide**
+
+Before creating any plan, conduct thorough investigation—NOTHING can be left to assumptions. Specificity is critical for successful implementation.
+
+A well-structured plan should include:
+
+1. **Summary**
+   - Clear, concise description of what will be implemented
+   - The core problem being solved or feature being added
+
+2. **Reasoning/Motivation**
+   - Why this approach was chosen
+   - Trade-offs considered
+   - Key decisions made during investigation
+
+3. **Current System Overview**
+   - How the existing system works (be specific)
+   - Key files and their responsibilities:
+     - List actual file paths (e.g., src/services/auth.ts, components/Dashboard.tsx)
+     - Describe what each file does in the current implementation
+   - Dependencies and data flow
+
+4. **New System Design**
+   - How the system will work after implementation
+   - New or modified files required:
+     - List exact file paths that will be created or changed
+     - Describe the purpose of each change
+   - Integration points with existing code
+
+5. **Other Relevant Context**
+   - Utility functions or helpers needed (with file paths)
+   - Type definitions or interfaces (with file paths)
+   - Configuration changes required
+   - External dependencies or libraries
+   - Testing considerations
+
+**What NOT to include in plans:**
+- Code snippets or implementation details
+- Timelines or effort estimates
+- Self-evident advice for LLMs
+- Generic best practices
+- Vague descriptions without file references
+
+**Critical Requirements:**
+- Every assertion must be based on actual investigation, not assumptions
+- All file references must be exact paths discovered during research
+- Dependencies between components must be explicitly mapped
+- Edge cases and error conditions must be identified through code analysis
+
+Remember: A plan fails when it makes assumptions. Investigate thoroughly, reference specifically, plan comprehensively.
+</planning-workflow>
+
+</system-reminder>
+"""
+
 PARALLEL_PROMPT = """
 <system-reminder>The user has mentioned parallel execution or parallelization.
 
-<parallelization-guide>
-**How and When to Parallelize Tasks:**
+CRITICAL: You should immediately read ~/.claude/guides/parallel.md for comprehensive guidance on parallel execution and agent management.
 
-Parallelizing tasks means delegating implementations and changes to multiple agents at the same time. Agents have their own context, meaning they are more likely to succeed and won't clog up context windows.
+The parallel execution guide contains:
+- Core philosophy and principles of parallelization
+- Dependency management strategies
+- Execution phases and strategies
+- Agent management best practices and limitations
+- Decision framework for when to parallelize
+- Common patterns and anti-patterns
+- Proper syntax for parallel execution
 
-In order to parallelize, you should break it into groups of tasks that don't depend on each other's outputs. Then, think some more, and then delegate the next batch of one or more agents.
+Quick reminders from the guide:
+1. **Identify Independent Tasks**: Analyze dependencies before grouping
+2. **Use Single function_calls Block**: All parallel invocations in ONE block
+3. **Respect Agent Limits**: One primary task per agent with sufficient context
+4. **Think Between Batches**: Reassess after each stage completes
 
-1. **Identify Independent Tasks**: Look for tasks that don't depend on each other's outputs
-2. **Use Single function_calls Block**: Place multiple tool invocations in ONE block:
-   <function_calls>
-     <invoke name="Task">...</invoke>
-     <invoke name="Task">...</invoke>
-     <invoke name="Bash">...</invoke>
-   </function_calls>
-3. Use the right agent for each task.
-4. After each batch of agents, ultrathink about which tasks can be done next, based on the dependencies. 
-
-General Advice:
-- Agents you create do not have the same knowledge that you do. Either give them that knowledge, or tell them which files to read in order to get them up to speed.
-- Dependencies are critical. If a task depends on another task (types, interfaces, core utilities), it must be run _after_ the dependent task.
-- Agents cannot handle many instructions—be judicious in how much each agent is given, and prefer using multiple agents over giving them many instructions when possible.
-
-
-Remember: EVERYTHING needs to get done, and all tasks should be given to agents. The dependency order is critical, so don't put tasks that depend on each other (such as db and type updates combining with tasks that rely on them) in the same batch.
-
-</parallelization-guide>
+Read the full guide at ~/.claude/guides/parallel.md for detailed instructions and examples.
 
 </system-reminder>
 """
@@ -156,6 +216,11 @@ if check_patterns(prompt, INVESTIGATION_PATTERNS):
 # Check for prompt improvement triggers
 if check_patterns(prompt, PROMPT_IMPROVEMENT_PATTERNS):
     print(PROMPT_IMPROVEMENT_PROMPT)
+    sys.exit(0)
+
+# Check for planning triggers
+if check_patterns(prompt, PLANNING_PATTERNS):
+    print(PLANNING_PROMPT)
     sys.exit(0)
 
 # Check for parallelization triggers
