@@ -11,13 +11,13 @@ from pathlib import Path
 # Define keyword patterns and their corresponding output styles
 STYLE_PATTERNS = [
     # Brainstorming style triggers
-    (r'\b(brainstorm|ideate|creative|innovate|imagine|possibilities|alternatives|ideas)\b', 'Brainstorming'),
+    (r'\b(brainstorm)\b', 'Brainstorming'),
 
     # Business panel style triggers
-    (r'\b(business|strategy|executive|presentation|stakeholder|ROI|metrics|KPI)\b', 'Business Panel'),
+    (r'\b(business panel)\b', 'Business Panel'),
 
     # Deep research style triggers
-    (r'\b(deep research|thorough investigation|comprehensive analysis|literature review|academic|scholarly)\b', 'Deep Research'),
+    (r'\b(deep research)\b', 'Deep Research'),
 
     # Sr. Software Developer style triggers (default professional mode)
     (r'\b(implement|build|code|develop|fix|refactor|optimize|debug|deploy)\b', 'Sr. Software Developer')
