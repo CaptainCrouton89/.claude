@@ -1,12 +1,8 @@
-I have just finished one or more features. It's time to push commits and to update the documentation.
+I have just finished one or more changes. It's time to push commits and to potentially update the documentation.
 
 ## Phase 1: Analysis
 
-Run these git commands in parallel (single function_calls block):
-- `git status` - See all untracked files
-- `git diff --staged` - See staged changes
-- `git diff` - See unstaged changes
-- `git log --oneline -10` - Review recent commit style
+Analyze git diffs, running any additional `git` commands necessary to understand the scope of change.
 
 ## Phase 2: Decision & Strategy
 
