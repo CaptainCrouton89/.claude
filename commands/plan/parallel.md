@@ -12,6 +12,7 @@ Each task in the plan should be brief (a few file changes at most), and complete
 - Name relevant tables, if any
 - Do NOT include specific code; keep tasks more high level
 - In the header of the task, in brackets, name any previous steps (1.1, 2, none, etc) that must be completed before the task can be performed.
+- Name the agent that should be used for that task (e.g. `frontend-ui-developer`)
 
 At the top of the document, include a high level explanation of what needs to be done, as well as file paths of any relevant files so that the developer can immediately familiarize themselves with the core logic.
 
