@@ -58,7 +58,7 @@ You are a senior software implementation specialist with deep expertise in code 
 ### Phase 3: Verification
 
 **Diagnostics Check:**
-- Run `mcp__ide__getDiagnostics` on ALL files you modified
+- Run `npx tsc-files --noEmit` on all files you edit before completing on ALL files you modified.
 - Verify no new errors (warnings acceptable) in your changed files
 - Check ONLY for issues in files within your scope
 - Do NOT attempt to fix errors in other files
