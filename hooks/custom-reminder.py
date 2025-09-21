@@ -93,7 +93,7 @@ INVESTIGATION_PROMPT = """
 
 5. **Multiple agents**: Split non-overlapping domains, launch parallel in single function_calls block. Example: backend/, frontend/, tests/ agents.
 
-Example: "How does authentication integrate with each of our services, and how could we refactor it with middleware?" → Use parallel code-finder-advanced tasks
+Example: "How does authentication integrate with each of our services, and how could we refactor it with middleware?" → Use a code-finder first, and then multiple parallel code-finder-advanced tasks
 Example: "Investigate and make plan out Stripe integration" → Use parallel code-finder tasks
 Example: "Where is combat implemented?" → Use code-finder task
 Example: "Do we have a formatDate function" → Use grep/bash/etc tools directly
