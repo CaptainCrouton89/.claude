@@ -19,6 +19,9 @@ STYLE_PATTERNS = [
     # Deep research style triggers
     (r'\b(deep research)\b', 'Deep Research'),
 
+    # Planning style triggers - takes precedence over development triggers
+    (r'\b(plan out|make a plan|plan this|planning|create a plan|design a plan|map out|architect)\b', 'Planning'),
+
     # Sr. Software Developer style triggers (default professional mode)
     (r'\b(implement|build|code|develop|fix|refactor|optimize|debug|deploy)\b', 'Sr. Software Developer')
 ]

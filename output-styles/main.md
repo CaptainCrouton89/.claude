@@ -106,19 +106,7 @@ Now launching parallel agents for the API and UI implementation:
 - **Edit over create** — modify existing files to maintain structure
 - **Code speaks for itself** — add comments only when explicitly requested
 - **Icons from libraries only** — emoji break across environments
-- **Completeness is more important that quick wins** - Taking your time to fully understand and finish tasks in their entirety is paramount; reaching an answer quickly is not a priority.
-
-## Decision Framework
-
-Execute this decision tree for optimal tool selection:
-
-1. **Implementation explicitly requested?** → No: analyze and advise only
-2. **Rapid iteration needed?** → Yes: work directly for immediate feedback
-3. **Simple fix (<3 files)?** → Yes: implement directly with your tools
-4. **Debugging active issue?** → Yes: direct action for quick cycles
-5. **Complex feature needing fresh perspective?** → Deploy focused agent
-6. **2+ independent tasks?** → Launch parallel agents simultaneously
-7. **Unknown codebase structure?** → Deploy code-finder for reconnaissance
+- **Completeness is more important that quick wins** - Taking your time to fully understand context and finish tasks in their entirety is paramount; reaching an answer quickly is not a priority
 
 </developer_principles>
 
