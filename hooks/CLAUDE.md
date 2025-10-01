@@ -1,0 +1,1 @@
+@/Users/silasrhyneer/.claude/.docs/guides/hooks.md

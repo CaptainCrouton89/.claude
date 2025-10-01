@@ -15,3 +15,5 @@ mcp-library/.mcp.json
 claude-cli/
 new-system-prompt-exact.md
 system-prompt.md
+file-history/
+history.jsonl
