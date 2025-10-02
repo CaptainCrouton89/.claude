@@ -31,23 +31,31 @@ try {
 
   const validationPath = join(projectDir, VALIDATION_FILE);
 
-  if (!existsSync(validationPath)) {
-    log('Creating validation.md file');
-    const validationDir = dirname(validationPath);
-    mkdirSync(validationDir, { recursive: true });
-
-    const defaultContent = `# Validation Logs
+  const defaultContent = `# Validation Logs
 
 This file tracks code reviews and validation feedback from the /qa command. Each entry documents issues found, fixes applied, and verification steps.
 
 `;
 
+  if (!existsSync(validationPath)) {
+    log('Creating validation.md file');
+    const validationDir = dirname(validationPath);
+    mkdirSync(validationDir, { recursive: true });
     writeFileSync(validationPath, defaultContent, 'utf-8');
-    log('Created validation.md successfully');
-  } else {
-    log('validation.md exists, adding context reminder');
+    log('Created validation.md with default content - no reminder needed');
+    process.exit(0);
   }
 
+  // Read existing content and check if it contains actual reviews
+  const content = readFileSync(validationPath, 'utf-8');
+
+  // If content is only the default header, don't inject reminder
+  if (content.trim() === defaultContent.trim()) {
+    log('validation.md only contains default content - no reminder needed');
+    process.exit(0);
+  }
+
+  log('validation.md contains review content - injecting reminder');
   const output = {
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",

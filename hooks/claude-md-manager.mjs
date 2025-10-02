@@ -21,7 +21,8 @@ async function backgroundWorker() {
     fileTypes,
     subdirs,
     filePath,
-    cwd
+    cwd,
+    fileDir
   } = JSON.parse(input);
 
   // Set up logging
@@ -29,14 +30,8 @@ async function backgroundWorker() {
   const logMessage = (msg) => {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] [claude-md-manager] ${msg}\n`;
-    try {
-      writeFileSync(logPath, logEntry, { flag: 'a' });
-    } catch (e) {
-      // Silent fail
-    }
+    writeFileSync(logPath, logEntry, { flag: 'a' });
   };
-
-  logMessage(`Background worker starting for ${relativePath}`);
 
   // Collect all CLAUDE.md files from cwd to fileDir
   const claudeMdHierarchy = [];
@@ -45,24 +40,19 @@ async function backgroundWorker() {
   while (currentDir.startsWith(cwd)) {
     const potentialClaudeMd = join(currentDir, 'CLAUDE.md');
     if (existsSync(potentialClaudeMd) && currentDir !== fileDir) {
-      try {
-        const content = readFileSync(potentialClaudeMd, 'utf-8');
-        const lineCount = content.split('\n').length;
-        claudeMdHierarchy.unshift({
-          path: relative(cwd, potentialClaudeMd),
-          content,
-          lineCount
-        });
-      } catch (e) {
-        // Skip if unreadable
-      }
+      const content = readFileSync(potentialClaudeMd, 'utf-8');
+      const lineCount = content.split('\n').length;
+      claudeMdHierarchy.unshift({
+        path: relative(cwd, potentialClaudeMd),
+        content,
+        lineCount
+      });
     }
     const parentDir = dirname(currentDir);
     if (parentDir === currentDir) break;
     currentDir = parentDir;
   }
 
-  logMessage(`Found ${claudeMdHierarchy.length} parent CLAUDE.md files`);
 
   // Determine target line count based on directory complexity
   const totalFiles = fileTypes.length;
@@ -81,15 +71,32 @@ async function backgroundWorker() {
     targetLines = '~50';
   }
 
-  // Prepare the assistant prompt
-  const systemPrompt = `You are an expert at creating concise, focused CLAUDE.md files for subdirectories in software projects.
+  // Prepare the assistant prompt based on whether this is root or subdirectory
+  const systemPrompt = isRoot
+    ? `You are an expert at creating comprehensive CLAUDE.md files for project root directories.
+
+## Root Directory CLAUDE.md Requirements
+
+Root CLAUDE.md files should provide essential project context:
+- **Project purpose and domain** - what this project does
+- **Key technologies and frameworks** - main stack
+- **Architecture overview** - how major components relate
+- **Critical conventions** - coding standards, patterns
+- **Important constraints** - what to avoid, boundaries
+
+Be comprehensive but concise. Root CLAUDE.md is the foundation for all subdirectory context.
+
+## Output Format
+- Use the Write tool with NO explanatory text
+- Create a well-structured CLAUDE.md with clear sections`
+    : `You are an expert at creating concise, focused CLAUDE.md files for subdirectories in software projects.
 
 ## Best Practices for Subdirectory CLAUDE.md Files
 
 ### When to Create
-- Only create if the subdirectory has UNIQUE context not obvious from its name/structure
-- Only create if there are specific conventions, patterns, or constraints worth documenting
-- Don't create if the directory purpose is self-evident (e.g., "components" folder just contains components)
+- Create for directories with >5 files or significant complexity
+- Create if there are specific conventions, patterns, or constraints worth documenting
+- Skip only if the directory is trivial (few files, obvious purpose)
 
 ### Content Guidelines
 - **Be extremely concise** - use short, declarative bullet points
@@ -110,7 +117,7 @@ async function backgroundWorker() {
 - Over-engineering simple directories
 - Including generic best practices
 
-Remember: **Err on the side of NOT creating or minimally editing**. Less is more.
+Remember: **Create docs for directories with >5 files**. Be helpful and proactive.
 
 ## Output Format
 - If you decide to use the Write tool, use it with NO explanatory text
@@ -164,17 +171,17 @@ Edited file: ${basename(filePath)}
 
 **Target length: ${targetLines} lines**
 
-Should a CLAUDE.md be created for this directory? Consider:
-1. Is the directory purpose non-obvious from its name and contents?
-2. Are there specific conventions or patterns that need documentation?
-3. Are there important constraints or boundaries to establish?
-4. Is there unique context not already covered in parent CLAUDE.md files?
+Should a CLAUDE.md be created for this directory?
 
-If you decide to create a CLAUDE.md, use the Write tool to write it to ${claudeMdPath}.
-If no CLAUDE.md is needed, do nothing.`;
+**Creation criteria (at least one should be true):**
+1. Directory has >5 files OR >3 subdirectories
+2. There are specific conventions, patterns, or constraints to document
+3. There is important unique context not covered in parent CLAUDE.md files
+
+If any criteria is met, use the Write tool to create ${claudeMdPath}.
+If none apply, do nothing.`;
 
   try {
-    logMessage(`Starting query for ${relativePath}`);
     const result = query({
       prompt: userPrompt,
       cwd: cwd,
@@ -187,20 +194,10 @@ If no CLAUDE.md is needed, do nothing.`;
       }
     });
 
-    let allText = '';
+    // Consume the response
     for await (const message of result) {
-      // Collect all text for logging
-      if (message.type === 'assistant' && message.message?.content) {
-        for (const block of message.message.content) {
-          if (block.type === 'text') {
-            allText += block.text;
-          }
-        }
-      }
+      // Just consume the stream
     }
-
-    logMessage(`Completed query for ${relativePath}`);
-    logMessage(`Agent reasoning:\n${allText.substring(0, 500)}${allText.length > 500 ? '...' : ''}`);
   } catch (error) {
     logMessage(`Error for ${relativePath}: ${error.message}`);
   }
@@ -223,62 +220,49 @@ async function main() {
   const logMessage = (msg) => {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] [claude-md-manager] ${msg}\n`;
-    try {
-      writeFileSync(logPath, logEntry, { flag: 'a' });
-    } catch (e) {
-      // Silent fail
-    }
+    writeFileSync(logPath, logEntry, { flag: 'a' });
   };
 
-  logMessage("Hook triggered - starting execution");
-
   // Read hook input from stdin
-  let inputData;
-  try {
-    const stdin = readFileSync(0, "utf-8");
-    logMessage(`Raw stdin received: ${stdin.substring(0, 200)}`);
-    inputData = JSON.parse(stdin);
-    logMessage(`Parsed input - tool: ${inputData?.tool_name}, has_path: ${!!inputData?.tool_input?.file_path}`);
-  } catch (e) {
-    logMessage(`Error parsing stdin: ${e.message}`);
-    process.exit(0);
-  }
+  const stdin = readFileSync(0, "utf-8");
+  const inputData = JSON.parse(stdin);
 
   const { tool_name, tool_input, cwd } = inputData;
 
   // Only process Write and Edit tools
   if (!["Write", "Edit", "MultiEdit"].includes(tool_name)) {
-    logMessage(`Skipping - tool is ${tool_name}, not Write/Edit/MultiEdit`);
     process.exit(0);
   }
 
   // Get the file path from tool input
   const filePath = tool_input?.file_path;
   if (!filePath) {
-    logMessage(`Skipping - no file_path in tool_input`);
     process.exit(0);
   }
-  logMessage(`Processing file: ${filePath}`)
 
   // Get the directory containing the edited file
   const fileDir = dirname(filePath);
+  const relativePath = relative(cwd, fileDir) || '.';
+
+  // Skip if file is outside cwd (relative path would go up with ..)
+  if (relativePath.startsWith('..')) {
+    process.exit(0);
+  }
+
   const claudeMdPath = join(fileDir, "CLAUDE.md");
 
   // Skip if this IS a CLAUDE.md file
   if (basename(filePath) === "CLAUDE.md") {
-    logMessage(`Skipping - file is CLAUDE.md itself`);
     process.exit(0);
   }
 
   // Skip if directory is .claude or hooks directory
   if (fileDir.includes("/.claude/") || fileDir.includes("/.claude") || fileDir.endsWith("/.claude")) {
-    logMessage(`Skipping - directory is in .claude: ${fileDir}`);
     process.exit(0);
   }
 
   // Skip if this is a CLAUDE.md file being written by this hook or validator
   if (filePath.endsWith("/CLAUDE.md")) {
-    logMessage(`Skipping - file is CLAUDE.md itself (including newly created)`);
     process.exit(0);
   }
 
@@ -289,46 +273,26 @@ async function main() {
   // Read existing CLAUDE.md if it exists
   let existingClaudeMd = "";
   if (hasClaudeMd) {
-    try {
-      existingClaudeMd = readFileSync(claudeMdPath, "utf-8");
-    } catch (e) {
-      logMessage(`Error reading CLAUDE.md: ${e.message}`);
-      process.exit(0);
-    }
+    existingClaudeMd = readFileSync(claudeMdPath, "utf-8");
   }
 
   // Get some context about the directory
   const fileTypes = dirContents
     .filter(f => {
       const fullPath = join(fileDir, f);
-      try {
-        return statSync(fullPath).isFile();
-      } catch (e) {
-        return false;
-      }
+      return statSync(fullPath).isFile();
     })
     .map(f => f.split('.').pop())
     .filter(ext => ext && ext.length < 10);
 
   const subdirs = dirContents.filter(f => {
     const fullPath = join(fileDir, f);
-    try {
-      return statSync(fullPath).isDirectory() && !f.startsWith('.');
-    } catch (e) {
-      return false;
-    }
+    return statSync(fullPath).isDirectory() && !f.startsWith('.');
   });
 
-  const relativePath = relative(cwd, fileDir);
-  if (!relativePath) {
-    logMessage(`Could not determine relative path`);
-    process.exit(0);
-  }
-
-  // Show user message
+  // Log only when actually processing
+  logMessage(`Checking CLAUDE.md for ${relativePath}`);
   console.error(`🔍 Checking if ${relativePath} needs a CLAUDE.md...`);
-  logMessage(`Triggered for ${relativePath} (file: ${basename(filePath)})`);
-  logMessage(`Spawning background worker process`);
 
   // Spawn detached background process
   const { spawn } = await import('child_process');
@@ -341,7 +305,8 @@ async function main() {
     fileTypes,
     subdirs,
     filePath,
-    cwd
+    cwd,
+    fileDir
   });
 
   const child = spawn(process.execPath, [

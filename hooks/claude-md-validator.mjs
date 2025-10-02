@@ -98,23 +98,28 @@ async function backgroundWorker() {
     }
   };
 
-  // Build descriptive log message
-  let logDetail = `Validating ${toolName}`;
-  if (toolName === "Bash" && toolInput?.command) {
-    const cmd = toolInput.command.length > 60
-      ? toolInput.command.substring(0, 60) + "..."
-      : toolInput.command;
-    logDetail += `: ${cmd}`;
-  } else if (toolInput?.file_path) {
-    logDetail += `: ${toolInput.file_path}`;
-  }
-  logMessage(logDetail);
+  // Only log the final result (logged below after validation completes)
 
   // Determine validation file path - use cwd (Claude's working directory)
   const validationPath = join(cwd, '.claude', 'validation.md');
 
-  // Build validation prompt
-  const validationPrompt = `You are an expert code quality validator specializing in enforcing project-specific coding standards. Your role is to analyze tool usage against CLAUDE.md rules and identify violations with precision.
+  // Build validation prompt with system prompt
+  const systemPrompt = `You are a code quality validator. Analyze tool usage against CLAUDE.md rules using best judgment.
+
+CRITICAL CONSTRAINTS:
+- ZERO explanation. ZERO analysis. ZERO thinking aloud. ZERO reasoning.
+- Your ENTIRE response MUST be EXACTLY ONE LINE: "PASS", "FIXED: <description>", "FAIL: <summary>", or "SKIP: <command>"
+- Use tools (Edit/Write/Read/Bash) for fixes or documentation, then output ONLY the one-line verdict
+- Apply common sense:
+  * If the user explicitly requested something, it's not a violation
+  * Consider what the code is trying to accomplish—context matters
+  * Don't be pedantic about edge cases or infrastructure code
+  * Focus on violations that actually degrade code quality or maintainability
+
+EXAMPLE CORRECT OUTPUT: "PASS"
+EXAMPLE WRONG OUTPUT: "I analyzed the code and found... PASS" ❌ NO EXPLANATION ALLOWED`;
+
+  const validationPrompt = `${systemPrompt}
 
 Rules are organized from most specific (file's directory) to global (HOME). More specific rules take precedence.
 
@@ -139,15 +144,14 @@ ${JSON.stringify(toolResponse, null, 2)}
 Your task:
 
 1. **Analyze the tool usage** - Compare the tool input and response against each rule in CLAUDE.md
-2. **Consider user intent** - CRITICAL: If the user explicitly requested something that appears to violate a general rule, it is NOT a violation. Explicit user requests override general guidelines.
-3. **Identify violations** - Determine if any rules were broken (e.g., using \`any\` type, using fallbacks instead of throwing errors)
+2. **Use best judgment** - CRITICAL: Consider the user's intent and code context. If it's obvious the user wants something that contradicts CLAUDE.md, that's not a violation—it's the user making an informed choice.
+3. **Identify real violations** - Only flag issues that genuinely harm code quality in context. Ask yourself: "Does this actually make the code worse, or am I being pedantic?"
 4. **Check for resolved violations** - If @${validationPath.replace(process.env.HOME, '~')} exists, Read it first to check if this tool usage resolves any previously documented violations. If violations are now fixed, remove those entries from the validation file.
 5. **Fix or document** - For violations found:
-   a. **If it's a simple fix** (e.g., replacing \`any\` with proper type, changing fallback to throw error): Use Edit/Write to fix it directly
-   b. **If it's complex or requires user decision**: Document in validation.md:
-      - First, use Bash to create the directory: mkdir -p ${dirname(validationPath)}
-      - Then use Read to get current content (if file exists)
-      - Use Write tool to write to this EXACT file path: @${validationPath.replace(process.env.HOME, '~')}
+   a. **If it's a simple fix** (e.g., replacing \`any\` with proper type, changing fallback to throw error): Use Edit/Write to fix it directly, then return "FIXED: <description>"
+   b. **If it's complex or requires user decision**: You MUST document it first before returning FAIL:
+      - REQUIRED: First use Bash to create directory: mkdir -p ${dirname(validationPath)}
+      - REQUIRED: Use Write tool to write to: @${validationPath.replace(process.env.HOME, '~')}
 
 Append a detailed entry with this format:
 
@@ -174,21 +178,24 @@ Then append your violation entry.
 
 6. **Self-healing for Bash commands** - If this is a Bash command that could NEVER realistically trigger a CLAUDE.md violation (read-only commands, inspection tools, etc.), use the Write tool to append the command prefix to @.claude/ignored-bash.txt so it will be skipped in the future. Only add commands that are purely informational and cannot create/modify code.
 
-7. **Return verdict** - Your FINAL message must contain ONLY ONE LINE with one of these exact formats:
+7. **Return verdict** - Your ENTIRE response must be EXACTLY ONE LINE:
    - "PASS" if no violations found
    - "FIXED: <brief description>" if you fixed violations automatically
-   - "FAIL: <brief violation summary>" if violations were documented (too complex to auto-fix)
+   - "FAIL: <brief violation summary>" ONLY AFTER you have used Write tool to document the violation
    - "SKIP: <command>" if you added this command to ignored-bash.txt
 
-Do not include analysis, explanations, or thinking in your final response. ONLY the verdict line.
+CRITICAL: You CANNOT return "FAIL:" without first using the Write tool. If you find a violation that's too complex to fix, you MUST Write to validation.md BEFORE returning FAIL.
+
+ZERO explanation. ZERO reasoning. If you output more than one line, you FAIL.
 
 Focus on actual rule violations. Be precise and actionable in your assessment.`;
 
   try {
+    logMessage(`DEBUG: Starting validation query for ${toolName}`);
     const response = query({
       prompt: validationPrompt,
       cwd: cwd,
-      maxTurns: 2,
+      maxTurns: 10,
       options: {
         model: "claude-sonnet-4-5",
         allowedTools: ["Write", "Bash", "Edit", "Read"],
@@ -199,31 +206,50 @@ Focus on actual rule violations. Be precise and actionable in your assessment.`;
     });
 
     let validationResult = "";
+    let toolCalls = [];
     for await (const message of response) {
       if (message.type === 'assistant' && message.message?.content) {
         for (const block of message.message.content) {
           if (block.type === 'text') {
             validationResult += block.text;
+          } else if (block.type === 'tool_use') {
+            toolCalls.push(`${block.name}(${JSON.stringify(block.input).slice(0, 100)}...)`);
           }
         }
       }
     }
 
-    const result = validationResult.trim();
-    logMessage(`Validation complete: ${result}`);
+    const toolsList = toolCalls.length > 0 ? toolCalls.join(', ') : 'none';
+    logMessage(`DEBUG: Query complete. Tools used: ${toolsList}`);
+    logMessage(`DEBUG: Validation result text: ${validationResult.slice(0, 200)}`);
 
+    // Extract only the verdict line (last line matching PASS|FIXED|FAIL|SKIP)
+    const lines = validationResult.trim().split('\n');
+    const verdictLine = lines.reverse().find(line =>
+      /^(PASS|FIXED:|FAIL:|SKIP:)/.test(line.trim())
+    );
+
+    if (!verdictLine) {
+      logMessage(`DEBUG: No verdict line found. Full response: ${validationResult}`);
+      throw new Error(`No valid verdict found in response: ${validationResult}`);
+    }
+
+    const result = verdictLine.trim();
+    logMessage(`DEBUG: Final verdict: ${result}`);
+
+    // Log and output based on result
     if (result.startsWith("FAIL")) {
-      logMessage(`❌ Violation detected: ${result}`);
+      logMessage(`FAIL: ${result.substring(5)}`);
       console.error(`⚠️  CLAUDE.md violation: ${result}`);
     } else if (result.startsWith("FIXED")) {
-      logMessage(`🔧 Auto-fixed: ${result}`);
-    } else if (result === "PASS") {
-      logMessage(`✓ Validation passed for ${toolName}`);
-    } else {
-      logMessage(`⚠️  Unexpected validation result: ${result}`);
+      logMessage(`FIXED: ${result.substring(6)}`);
+    } else if (result.startsWith("SKIP")) {
+      logMessage(`SKIP: ${result.substring(5)}`);
     }
+    // Don't log PASS results
   } catch (error) {
     logMessage(`Error during validation: ${error.message}`);
+    logMessage(`DEBUG: Error stack: ${error.stack}`);
   }
 
   process.exit(0);
@@ -249,7 +275,43 @@ async function main() {
   const toolInput = input.tool_input;
   const toolResponse = input.tool_response;
   const cwd = input.cwd;
-  const userMessage = input.user_message;
+  const transcriptPath = input.transcript_path;
+
+  // Extract user message from transcript
+  let userMessage = null;
+  try {
+    const transcriptContent = readFileSync(transcriptPath, "utf-8");
+    const lines = transcriptContent.trim().split("\n");
+
+    // Find the last user message (most recent, not meta, not commands)
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const entry = JSON.parse(lines[i]);
+      if (entry.type === "user" &&
+          entry.message?.role === "user" &&
+          !entry.isMeta) {
+        const content = entry.message.content;
+        const textContent = typeof content === "string"
+          ? content
+          : Array.isArray(content)
+            ? content.find(c => c.type === "text")?.text
+            : null;
+
+        // Skip command messages
+        if (textContent && !textContent.includes("<command-name>")) {
+          userMessage = textContent;
+          break;
+        }
+      }
+    }
+  } catch (error) {
+    // If we can't read transcript, skip validation
+    process.exit(0);
+  }
+
+  // Skip validation if no user message found
+  if (!userMessage) {
+    process.exit(0);
+  }
 
   // Skip validation for non-code tools
   if (toolName === "TodoWrite") {

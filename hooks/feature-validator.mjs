@@ -294,30 +294,15 @@ async function main() {
   }
 
   const input = await loadInput();
-
-  // Set up logging immediately
   const logPath = join(process.env.HOME, '.claude', 'hooks.log');
-  const logMessage = (msg) => {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [feature-validator] ${msg}\n`;
-    try {
-      writeFileSync(logPath, logEntry, { flag: 'a' });
-    } catch (e) {
-      // Silent fail
-    }
-  };
-
-  logMessage(`Hook triggered with event: ${input.hook_event_name}`);
 
   // Only process Stop events
   if (input.hook_event_name !== 'Stop') {
-    logMessage(`Skipping - not a Stop event`);
     process.exit(0);
   }
 
   // Don't run if we're already in a stop hook to prevent infinite loops
   if (input.stop_hook_active) {
-    logMessage(`Skipping - stop_hook_active is true`);
     process.exit(0);
   }
 
@@ -331,7 +316,6 @@ async function main() {
     tc.input?.file_path?.endsWith('/validation.md')
   );
   if (hasValidationWrite) {
-    logMessage(`Skipping - validation.md write detected, preventing circular validation`);
     process.exit(0);
   }
 
@@ -353,19 +337,8 @@ async function main() {
   const assistantMessages = getRecentAssistantMessages(transcriptPath);
 
   if (assistantMessages.length === 0) {
-    logMessage(`No assistant messages found in transcript`);
-    // Debug: check if file exists and has content
-    if (existsSync(transcriptPath)) {
-      const { statSync } = await import('fs');
-      const stats = statSync(transcriptPath);
-      logMessage(`Transcript exists, size: ${stats.size} bytes`);
-    } else {
-      logMessage(`Transcript file does not exist`);
-    }
     process.exit(0);
   }
-
-  logMessage(`Found ${assistantMessages.length} assistant messages`);
 
   // Get tool calls for analysis
   const toolCalls = getToolCalls(assistantMessages);
@@ -373,13 +346,23 @@ async function main() {
 
   // Check if validation is needed
   const needsValidation = requiresValidation(toolCalls, assistantText);
-  logMessage(`Stop hook triggered. Needs validation: ${needsValidation} (${toolCalls.length} tools, ${assistantText.length} chars)`);
 
   if (!needsValidation) {
     process.exit(0);
   }
 
-  logMessage(`Spawning background validation process`);
+  // Only log when actually running validation
+  const writeLog = (msg) => {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [feature-validator] ${msg}\n`;
+    try {
+      writeFileSync(logPath, logEntry, { flag: 'a' });
+    } catch (e) {
+      // Silent fail
+    }
+  };
+
+  writeLog(`Validation triggered: ${toolCalls.length} tool calls detected`);
 
   // Spawn detached background process for validation
   const { spawn } = await import('child_process');

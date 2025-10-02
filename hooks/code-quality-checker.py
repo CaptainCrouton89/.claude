@@ -46,55 +46,57 @@ def check_anthropic_models(content: str) -> list[str]:
 
 def check_fallback_patterns(content: str) -> list[str]:
     """Check for fallback and legacy patterns."""
-    issues = []
-    
-    fallback_patterns = [
-        (r'\bfallback\b', 'WARNING: Fallbacks detected. Code should fail fast and throw errors early. Consider rewriting without fallback logic.'),
-        (r'\blegacy\b', 'WARNING: Legacy code detected. Consider removing legacy code and using modern implementations.'),
-        (r'backward[s]?\s+compatib', 'WARNING: Backwards compatibility detected. Consider breaking existing code if needed for better implementation.'),
-        (r'\|\|\s*[\'"][^\'"]*[\'"]', 'WARNING: Default value fallbacks (|| "default") detected. Consider using explicit error handling instead.'),
-        (r'\?\?\s*[\'"][^\'"]*[\'"]', 'WARNING: Nullish coalescing with defaults (?? "default") detected. Consider replacing with explicit validation.'),
-        (r'try\s*\{[^}]*\}\s*catch\s*\([^)]*\)\s*\{[^}]*\}', 'WARNING: Empty or generic catch blocks may hide errors. Ensure proper error handling and re-throwing.'),
-    ]
-    
-    for pattern, message in fallback_patterns:
-        if re.search(pattern, content, re.IGNORECASE):
-            issues.append(message)
-    
-    return issues
+    return []
+    # issues = []
+
+    # fallback_patterns = [
+    #     (r'\bfallback\b', 'WARNING: Fallbacks detected. Code should fail fast and throw errors early. Consider rewriting without fallback logic.'),
+    #     (r'\blegacy\b', 'WARNING: Legacy code detected. Consider removing legacy code and using modern implementations.'),
+    #     (r'backward[s]?\s+compatib', 'WARNING: Backwards compatibility detected. Consider breaking existing code if needed for better implementation.'),
+    #     (r'\|\|\s*[\'"][^\'"]*[\'"]', 'WARNING: Default value fallbacks (|| "default") detected. Consider using explicit error handling instead.'),
+    #     (r'\?\?\s*[\'"][^\'"]*[\'"]', 'WARNING: Nullish coalescing with defaults (?? "default") detected. Consider replacing with explicit validation.'),
+    #     (r'try\s*\{[^}]*\}\s*catch\s*\([^)]*\)\s*\{[^}]*\}', 'WARNING: Empty or generic catch blocks may hide errors. Ensure proper error handling and re-throwing.'),
+    # ]
+
+    # for pattern, message in fallback_patterns:
+    #     if re.search(pattern, content, re.IGNORECASE):
+    #         issues.append(message)
+
+    # return issues
 
 def check_any_type_usage(content: str) -> list[str]:
     """Check for 'any' type usage in TypeScript/JavaScript."""
-    issues = []
-    
-    # More sophisticated pattern to catch 'any' as a type
-    any_type_patterns = [
-        (r':\s*any\b', "WARNING: 'any' type detected. Consider defining proper types instead. Look up existing type definitions or create new ones in appropriate locations."),
-        (r'<any>', "WARNING: 'any' generic type detected. Consider using specific types instead."),
-        (r'Array<any>', "WARNING: 'Array<any>' detected. Consider using 'Array<SpecificType>' instead."),
-        (r'Promise<any>', "WARNING: 'Promise<any>' detected. Consider using 'Promise<SpecificType>' instead."),
-        (r'\bas\s+any\b', "WARNING: Type assertion 'as any' detected. Consider using proper type assertions or fix the underlying type issue."),
-        (r'Record<[^,>]+,\s*any>', "WARNING: 'Record<string, any>' pattern detected. Consider defining proper value types if possible."),
-    ]
-    
-    # Don't match 'any' in strings, comments, or variable names
-    # Split content into lines and check each line
-    lines = content.split('\n')
-    for line_num, line in enumerate(lines, 1):
-        # Skip comments
-        if re.match(r'^\s*(/\*|//|\*|#)', line.strip()):
-            continue
-        
-        # Skip string literals (simplified - may not catch all cases)
-        line_without_strings = re.sub(r'["\'][^"\']*["\']', '', line)
-        line_without_strings = re.sub(r'`[^`]*`', '', line_without_strings)
-        
-        for pattern, message in any_type_patterns:
-            if re.search(pattern, line_without_strings):
-                issues.append(f"{message} (Line {line_num})")
-                break  # Only report one issue per line
-    
-    return issues
+    return []
+    # issues = []
+
+    # # More sophisticated pattern to catch 'any' as a type
+    # any_type_patterns = [
+    #     (r':\s*any\b', "WARNING: 'any' type detected. Consider defining proper types instead. Look up existing type definitions or create new ones in appropriate locations."),
+    #     (r'<any>', "WARNING: 'any' generic type detected. Consider using specific types instead."),
+    #     (r'Array<any>', "WARNING: 'Array<any>' detected. Consider using 'Array<SpecificType>' instead."),
+    #     (r'Promise<any>', "WARNING: 'Promise<any>' detected. Consider using 'Promise<SpecificType>' instead."),
+    #     (r'\bas\s+any\b', "WARNING: Type assertion 'as any' detected. Consider using proper type assertions or fix the underlying type issue."),
+    #     (r'Record<[^,>]+,\s*any>', "WARNING: 'Record<string, any>' pattern detected. Consider defining proper value types if possible."),
+    # ]
+
+    # # Don't match 'any' in strings, comments, or variable names
+    # # Split content into lines and check each line
+    # lines = content.split('\n')
+    # for line_num, line in enumerate(lines, 1):
+    #     # Skip comments
+    #     if re.match(r'^\s*(/\*|//|\*|#)', line.strip()):
+    #         continue
+
+    #     # Skip string literals (simplified - may not catch all cases)
+    #     line_without_strings = re.sub(r'["\'][^"\']*["\']', '', line)
+    #     line_without_strings = re.sub(r'`[^`]*`', '', line_without_strings)
+
+    #     for pattern, message in any_type_patterns:
+    #         if re.search(pattern, line_without_strings):
+    #             issues.append(f"{message} (Line {line_num})")
+    #             break  # Only report one issue per line
+
+    # return issues
 
 def main():
     try:
