@@ -1,0 +1,137 @@
+# Bash commands that should skip CLAUDE.md validation
+# These are read-only operations that cannot violate coding rules
+# Add one command prefix per line (commands will be matched with startsWith)
+
+# File viewing/navigation
+ls
+pwd
+echo
+cat
+head
+tail
+less
+more
+file
+stat
+du
+df
+tree
+basename
+dirname
+realpath
+readlink
+
+# Search/filter
+grep
+rg
+find
+locate
+which
+type
+whereis
+awk
+sed -n
+cut
+sort
+uniq
+wc
+diff
+cmp
+
+# Git read operations
+git status
+git log
+git diff
+git show
+git branch
+git remote
+git config --get
+git blame
+git ls-files
+git ls-tree
+git rev-parse
+git describe
+git tag
+git reflog
+
+# Package managers (read-only)
+npm list
+npm view
+npm info
+npm outdated
+npm doctor
+pnpm list
+yarn list
+pip list
+pip show
+pip freeze
+cargo search
+go list
+composer show
+
+# Linters/formatters (check mode)
+black --check
+black --diff
+pylint
+flake8
+mypy
+eslint
+prettier --check
+rustfmt --check
+gofmt -d
+
+# Testing (dry-run/list)
+pytest --collect-only
+make -n
+make --dry-run
+
+# Documentation
+man
+pydoc
+help
+info
+
+# System info
+env
+printenv
+ps
+top
+htop
+uptime
+whoami
+hostname
+uname
+date
+cal
+history
+
+# Text processing
+tr
+expand
+unexpand
+fold
+fmt
+nl
+tac
+rev
+strings
+od
+hexdump
+xxd
+
+# Data formats
+jq
+yq
+xmllint
+json
+yaml
+
+# Misc read-only
+test
+true
+false
+hash
+command -v
+compgen
+sleep
+mkdir
