@@ -5,15 +5,6 @@ Hook that adds debugging or investigation prompts based on trigger words in user
 import json
 import re
 import sys
-from pathlib import Path
-
-# Load the shared parallel execution guide
-PARALLEL_GUIDE_PATH = Path.home() / ".claude" / "guides" / "parallel.md"
-try:
-    with open(PARALLEL_GUIDE_PATH, 'r') as f:
-        parallel_guide_content = f.read()
-except Exception as e:
-    parallel_guide_content = f"Error loading parallel guide: {e}"
 
 # Debugging trigger patterns
 DEBUG_PATTERNS = [
@@ -22,19 +13,11 @@ DEBUG_PATTERNS = [
     r'\b(stack trace|error message|exception|\^\^\^)\b'
 ]
 
-# Investigation trigger patterns  
+# Investigation trigger patterns
 INVESTIGATION_PATTERNS = [
     r'\b(investigate|research|analyze|examine|explore|understand)\b',
     r'\b(how does.*work|figure out|explain|find out)\b',
     r'\b(code review|audit|inspect)\b'
-]
-
-# Prompt improvement trigger patterns
-PROMPT_IMPROVEMENT_PATTERNS = [
-    r'\b(improv|enhanc).*\b(prompt|prompting)\b',
-    r'\b(prompt|prompting).*\b(improv|enhanc)\b',
-    r'\b(better|optimize|refine).*\b(prompt|prompting)\b',
-    r'\b(prompt|prompting).*\b(better|optimize|refine)\b'
 ]
 
 # Planning trigger patterns
@@ -43,14 +26,6 @@ PLANNING_PATTERNS = [
     r'\bplan\s+(out|for|the)\b',
     r'\bplanning\s+(out|for|the)\b',
     r'\b(implementation|feature|system)\s+plan\b'
-]
-
-# Parallelization trigger patterns
-PARALLEL_PATTERNS = [
-    r'\b(parallel|parallelize|parallelization|concurrently|simultaneously)\b',
-    r'\bin parallel\b',
-    r'\bat the same time\b',
-    r'\bconcurrent execution\b'
 ]
 
 DEBUG_PROMPT = """
@@ -100,17 +75,6 @@ Example: "Do we have a formatDate function" → Use grep/bash/etc tools directly
 </investigation-workflow>
 
 This workflow ensures efficient investigation based on task complexity.
-"""
-
-PROMPT_IMPROVEMENT_PROMPT = """
-<system-reminder>The user has mentioned improving or enhancing prompts/prompting.
-
-CRITICAL: You MUST first read ~/.claude/guides/prompting-guide.md for comprehensive guidance on writing effective prompts. If you haven't read this guide yet in this conversation, read it immediately before proceeding with any prompt-related suggestions.
-
-Only after reading and understanding this guide should you provide prompt improvement recommendations.
-
-If the user is not looking to improve a prompt, or you have already read the guide, ignore this reminder.
-</system-reminder>
 """
 
 PLANNING_PROMPT = """
@@ -172,16 +136,6 @@ Remember: A plan fails when it makes assumptions. Investigate thoroughly, refere
 </system-reminder>
 """
 
-PARALLEL_PROMPT = f"""
-<system-reminder>The user has mentioned parallel execution or parallelization.
-
-<parallelization-guide>
-{parallel_guide_content}
-</parallelization-guide>
-
-</system-reminder>
-"""
-
 def check_patterns(text, patterns):
     """Check if any pattern matches the text (case insensitive)."""
     for pattern in patterns:
@@ -202,24 +156,14 @@ if check_patterns(prompt, DEBUG_PATTERNS):
     print(DEBUG_PROMPT)
     sys.exit(0)
 
-# Check for investigation triggers  
+# Check for investigation triggers
 if check_patterns(prompt, INVESTIGATION_PATTERNS):
     print(INVESTIGATION_PROMPT)
-    sys.exit(0)
-
-# Check for prompt improvement triggers
-if check_patterns(prompt, PROMPT_IMPROVEMENT_PATTERNS):
-    print(PROMPT_IMPROVEMENT_PROMPT)
     sys.exit(0)
 
 # Check for planning triggers
 if check_patterns(prompt, PLANNING_PATTERNS):
     print(PLANNING_PROMPT)
-    sys.exit(0)
-
-# Check for parallelization triggers
-if check_patterns(prompt, PARALLEL_PATTERNS):
-    print(PARALLEL_PROMPT)
     sys.exit(0)
 
 # No triggers matched, allow normal processing

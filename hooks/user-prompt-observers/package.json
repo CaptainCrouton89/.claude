@@ -1,0 +1,11 @@
+{
+  "name": "user-prompt-observers",
+  "version": "1.0.0",
+  "description": "Hooks to observe user prompts and inject contextual guidance",
+  "type": "commonjs",
+  "dependencies": {
+    "ai": "^4.0.31",
+    "@ai-sdk/openai": "^1.0.10",
+    "zod": "^3.24.1"
+  }
+}

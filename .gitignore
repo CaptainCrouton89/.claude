@@ -19,3 +19,4 @@ file-history/
 history.jsonl
 debug/
 .idea/
+**/node_modules/

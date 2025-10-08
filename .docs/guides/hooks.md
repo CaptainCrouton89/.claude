@@ -117,6 +117,8 @@ Runs immediately after a tool completes successfully.
 
 Recognizes the same matcher values as PreToolUse.
 
+**Note on TodoWrite**: Claude Code automatically saves todos to `~/.claude/todos/` with the naming pattern `{session_id}-agent-{agent_id}.json`. For the main conversation, the agent_id equals session_id, so the path is `~/.claude/todos/{session_id}-agent-{session_id}.json`. You can construct this path in a PostToolUse hook using the `session_id` field from the hook input.
+
 ### Notification
 
 Runs when Claude Code sends notifications. Notifications are sent when:
