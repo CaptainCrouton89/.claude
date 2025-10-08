@@ -20,3 +20,5 @@ history.jsonl
 debug/
 .idea/
 **/node_modules/
+conversation-state/
+**/*.log
