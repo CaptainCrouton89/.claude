@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { appendFileSync, existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 
-const VALIDATION_FILE = '.claude/validation.md';
+const VALIDATION_FILE = '.claude/validation.json';
 
 function getLogFile() {
   if (!process.env.HOME) {
     throw new Error('HOME environment variable is required for logging');
   }
-  return join(process.env.HOME, '.claude/hooks.log');
+  return join(process.env.HOME, '.claude', 'logs', 'hooks.log');
 }
 
 function log(message) {
@@ -20,9 +20,7 @@ function log(message) {
 }
 
 try {
-  log('START - Hook invoked');
   readFileSync(0, 'utf-8');
-  log('Hook triggered with event: UserPromptSubmit');
 
   if (!process.env.CLAUDE_PROJECT_DIR) {
     throw new Error('CLAUDE_PROJECT_DIR environment variable is required');
@@ -31,40 +29,45 @@ try {
 
   const validationPath = join(projectDir, VALIDATION_FILE);
 
-  const defaultContent = `# Validation Logs
-
-This file tracks code reviews and validation feedback from the /qa command. Each entry documents issues found, fixes applied, and verification steps.
-
-`;
-
+  // If file doesn't exist, nothing to report
   if (!existsSync(validationPath)) {
-    log('Creating validation.md file');
-    const validationDir = dirname(validationPath);
-    mkdirSync(validationDir, { recursive: true });
-    writeFileSync(validationPath, defaultContent, 'utf-8');
-    log('Created validation.md with default content - no reminder needed');
     process.exit(0);
   }
 
-  // Read existing content and check if it contains actual reviews
+  // Read and parse validation JSON
   const content = readFileSync(validationPath, 'utf-8');
-
-  // If content is only the default header, don't inject reminder
-  if (content.trim() === defaultContent.trim()) {
-    log('validation.md only contains default content - no reminder needed');
+  let validations;
+  try {
+    validations = JSON.parse(content);
+  } catch {
+    // Invalid JSON, skip
     process.exit(0);
   }
 
-  log('validation.md contains review content - injecting reminder');
+  // If empty array, nothing to report
+  if (!Array.isArray(validations) || validations.length === 0) {
+    process.exit(0);
+  }
+
+  log('Injecting validation reminder');
+
+  // Generate markdown from JSON
+  const markdown = validations.map(v => {
+    const timestamp = new Date(v.timestamp).toLocaleString();
+    const filesStr = v.files && v.files.length > 0
+      ? ` (${v.files.map(f => `@${f}`).join(', ')})`
+      : '';
+    return `- [${timestamp}] ${v.content}${filesStr}`;
+  }).join('\n');
+
   const output = {
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
-      additionalContext: "<system-reminder>Some previous code has been reviewed and a report has been written here: @.claude/validation.md. Do not acknowledge this message or the report in your response, but bring up the issues in your response and fix them. For example, 'By the way, I noticed [issues in the report]. Let me get those fixed real quick/How do you want to address them?'</system-reminder>"
-    }
+      additionalContext: `<system-reminder>Some previous code has been reviewed and issues have been found.\n\nIssues found:\n${markdown}\n\nDo not acknowledge this message in your response, but bring up the issues in your response and fix them. For example, 'By the way, I noticed [issues]. Want me to fix them real quick/How do you want to address them?'</system-reminder>`,
+    },
   };
 
   console.log(JSON.stringify(output));
-  log('Hook completed successfully');
   process.exit(0);
 
 } catch (error) {

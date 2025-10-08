@@ -9,9 +9,262 @@
  * 4. Reports findings to .claude/validation.md
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { query } from '/Users/silasrhyneer/.claude/claude-cli/sdk.mjs';
+
+const HOOK_NAME = 'feature-validator';
+const TODO_CACHE_MAX_AGE_MS = 2 * 60 * 1000;
+
+function appendLog(message) {
+  const homeDir = process.env.HOME;
+  if (!homeDir) {
+    return;
+  }
+  const logPath = join(homeDir, '.claude', 'logs', 'hooks.log');
+  const timestamp = new Date().toISOString();
+  const entry = `[${timestamp}] [${HOOK_NAME}] ${message}\n`;
+  try {
+    writeFileSync(logPath, entry, { flag: 'a' });
+  } catch (error) {
+    // Ignore logging failures to avoid breaking the hook
+  }
+}
+
+function getMessageText(message) {
+  if (!message) {
+    return '';
+  }
+  const content = message.message?.content || message.content || [];
+  const parts = [];
+  for (const block of content) {
+    if (block.type === 'text' && typeof block.text === 'string') {
+      parts.push(block.text);
+    }
+  }
+  return parts.join('\n').trim();
+}
+
+const CHECKBOX_PATTERN = /(?:\[(?: |x|X)\]|[☐☑☒✅❌])/;
+const TODO_CHECKBOX_REGEX = /(^|\n)\s*(?:[-*]|\d+\.)?\s*(?:\[(?: |x|X)\]|[☐☑☒✅❌])/;
+const TODO_HEADER_REGEX = /(^|\n)\s*(todo(?:\s+list)?|todos?)\s*[:\-]/i;
+
+function extractTodoInfoFromMessage(message) {
+  if (!message) {
+    return null;
+  }
+
+  const content = message.message?.content || message.content || [];
+  let combinedText = '';
+  let todoBlocks = [];
+
+  for (const block of content) {
+    if (block.type === 'text' && typeof block.text === 'string') {
+      combinedText += `${block.text}\n`;
+    }
+    if (block.type === 'tool_use' && block.name === 'TodoWrite') {
+      const todos = Array.isArray(block.input?.todos) ? block.input.todos : [];
+      todoBlocks.push({ todos, block });
+    }
+  }
+
+  const textMatches = combinedText && (TODO_CHECKBOX_REGEX.test(combinedText) || TODO_HEADER_REGEX.test(combinedText));
+  if (todoBlocks.length > 0) {
+    return {
+      source: 'tool',
+      todos: todoBlocks[0].todos,
+      block: todoBlocks[0].block,
+      text: combinedText.trim(),
+      signature: computeTodoSignature(todoBlocks[0].todos),
+    };
+  }
+
+  if (textMatches) {
+    return {
+      source: 'text',
+      todos: null,
+      block: null,
+      text: combinedText.trim(),
+      signature: null,
+    };
+  }
+
+  return null;
+}
+
+function summarizeTodoList(info) {
+  if (!info) {
+    return 'todo list';
+  }
+
+  if (info.source === 'tool' && Array.isArray(info.todos) && info.todos.length > 0) {
+    const parts = info.todos.slice(0, 3).map(todo => {
+      const content = typeof todo.content === 'string' && todo.content.trim().length > 0
+        ? todo.content.trim().slice(0, 80)
+        : '(unnamed)';
+      const status = typeof todo.status === 'string' ? todo.status : 'unknown';
+      return `${content} [${status}]`;
+    });
+    const suffix = info.todos.length > 3 ? '...' : '';
+    return parts.join(' | ') + suffix;
+  }
+
+  const text = info.text || '';
+  if (!text) {
+    return 'todo list';
+  }
+
+  const lines = text.split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    return 'todo list';
+  }
+
+  const checkboxLines = lines.filter(line => {
+    const trimmed = line.replace(/^[-*]?\s*/, '');
+    return CHECKBOX_PATTERN.test(trimmed);
+  });
+  const targets = checkboxLines.length > 0 ? checkboxLines : lines;
+  const preview = targets.slice(0, 2).map(line => line.length > 80 ? `${line.slice(0, 77)}...` : line);
+  const suffix = targets.length > 2 ? '...' : '';
+  return `${preview.join(' | ')}${suffix}`;
+}
+
+function computeTodoSignature(todos) {
+  if (!Array.isArray(todos) || todos.length === 0) {
+    return null;
+  }
+  return todos
+    .map(todo => {
+      if (!todo || typeof todo !== 'object') {
+        return 'unknown';
+      }
+      const id = typeof todo.id === 'string' && todo.id.length > 0
+        ? `id:${todo.id}`
+        : typeof todo.activeForm === 'string' && todo.activeForm.length > 0
+          ? `active:${todo.activeForm}`
+          : typeof todo.content === 'string' && todo.content.length > 0
+            ? `content:${todo.content}`
+            : JSON.stringify(todo);
+      const status = typeof todo.status === 'string' ? todo.status : 'unknown';
+      return `${id}:${status}`;
+    })
+    .join('|');
+}
+
+function getTodoStateCachePath() {
+  const homeDir = process.env.HOME;
+  if (!homeDir) {
+    return null;
+  }
+  return join(homeDir, '.claude', 'hooks-state', 'todo-state.json');
+}
+
+function readCachedTodoState() {
+  const path = getTodoStateCachePath();
+  if (!path || !existsSync(path)) {
+    return { signature: null, statuses: {}, todos: [], updatedAt: null };
+  }
+  try {
+    const raw = JSON.parse(readFileSync(path, 'utf-8'));
+    if (!raw || typeof raw !== 'object') {
+      return { signature: null, statuses: {}, todos: [], updatedAt: null };
+    }
+    return {
+      signature: typeof raw.signature === 'string' ? raw.signature : null,
+      statuses: raw.statuses && typeof raw.statuses === 'object' ? raw.statuses : {},
+      todos: Array.isArray(raw.todos) ? raw.todos : [],
+      updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : null,
+    };
+  } catch (error) {
+    return { signature: null, statuses: {}, todos: [], updatedAt: null };
+  }
+}
+
+function isTodoStateFresh(state, maxAgeMs = TODO_CACHE_MAX_AGE_MS) {
+  if (!state || !state.updatedAt) {
+    return false;
+  }
+  const updatedTime = Date.parse(state.updatedAt);
+  if (Number.isNaN(updatedTime)) {
+    return false;
+  }
+  return Date.now() - updatedTime <= maxAgeMs;
+}
+
+function getFeatureStatePath() {
+  const homeDir = process.env.HOME;
+  if (!homeDir) {
+    return null;
+  }
+  return join(homeDir, '.claude', 'hooks-state', 'feature-validator-state.json');
+}
+
+const DEFAULT_STATE = { byTranscript: {} };
+
+function normalizeLegacyState(raw) {
+  if (!raw || typeof raw !== 'object') {
+    return { ...DEFAULT_STATE };
+  }
+
+  if (raw.byTranscript && typeof raw.byTranscript === 'object') {
+    return { byTranscript: raw.byTranscript };
+  }
+
+  const entries = {};
+  if (typeof raw.lastSignature === 'string') {
+    entries.__global__ = {
+      signature: raw.lastSignature,
+      processedAt: typeof raw.lastProcessedAt === 'string' ? raw.lastProcessedAt : null,
+    };
+  }
+
+  return { byTranscript: entries };
+}
+
+function readFeatureValidatorState() {
+  const path = getFeatureStatePath();
+  if (!path || !existsSync(path)) {
+    return { ...DEFAULT_STATE };
+  }
+  try {
+    const raw = JSON.parse(readFileSync(path, 'utf-8'));
+    return normalizeLegacyState(raw);
+  } catch (error) {
+    return { ...DEFAULT_STATE };
+  }
+}
+
+function pruneFeatureState(state, maxAgeMs = 12 * 60 * 60 * 1000) {
+  const now = Date.now();
+  const entries = state.byTranscript || {};
+  for (const [key, value] of Object.entries(entries)) {
+    if (!value || typeof value !== 'object') {
+      delete entries[key];
+      continue;
+    }
+    const processedAt = value.processedAt ? Date.parse(value.processedAt) : NaN;
+    if (Number.isNaN(processedAt) || now - processedAt > maxAgeMs) {
+      delete entries[key];
+    }
+  }
+  state.byTranscript = entries;
+}
+
+function writeFeatureValidatorState(state) {
+  const path = getFeatureStatePath();
+  if (!path) {
+    return;
+  }
+  try {
+    pruneFeatureState(state);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, JSON.stringify(state), 'utf-8');
+  } catch (error) {
+    // Ignore persistence failures
+  }
+}
 
 /**
  * Load and parse hook input from stdin
@@ -107,168 +360,6 @@ function getAssistantText(assistantMessages) {
 }
 
 /**
- * Determine if changes require validation
- */
-function requiresValidation(toolCalls, assistantText) {
-  // Check for code changes - validate any time code is modified
-  const codeChanges = toolCalls.some(tc =>
-    ['Write', 'Edit', 'MultiEdit', 'NotebookEdit'].includes(tc.tool)
-  );
-
-  return codeChanges;
-}
-
-/**
- * Run validation in background using Claude SDK
- */
-async function runBackgroundValidation(assistantMessages, cwd, projectDir) {
-  const assistantText = getAssistantText(assistantMessages);
-  const toolCalls = getToolCalls(assistantMessages);
-
-  // Set up logging
-  const logPath = join(process.env.HOME, '.claude', 'hooks.log');
-  const logMessage = (msg) => {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [feature-validator] ${msg}\n`;
-    try {
-      writeFileSync(logPath, logEntry, { flag: 'a' });
-    } catch (e) {
-      // Silent fail
-    }
-  };
-
-  logMessage(`Starting validation with ${toolCalls.length} tool calls`);
-
-  // Build validation prompt
-  const validationPrompt = `You are a validation agent. Review the following recent work and validate it thoroughly.
-
-## Recent Work Summary
-
-${assistantText}
-
-## Tool Calls Made
-${toolCalls.map(tc => `- ${tc.tool}: ${JSON.stringify(tc.input).substring(0, 200)}...`).join('\n')}
-
-## Your Validation Tasks
-
-### 1. Feature Completion Assessment
-- Is this feature fully finished?
-- List all completion criteria (NOT tests, just completion criteria)
-- For each criterion, verify it thoroughly using available tools
-- Check for edge cases and error handling. Do not be lazy.
-
-### 2. Assumption Verification
-- List all assumptions being made in the implementation
-- For each assumption, independently verify it is correct, delegating to a subagent for each one.
-- Check documentation, code behavior, and actual implementation
-
-## Output Format
-
-**IMPORTANT**: Use @ notation for ALL file and directory references (e.g., @path/to/file, @~/.claude/validation.md)
-
-Provide your findings in this format:
-
-### Completion Criteria
-- [ ] Criterion 1: Description (✓ verified / ✗ failed / ⚠ incomplete)
-- [ ] Criterion 2: Description (✓ verified / ✗ failed / ⚠ incomplete)
-
-### Assumptions
-- [ ] Assumption 1: Description (✓ valid / ✗ invalid)
-- [ ] Assumption 2: Description (✓ valid / ✗ invalid)
-
-### Issues Found
-1. Issue description [@file:line]
-2. Issue description [@file:line]
-
-### Recommendations
-- Specific recommendation 1
-- Specific recommendation 2
-
-If everything is valid and complete, simply state "✅ Validation passed - no issues found"
-`;
-
-  try {
-    logMessage(`Running query for validation`);
-    // Run validation using Claude SDK
-    const response = query({
-      prompt: validationPrompt,
-      cwd: projectDir || cwd,
-      maxTurns: 30,
-      options: {
-        model: 'claude-sonnet-4-5'
-      },
-      continueConversation: false,
-      disableHooks: true
-    });
-
-    // Collect response text
-    let validationResult = '';
-
-    for await (const message of response) {
-      if (message.type === 'assistant' && message.message?.content) {
-        for (const block of message.message.content) {
-          if (block.type === 'text') {
-            validationResult += block.text;
-          }
-        }
-      }
-    }
-
-    // Save to validation file if issues found
-    const hasIssues = !validationResult.includes('✅ Validation passed');
-    logMessage(`Validation completed. Has issues: ${hasIssues}`);
-    logMessage(`Full validation result:\n${validationResult}`);
-
-    if (hasIssues) {
-      const validationPath = join(projectDir || cwd, '.claude', 'validation.md');
-
-      // Ensure .claude directory exists
-      const claudeDir = dirname(validationPath);
-      if (!existsSync(claudeDir)) {
-        const { mkdirSync } = await import('fs');
-        mkdirSync(claudeDir, { recursive: true });
-      }
-
-      // Read existing validation content if it exists
-      let existingContent = '';
-      if (existsSync(validationPath)) {
-        existingContent = readFileSync(validationPath, 'utf8').trim();
-      }
-
-      // Prepare new entry
-      const timestamp = new Date().toISOString();
-      const newEntry = `
-## Validation Report - ${timestamp}
-
-${validationResult}
-
----
-`;
-
-      // Append to existing or create new (including when file is empty)
-      const finalContent = existingContent
-        ? existingContent + '\n' + newEntry
-        : `# Validation Reports\n\n${newEntry}`;
-
-      writeFileSync(validationPath, finalContent, 'utf8');
-
-      logMessage(`Issues logged to @${validationPath.replace(process.env.HOME, '~')}`);
-      console.log(`Validation issues found and saved to @${validationPath.replace(process.env.HOME, '~')}`);
-    }
-    // If validation passed, don't create/update file - just log success
-    else {
-      logMessage(`Validation passed`);
-      console.log('✅ Validation passed - no issues found');
-    }
-
-  } catch (error) {
-    logMessage(`Error: ${error.message}`);
-    console.error(`Validation error: ${error.message}`);
-    // Don't fail the hook on validation errors
-  }
-}
-
-/**
  * Background validation worker (runs as detached process)
  */
 async function backgroundWorker() {
@@ -277,9 +368,9 @@ async function backgroundWorker() {
     chunks.push(chunk);
   }
   const input = Buffer.concat(chunks).toString('utf8');
-  const { assistantMessages, cwd, projectDir } = JSON.parse(input);
+  const { assistantMessages, cwd, projectDir, todoSummary } = JSON.parse(input);
 
-  await runBackgroundValidation(assistantMessages, cwd, projectDir);
+  await runBackgroundValidation(assistantMessages, cwd, projectDir, todoSummary || 'todo list');
   process.exit(0);
 }
 
@@ -287,39 +378,103 @@ async function backgroundWorker() {
  * Main hook execution
  */
 async function main() {
-  // Check if running as background worker
   if (process.argv.includes('--background')) {
     await backgroundWorker();
     return;
   }
 
   const input = await loadInput();
-  const logPath = join(process.env.HOME, '.claude', 'hooks.log');
 
-  // Only process Stop events
-  if (input.hook_event_name !== 'Stop') {
-    process.exit(0);
-  }
-
-  // Don't run if we're already in a stop hook to prevent infinite loops
-  if (input.stop_hook_active) {
-    process.exit(0);
-  }
-
+  const inputKeys = Object.keys(input || {});
   const transcriptPath = input.transcript_path;
   const cwd = input.cwd || process.cwd();
+  const cachedTodoState = readCachedTodoState();
+  const cacheAgeMsRaw = cachedTodoState.updatedAt ? Date.now() - Date.parse(cachedTodoState.updatedAt) : Number.POSITIVE_INFINITY;
+  const cacheAgeDisplay = Number.isFinite(cacheAgeMsRaw) ? Math.max(Math.round(cacheAgeMsRaw), 0) : 'inf';
+  const cacheFresh = isTodoStateFresh(cachedTodoState);
 
-  // Skip if this is a validation.md or CLAUDE.md write to prevent circular hooks
-  const recentToolCalls = getToolCalls(getRecentAssistantMessages(transcriptPath));
-  const hasValidationWrite = recentToolCalls.some(tc =>
-    ['Write', 'Edit'].includes(tc.tool) &&
-    tc.input?.file_path?.endsWith('/validation.md')
-  );
-  if (hasValidationWrite) {
+  const lastAssistantSnippet = assistantMessages => {
+    if (!assistantMessages || assistantMessages.length === 0) {
+      return 'none';
+    }
+    const text = getMessageText(assistantMessages[assistantMessages.length - 1]) || '';
+    return text.slice(0, 80).replace(/\s+/g, ' ').trim() || 'empty';
+  };
+
+  const skip = (reason, extra = '') => {
+    const details = [
+      `keys=${inputKeys.join('|')}`,
+      `path=${transcriptPath || 'none'}`,
+      `cacheTodos=${cachedTodoState.todos.length}`,
+      `cacheAgeMs=${cacheAgeDisplay}`,
+    ];
+    if (extra) {
+      details.push(extra.trim());
+    }
+    appendLog(`Skipped: ${reason} (${details.join(', ')})`);
     process.exit(0);
+  };
+
+  if (input.hook_event_name !== 'Stop') {
+    skip('event not Stop');
   }
 
-  // Find project directory (where .claude might be)
+  if (input.stop_hook_active) {
+    skip('stop hook already active');
+  }
+
+  if (!transcriptPath) {
+    skip('missing transcript path');
+  }
+
+  const assistantMessages = getRecentAssistantMessages(transcriptPath);
+  if (assistantMessages.length === 0) {
+    skip('no assistant messages after last user', 'assistantCount=0');
+  }
+
+  const recentToolCalls = getToolCalls(assistantMessages);
+  const hasValidationWrite = recentToolCalls.some(tc =>
+    ['Write', 'Edit'].includes(tc.tool) &&
+    (tc.input?.file_path?.endsWith('/validation.json') || tc.input?.file_path?.endsWith('/validation.md'))
+  );
+  if (hasValidationWrite) {
+    skip('validation files recently updated');
+  }
+
+  const hasTodoWrites = recentToolCalls.some(tc => tc.tool === 'TodoWrite');
+
+  let todoMessageIndex = -1;
+  let todoInfo = null;
+  for (let i = assistantMessages.length - 1; i >= 0; i--) {
+    const info = extractTodoInfoFromMessage(assistantMessages[i]);
+    if (info) {
+      todoMessageIndex = i;
+      todoInfo = info;
+      break;
+    }
+  }
+
+  if (todoMessageIndex === -1 && cacheFresh && cachedTodoState.todos.length > 0) {
+    todoInfo = {
+      source: 'cached',
+      todos: cachedTodoState.todos,
+      text: '',
+      signature: cachedTodoState.signature,
+    };
+    todoMessageIndex = assistantMessages.length > 0 ? assistantMessages.length - 1 : 0;
+  }
+
+  if (todoMessageIndex === -1) {
+    skip(
+      'no todo list in assistant messages',
+      `assistantCount=${assistantMessages.length}, hasTodoWrite=${hasTodoWrites}, cacheFresh=${cacheFresh}, last="${lastAssistantSnippet(assistantMessages)}"`
+    );
+  }
+
+  if (!todoInfo && todoMessageIndex >= 0) {
+    todoInfo = extractTodoInfoFromMessage(assistantMessages[todoMessageIndex]) || todoInfo;
+  }
+
   const findProjectDir = (startDir) => {
     let dir = startDir;
     while (dir !== dirname(dir)) {
@@ -332,45 +487,33 @@ async function main() {
   };
 
   const projectDir = findProjectDir(cwd);
+  const todoSummary = summarizeTodoList(todoInfo);
 
-  // Get recent assistant messages
-  const assistantMessages = getRecentAssistantMessages(transcriptPath);
-
-  if (assistantMessages.length === 0) {
-    process.exit(0);
+  let todoSignature = (todoInfo && todoInfo.signature) || null;
+  if (!todoSignature && todoInfo && Array.isArray(todoInfo.todos)) {
+    todoSignature = computeTodoSignature(todoInfo.todos);
+  }
+  if (!todoSignature) {
+    todoSignature = cachedTodoState.signature;
   }
 
-  // Get tool calls for analysis
-  const toolCalls = getToolCalls(assistantMessages);
-  const assistantText = getAssistantText(assistantMessages);
-
-  // Check if validation is needed
-  const needsValidation = requiresValidation(toolCalls, assistantText);
-
-  if (!needsValidation) {
-    process.exit(0);
-  }
-
-  // Only log when actually running validation
-  const writeLog = (msg) => {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [feature-validator] ${msg}\n`;
-    try {
-      writeFileSync(logPath, logEntry, { flag: 'a' });
-    } catch (e) {
-      // Silent fail
+  const featureState = readFeatureValidatorState();
+  const transcriptKey = transcriptPath || '__global__';
+  const existingEntry = featureState.byTranscript?.[transcriptKey];
+  if (todoSignature && existingEntry && existingEntry.signature === todoSignature) {
+    const processedAtTime = existingEntry.processedAt ? Date.parse(existingEntry.processedAt) : NaN;
+    if (!Number.isNaN(processedAtTime) && Date.now() - processedAtTime <= TODO_CACHE_MAX_AGE_MS) {
+      skip('duplicate todo signature recently processed', `signature=${todoSignature}, transcript=${transcriptKey}`);
     }
-  };
+  }
 
-  writeLog(`Validation triggered: ${toolCalls.length} tool calls detected`);
-
-  // Spawn detached background process for validation
   const { spawn } = await import('child_process');
 
   const validationData = JSON.stringify({
     assistantMessages,
     cwd,
-    projectDir
+    projectDir,
+    todoSummary,
   });
 
   const child = spawn(process.execPath, [
@@ -385,13 +528,146 @@ async function main() {
   child.stdin.end();
   child.unref();
 
-  // Return success immediately - validation happens in background
-  const response = {
-    suppressOutput: true
-  };
-  console.log(JSON.stringify(response));
+  if (todoSignature) {
+    featureState.byTranscript = featureState.byTranscript || {};
+    featureState.byTranscript[transcriptKey] = {
+      signature: todoSignature,
+      processedAt: new Date().toISOString(),
+    };
+    writeFeatureValidatorState(featureState);
+  }
 
+  console.log(JSON.stringify({ suppressOutput: true }));
   process.exit(0);
+}
+/**
+ * Run validation in background using Claude SDK
+ */
+async function runBackgroundValidation(assistantMessages, cwd, projectDir, todoSummary) {
+  const assistantText = getAssistantText(assistantMessages);
+  const toolCalls = getToolCalls(assistantMessages);
+
+  const systemPrompt = `You are a validation agent that reviews completed work for thoroughness and correctness.
+
+CRITICAL CONSTRAINTS:
+- Focus on verification, not explanation
+- Use tools to verify assumptions and completion criteria
+- Log ALL issues using MCP tools - do not just describe them
+- Your final response must be ONLY the word "Done"
+
+TOOLS AVAILABLE:
+- Read/Grep/Glob/Task - for verification and investigation
+- mcp__validation__saveValidationFailure - REQUIRED to log any issues found
+  * content: Description of issue with context and how to fix
+  * files: Array of affected file paths (e.g., ["src/foo.ts"])
+- mcp__validation__removeValidationFailure - Remove resolved issues by timestamp
+
+VALIDATION TASKS:
+
+1. **Feature Completion Assessment**
+   - Is this feature fully finished?
+   - List all completion criteria (NOT tests, just completion criteria)
+   - For each criterion, verify it thoroughly using available tools
+   - Check for edge cases and error handling. Do not be lazy.
+
+2. **Assumption Verification**
+   - List all assumptions being made in the implementation
+   - For each assumption, independently verify it is correct, delegating to a subagent for each one
+   - Check documentation, code behavior, and actual implementation
+
+3. **Check for Resolved Issues**
+   - Read @.claude/validation.json to see if any previously logged issues have been resolved by this work
+   - Use removeValidationFailure(timestamp) to remove any fixed issues
+
+REPORTING ISSUES:
+
+For any issues found, you MUST call mcp__validation__saveValidationFailure:
+- content: Clear description of the issue including criterion/assumption, what failed, why, and how to fix
+- files: Array of affected file paths (extract from tool calls or investigation)
+
+CRITICAL: After all validation is complete, your ENTIRE response must be exactly: "Done"
+Do not provide summaries, do not list findings - just submit via MCP tools and respond "Done".`;
+
+  const validationPrompt = `<recent_work>
+${assistantText}
+</recent_work>
+
+<tool_calls_made>
+${toolCalls.map(tc => `- ${tc.tool}: ${JSON.stringify(tc.input).substring(0, 200)}...`).join('\n')}
+</tool_calls_made>
+
+<todo_list_summary>
+${todoSummary}
+</todo_list_summary>
+
+Review the above work and validate it thoroughly according to your instructions.`;
+
+  let logText = null;
+
+  try {
+    const response = query({
+      prompt: validationPrompt,
+      cwd: projectDir || cwd,
+      maxTurns: 30,
+      options: {
+        customSystemPrompt: systemPrompt,
+        model: "claude-sonnet-4-5",
+        allowedTools: ["Read", "Grep", "Glob", "Task", "mcp__validation__saveValidationFailure", "mcp__validation__removeValidationFailure"],
+        permissionMode: "bypassPermissions",
+        disableHooks: true,
+        mcpServers: {
+          validation: {
+            command: "node",
+            args: [join(process.env.HOME, ".claude", "hooks", "validation-mcp.mjs")],
+            env: { CLAUDE_PROJECT_DIR: projectDir || cwd }
+          }
+        },
+      },
+      continueConversation: false,
+    });
+
+    let validationResult = "";
+    const toolNames = new Set();
+
+    for await (const message of response) {
+      if (message.type === 'assistant' && message.message?.content) {
+        for (const block of message.message.content) {
+          if (block.type === 'text') {
+            validationResult += block.text;
+          } else if (block.type === 'tool_use' && block.name) {
+            toolNames.add(block.name);
+          }
+        }
+      }
+    }
+
+    const trimmed = validationResult.trim();
+    const completed = trimmed.toLowerCase() === 'done';
+    const firstLine = trimmed.split('\n')[0] || trimmed;
+    const resultSummary = completed
+      ? 'Done'
+      : (firstLine.length > 80 ? `${firstLine.slice(0, 77)}...` : firstLine || 'Incomplete');
+
+    if (completed) {
+      console.log('Validation complete - check @.claude/validation.json for any issues');
+    } else {
+      console.log('Validation finished - check @.claude/validation.json');
+    }
+
+    const issueLogged = Array.from(toolNames).some(name => name === 'mcp__validation__saveValidationFailure');
+    const issueSuffix = issueLogged ? ' | issues logged' : '';
+    const toolsSuffix = toolNames.size > 0
+      ? ` | tools: ${Array.from(toolNames).join(', ')}`
+      : '';
+    logText = `Result ${resultSummary} for ${todoSummary}${issueSuffix}${toolsSuffix}`;
+  } catch (error) {
+    console.error(`Validation error: ${error.message}`);
+    logText = `Validation error for ${todoSummary}: ${error.message}`;
+  }
+
+  if (logText) {
+    appendLog(logText);
+  }
 }
 
 main();

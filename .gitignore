@@ -17,3 +17,5 @@ new-system-prompt-exact.md
 system-prompt.md
 file-history/
 history.jsonl
+debug/
+.idea/

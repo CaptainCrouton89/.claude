@@ -47,7 +47,7 @@ All validators use the same detached background process pattern:
 4. Main hook exits immediately (non-blocking)
 5. Background worker reads data from stdin, runs SDK query with validation prompt
 6. Background worker writes results to validation.md or auto-fixes issues
-7. Logs all activity to `@~/.claude/hooks.log`
+7. Logs all activity to `@~/.claude/logs/hooks.log`
 
 ```javascript
 // Main hook pattern
@@ -237,7 +237,7 @@ Environment variables:
 **Manual test for claude-md-validator**:
 1. Create a CLAUDE.md file with rule: "Never use `any` type"
 2. Edit a file to add `function foo(x: any)`
-3. Check `@~/.claude/hooks.log` for validation activity
+3. Check `@~/.claude/logs/hooks.log` for validation activity
 4. Verify violation is auto-fixed or documented in `@.claude/validation.md`
 
 **Manual test for claude-md-manager**:
@@ -264,7 +264,7 @@ Environment variables:
 - Simple violations auto-fixed without user notification
 - Complex violations documented with file:line references
 - No circular validation (hooks don't trigger during validation)
-- All activity logged to `@~/.claude/hooks.log`
+- All activity logged to `@~/.claude/logs/hooks.log`
 
 ## Related Documentation
 

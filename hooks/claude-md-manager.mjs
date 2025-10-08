@@ -26,7 +26,7 @@ async function backgroundWorker() {
   } = JSON.parse(input);
 
   // Set up logging
-  const logPath = join(process.env.HOME, ".claude", "hooks.log");
+  const logPath = join(process.env.HOME, ".claude", "logs", "hooks.log");
   const logMessage = (msg) => {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] [claude-md-manager] ${msg}\n`;
@@ -216,7 +216,7 @@ async function main() {
   }
 
   // Set up logging
-  const logPath = join(process.env.HOME, ".claude", "hooks.log");
+  const logPath = join(process.env.HOME, ".claude", "logs", "hooks.log");
   const logMessage = (msg) => {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] [claude-md-manager] ${msg}\n`;
