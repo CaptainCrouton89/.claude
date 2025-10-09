@@ -1,17 +1,15 @@
 ---
 created: 2025-10-09T18:35:23.539Z
-last_updated: 2025-10-09T18:52:58.070Z
+last_updated: 2025-10-09T19:48:12.344Z
 ---
+## 2025-10-09: refactored session history logging to use MCP server architecture
 
-## Oct 9, 2025
-- improved system prompt in session-history-logger hook
-  - modified systemPrompt in hooks/session-history-logger.mjs so that it follows best prompting practices with clear role definition, XML structure for organization, positive framing, and contextual explanations
-
-## Oct 9, 2025
-- implemented auto-cleanup for session history file
-  - added section-based trimming logic to hooks/session-history-logger.mjs so that history.md is capped at 100 lines by removing oldest sections while preserving frontmatter
-
-## Oct 9, 2025
-- updated session history logger system prompt in hooks/session-history-logger.mjs so that it only documents substantive logic and feature changes, ignoring styling, comments, and formatting
-  - modified prompt to use relative file paths from project root instead of absolute paths
-  - added SKIP output handling so trivial-only changes don't create history entries
+- created history-mcp.mjs at hooks/lifecycle/history-mcp.mjs implementing MCP server with logHistoryEntry tool
+  - accepts structured schema with title and nested bullets (max 1 level deep)
+  - handles file operations for .claude/memory/history.md with frontmatter preservation
+  - prepends entries with newest-first ordering and automatic timestamp generation
+- modified session-history-logger.mjs in hooks/lifecycle/session-history-logger.mjs to use MCP server instead of direct file editing
+  - removed Edit and Write tools, keeping only Read tool access
+  - added mcpServers configuration connecting to history-mcp.mjs
+  - rewrote systemPrompt to focus on calling logHistoryEntry tool rather than direct file manipulation
+  - updated completion logging to track tool calls instead of file edits
