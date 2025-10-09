@@ -2,9 +2,9 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 
 const LOG_PATH = '/Users/silasrhyneer/.claude/mcp-server-debug.log';
 function log(message) {
@@ -38,8 +38,6 @@ function ensureHistoryFile(cwd) {
 created: ${now}
 last_updated: ${now}
 ---
-
-# Session History
 
 `;
     log(`Creating history file: ${historyPath}`);

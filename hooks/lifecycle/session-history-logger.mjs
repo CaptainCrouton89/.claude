@@ -22,16 +22,15 @@ function appendLog(message) {
 }
 
 /**
- * Parse transcript JSONL file and extract user/assistant messages
+ * Parse transcript JSONL file and extract user messages only
  */
 function parseTranscript(transcriptPath) {
   if (!existsSync(transcriptPath)) {
-    return { userMessages: [], assistantMessages: [] };
+    return [];
   }
 
   const lines = readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean);
   const userMessages = [];
-  const assistantMessages = [];
 
   for (const line of lines) {
     try {
@@ -45,21 +44,6 @@ function parseTranscript(transcriptPath) {
         if (typeof content === 'string' && content.trim()) {
           userMessages.push(content.trim());
         }
-      } else if (entry.type === 'assistant' && entry.message?.content) {
-        let textContent = '';
-
-        if (Array.isArray(entry.message.content)) {
-          textContent = entry.message.content
-            .filter(block => block.type === 'text')
-            .map(block => block.text)
-            .join('\n');
-        } else if (typeof entry.message.content === 'string') {
-          textContent = entry.message.content;
-        }
-
-        if (textContent.trim()) {
-          assistantMessages.push(textContent.trim());
-        }
       }
     } catch (error) {
       // Skip malformed lines
@@ -67,7 +51,7 @@ function parseTranscript(transcriptPath) {
     }
   }
 
-  return { userMessages, assistantMessages };
+  return userMessages;
 }
 
 /**
@@ -100,35 +84,28 @@ async function backgroundWorker() {
     gitCheckFailed = true;
   }
 
-  const { userMessages, assistantMessages } = parseTranscript(transcriptPath);
+  const userMessages = parseTranscript(transcriptPath);
 
-  if (userMessages.length === 0 && assistantMessages.length === 0) {
+  if (userMessages.length === 0) {
     appendLog(`[START] session=${sessionId}, cwd=${cwd} | [SKIP] No messages in transcript`);
     process.exit(0);
   }
 
-  appendLog(`[START] session=${sessionId}, cwd=${cwd}, messages=${userMessages.length}u/${assistantMessages.length}a${gitCheckFailed ? ', git-check-failed' : ''}`);
+  appendLog(`[START] session=${sessionId}, cwd=${cwd}, messages=${userMessages.length}${gitCheckFailed ? ', git-check-failed' : ''}`);
 
-
-  // Build conversation context for summary
+  // Build conversation context with user messages and git changes
   const conversationContext = [];
   const maxUserMessages = 10;
-  const maxAssistantMessages = 10;
 
-  // Take up to 10 of each type of message
+  // Take up to 10 recent user messages
   const recentUser = userMessages.slice(-maxUserMessages);
-  const recentAssistant = assistantMessages.slice(-maxAssistantMessages);
+  for (const msg of recentUser) {
+    conversationContext.push(`User: ${msg}`);
+  }
 
-  for (let i = 0; i < Math.max(recentUser.length, recentAssistant.length); i++) {
-    if (i < recentUser.length) {
-      conversationContext.push(`User: ${recentUser[i]}`);
-    }
-    if (i < recentAssistant.length) {
-      const truncated = recentAssistant[i].length > 500
-        ? recentAssistant[i].slice(0, 500) + '...'
-        : recentAssistant[i];
-      conversationContext.push(`Assistant: ${truncated}`);
-    }
+  // Add git diff summary if available
+  if (gitDiff) {
+    conversationContext.push(`\nFile changes:\n${gitDiff}`);
   }
 
   const systemPrompt = `You are a session historian analyzing development conversations.

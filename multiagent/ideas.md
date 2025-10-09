@@ -227,4 +227,9 @@ Research triggered: "<notification>A background research process has begun. Aler
 
 
 - Memory md
-- 
+
+
+What if claude sdk tool for creating subagents? We intercept agent creation, create them ourselves using sdk, edit the prompting, and then immediately respond...
+
+mcp for 0->1
+learning applicationc
