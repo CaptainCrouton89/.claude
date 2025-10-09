@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { query } from '/Users/silasrhyneer/.claude/claude-cli/sdk.mjs';
 
 const HOOK_NAME = 'session-history-logger';
@@ -81,30 +81,34 @@ async function backgroundWorker() {
   const input = Buffer.concat(chunks).toString('utf-8');
   const { transcriptPath, sessionId, cwd } = JSON.parse(input);
 
-  appendLog(`Processing session ${sessionId}`);
-
   // Check for meaningful file changes via git
   const { execSync } = await import('child_process');
+  let gitStatus = '';
+  let gitDiff = '';
+  let gitCheckFailed = false;
   try {
-    const gitStatus = execSync('git status --porcelain', { cwd, encoding: 'utf8' });
-    const gitDiff = execSync('git diff --stat HEAD', { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
+    gitStatus = execSync('git status --porcelain', { cwd, encoding: 'utf8' });
+    gitDiff = execSync('git diff --stat HEAD', { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
 
     // Skip if no changes or only trivial changes (whitespace, comments)
     if (!gitStatus.trim() && !gitDiff) {
-      appendLog('No file changes detected, skipping');
+      appendLog(`[START] session=${sessionId}, cwd=${cwd} | [SKIP] No file changes detected`);
       process.exit(0);
     }
   } catch (error) {
     // Not a git repo or git command failed - continue anyway
-    appendLog(`Git check failed: ${error.message}`);
+    gitCheckFailed = true;
   }
 
   const { userMessages, assistantMessages } = parseTranscript(transcriptPath);
 
   if (userMessages.length === 0 && assistantMessages.length === 0) {
-    appendLog('No messages found in transcript, skipping');
+    appendLog(`[START] session=${sessionId}, cwd=${cwd} | [SKIP] No messages in transcript`);
     process.exit(0);
   }
+
+  appendLog(`[START] session=${sessionId}, cwd=${cwd}, messages=${userMessages.length}u/${assistantMessages.length}a${gitCheckFailed ? ', git-check-failed' : ''}`);
+
 
   // Build conversation context for summary
   const conversationContext = [];
@@ -127,70 +131,97 @@ async function backgroundWorker() {
     }
   }
 
-  const systemPrompt = `You are a session historian responsible for maintaining a development history log.
+  const systemPrompt = `You are a session historian analyzing development conversations.
 
-Your task: Analyze the conversation and update ${cwd}/.claude/memory/history.md with a summary of substantive changes.
+Your task: Identify substantive changes and log them using the logHistoryEntry tool.
 
 <requirements>
-- ONLY document substantive logic, feature, or architectural changes
-- IGNORE styling changes, comment additions, formatting, whitespace, or other non-functional changes
-- If no substantive changes occurred, do NOT modify the history file at all
+- ONLY log substantive logic, feature, or architectural changes
+- IGNORE styling, comments, formatting, whitespace, or non-functional changes
+- Call logHistoryEntry once per major feature/change (usually 1-2 times per session)
+- If no substantive changes occurred, do NOT call any tools
 - Use past tense action verbs: implemented, added, fixed, refactored, updated, removed
-- Use relative file paths from project root (e.g., src/file.ts not /absolute/path/to/src/file.ts)
+- Use relative file paths from project root (e.g., src/file.ts)
 - For modifications, explain what changed AND the resulting behavior
 </requirements>
 
-<output_format>
-Use this nested structure:
-- [past tense action verb] [feature/component/bug name]
-  - added [component/function/file] to [relative/path/to/file]
-  - modified [component/function] in [relative/path/to/file] so that [resulting behavior]
-  - [additional file changes with paths]
+<tool_usage>
+Call logHistoryEntry with:
+- title: Past tense description of the change (e.g., "implemented user authentication")
+- bullets: Array of specific file changes with paths
+  - text: "added [component] to [path]" or "modified [component] in [path] so that [behavior]"
+  - subbullets: Optional nested details (1 level deep max)
 
-Maximum 1-3 main accomplishments, each with specific file changes underneath.
-</output_format>
-
-<example>
-- implemented user authentication system
-  - added AuthProvider component to src/contexts/AuthContext.tsx
-  - modified login form in src/pages/Login.tsx so that it validates credentials before submission
-  - added token refresh logic to src/api/client.ts
-
-- fixed memory leak in data fetching
-  - modified useEffect cleanup in src/hooks/useDataFetch.ts so that subscriptions are properly cancelled
-</example>
+Example:
+{
+  title: "implemented user authentication system",
+  bullets: [
+    { text: "added AuthProvider component to src/contexts/AuthContext.tsx" },
+    { text: "modified login form in src/pages/Login.tsx so that it validates credentials before submission" },
+    { text: "added token refresh logic to src/api/client.ts" }
+  ]
+}
+</tool_usage>
 
 <instructions>
-1. Read ${cwd}/.claude/memory/history.md
-2. If substantive changes occurred: Add new entry at the top with today's date (${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })})
-3. If no substantive changes: Do nothing, do not modify the file
-4. History entries are ordered newest first (insert at top after frontmatter)
+1. Analyze the conversation below
+2. Identify substantive changes (ignore trivial/formatting changes)
+3. Call logHistoryEntry once per major accomplishment
+4. If no substantive work, do nothing
 </instructions>
+
+Project working directory: ${cwd}
   `;
 
   const userPrompt = `<conversation>
 ${conversationContext.join('\n\n')}
 </conversation>
 
-Analyze the conversation and update the history file accordingly.`;
+Analyze the conversation and log substantive changes using logHistoryEntry.`;
 
   try {
-    query({
+    const generator = query({
       prompt: userPrompt,
       cwd: cwd,
       options: {
         systemPrompt,
         model: 'claude-sonnet-4-5-20250929',
-        allowedTools: ['Read', 'Edit', 'Write'],
+        allowedTools: ['Read'],
         permissionMode: 'bypassPermissions',
         hooks: {},
         settingSources: [],
+        mcpServers: {
+          history: {
+            type: 'stdio',
+            command: 'node',
+            args: ['/Users/silasrhyneer/.claude/hooks/lifecycle/history-mcp.mjs'],
+          }
+        }
       },
     });
 
-    appendLog(`Session history processing initiated: ${sessionId}`);
+    let resultMessage;
+    let toolCallCount = 0;
+    for await (const message of generator) {
+      if (message.type === 'tool_use') {
+        toolCallCount++;
+      }
+      if (message.type === 'result') {
+        resultMessage = message;
+      }
+    }
+
+    if (resultMessage?.subtype === 'success') {
+      if (toolCallCount > 0) {
+        appendLog(`[DONE] session=${sessionId} | logged ${toolCallCount} history entries`);
+      } else {
+        appendLog(`[DONE] session=${sessionId} | no substantive changes to log`);
+      }
+    } else {
+      appendLog(`[DONE] session=${sessionId} | completed with status: ${resultMessage?.subtype || 'unknown'}`);
+    }
   } catch (error) {
-    appendLog(`Error generating summary: ${error.message}`);
+    appendLog(`[ERROR] session=${sessionId} | ${error.message}`);
   }
 
   process.exit(0);
@@ -223,11 +254,8 @@ async function main() {
   const cwd = inputData.cwd || process.cwd();
 
   if (!transcriptPath || !sessionId) {
-    appendLog('Missing transcript_path or session_id');
     process.exit(0);
   }
-
-  appendLog(`SessionEnd triggered for ${sessionId}`);
 
   // Spawn detached background process
   const { spawn } = await import('child_process');
