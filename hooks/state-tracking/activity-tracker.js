@@ -100,47 +100,43 @@ async function main() {
   const systemPrompt = `You are analyzing a developer's conversation to categorize their current activity. Focus on what type of work is actually being done, not just keywords mentioned.
 
 <activity_categories>
-1. **architecting**: Making high-level design decisions about system structure, planning multi-component solutions, choosing between architectural patterns
-   - Pattern: Discussions about "how should we structure", "what's the best architecture for", designing multiple interconnected parts
-   - NOT: Simple config changes or minor structural tweaks
-
-2. **debugging**: Actively diagnosing and fixing broken functionality, investigating why something isn't working as expected
+1. **debugging**: Actively diagnosing and fixing broken functionality, investigating why something isn't working as expected
    - Pattern: "Fix the bug", "why is this failing", "the output is wrong", examining error messages
    - NOT: Understanding how working code operates
 
-3. **code-review**: Evaluating existing code for quality, security, performance, or best practices
+2. **code-review**: Evaluating existing code for quality, security, performance, or best practices
    - Pattern: "Review this code", "is this secure", "check for vulnerabilities", quality assessment
    - NOT: Just reading code to understand it
 
-4. **documenting**: Writing documentation, READMEs, guides, API docs, or explanatory comments
+3. **documenting**: Writing documentation, READMEs, guides, API docs, or explanatory comments
    - Pattern: "Write the README", "document the API", "add usage guide", creating explanations for others
    - NOT: Code comments during implementation
 
-7. **feature-development**: Building new functionality or capabilities that didn't exist before
+4. **feature-development**: Building new functionality or capabilities that didn't exist before
    - Pattern: "Add ability to", "implement new feature", "build a system for", creating new user-facing capabilities
    - NOT: Modifying existing features
 
-8. **investigating**: Understanding how existing code works, tracing logic flow, exploring unfamiliar code
+5. **investigating**: Understanding how existing code works, tracing logic flow, exploring unfamiliar code
    - Pattern: "How does this work", "where is X implemented", "explain this code", learning existing systems
    - NOT: Diagnosing bugs
 
-9. **requirements-gathering**: Defining what to build, clarifying specifications, asking discovery questions about desired functionality
+6. **requirements-gathering**: Defining what to build, clarifying specifications, asking discovery questions about desired functionality
     - Pattern: "What should this do", "help me figure out the requirements", "what features do we need"
     - NOT: Implementing already-defined requirements
 
-10. **planning**: Creating implementation plans, breaking down features into steps, documenting approach before coding
-    - Pattern: "Make a plan", "create a plan for", "plan out the implementation", converting requirements into concrete steps
+7. **planning**: Creating implementation plans, breaking down features into steps, designing system architecture, making high-level design decisions
+    - Pattern: "Make a plan", "create a plan for", "plan out the implementation", "how should we structure this", "what's the best architecture for", designing multi-component solutions
     - NOT: Actually implementing the plan
 
-11. **security-auditing**: Analyzing code for security vulnerabilities, penetration testing, threat modeling
+8. **security-auditing**: Analyzing code for security vulnerabilities, penetration testing, threat modeling
     - Pattern: "Check for SQL injection", "audit security", "find vulnerabilities", proactive security analysis
     - NOT: General code review
 
-12. **testing**: Writing test code, improving test coverage, or verifying functionality through tests
+9. **testing**: Writing test code, improving test coverage, or verifying functionality through tests
     - Pattern: "Write tests for", "add test coverage", "verify with tests", creating automated test suites
     - NOT: Manual verification of changes
 
-13. **other**: Ambiguous requests, casual conversation, or work that doesn't fit other categories
+10. **other**: Ambiguous requests, casual conversation, or work that doesn't fit other categories
     - Pattern: "thoughts?", "hmm", "continue", unclear single-word prompts, general discussion
     - Use when confidence is low or the request doesn't match any specific category
 </activity_categories>
@@ -203,7 +199,6 @@ Based on the conversation, categorize the current development activity using the
   // Define the Zod schema for structured output
   const activitySchema = z.object({
     activity: z.enum([
-      "architecting",
       "debugging",
       "code-review",
       "documenting",
@@ -255,10 +250,9 @@ Based on the conversation, categorize the current development activity using the
     // Check if we should inject protocol context based on activity-specific thresholds
     const activityThresholds = {
       'debugging': 3,
-      'architecting': 3,
       'requirements-gathering': 3,
       'code-review': 3,
-      'planning': 4,
+      'planning': 3,
       'investigating': 6,
       'security-auditing': 4,
       'feature-development': 7,
@@ -273,7 +267,6 @@ Based on the conversation, categorize the current development activity using the
     if (shouldInjectProtocol) {
       // Map activity names to protocol filenames
       const activityToProtocol = {
-        'architecting': 'ARCHITECTURE-DESIGN',
         'debugging': 'BUG-FIXING',
         'code-review': 'CODE-REVIEW',
         'documenting': 'DOCUMENTATION',
@@ -317,8 +310,23 @@ Only after reading and understanding this protocol should you begin work on this
       }
     }
 
+    // Map activities to their corresponding emojis
+    const activityEmojis = {
+      'debugging': '🐛',
+      'code-review': '👀',
+      'documenting': '📝',
+      'feature-development': '✨',
+      'investigating': '🔍',
+      'planning': '📋',
+      'requirements-gathering': '❓',
+      'security-auditing': '🔒',
+      'testing': '🧪',
+      'other': '💬'
+    };
+
     // Output for user-facing logs only (not visible to LLM)
-    const output = `[Activity Tracker] ${result.activity} | Confidence: ${Math.round(result.confidence * 100)}% | Effort: ${result.effort}`;
+    const emoji = activityEmojis[result.activity] || '📊';
+    const output = `[Activity Tracker] ${emoji} ${result.activity} | ⚡️ ${result.effort}`;
 
     console.log(output);
     process.exit(0);

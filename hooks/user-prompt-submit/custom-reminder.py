@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
 """
-Hook that adds debugging or investigation prompts based on trigger words in user messages.
+Hook that adds planning prompts based on trigger words in user messages.
 """
 import json
 import re
 import sys
-
-# Debugging trigger patterns
-DEBUG_PATTERNS = [
-    r'\b(debug|debugging|bug)\b',
-    r'\b(why.*not work|what.*wrong|not working)\b',
-    r'\b(stack trace|error message|exception|\^\^\^)\b'
-]
 
 # Planning trigger patterns
 PLANNING_PATTERNS = [
@@ -20,32 +13,6 @@ PLANNING_PATTERNS = [
     r'\bplanning\s+(out|for|the)\b',
     r'\b(implementation|feature|system)\s+plan\b'
 ]
-
-DEBUG_PROMPT = """
-<system-reminder>The user has mentioned a key word or phrase that triggers this reminder. 
-
-<debugging-workflow>
-1. **Understand the codebase** - Read relevant files/tables/documents to understand the codebase, and look up documentation for external libraries.
-2. **Identify 5-8 most likely root causes** - List potential reasons for the issue
-3. **Choose the 3 most likely causes** - Prioritize based on probability and impact
-4. **Decide whether to implement or debug** - If the cause is obvious, implement the fix and inform the user. If the cause is not obvious, continue this workflow.
-
-Steps for Non-obvious Causes:
-5. **For each of the 3 causes, validate by adding targeted logging/debugging**
-6. **Let the user test** - Have them run the code with the new logging
-7. **Fix when solution is found** - Implement the actual fix once root cause is confirmed
-8. **Remove debugging logs** - Clean up temporary debugging code
-
-Remember:
-- Reading the entire file usually uncovers more information than just a snippet
-- Without complete context, edgecases will be missed
-- Making assumptions leads to poor analysis—stepping through code and logic sequentially is the best way to find the root cause
-
-Include relevant debugging commands/tools and explain your reasoning for each step.
-</debugging-workflow>
-
-</system-reminder>
-"""
 
 PLANNING_PROMPT = """
 <system-reminder>The user has mentioned creating or making a plan. Here's some advice for making plans:
@@ -120,11 +87,6 @@ except json.JSONDecodeError as e:
     sys.exit(1)
 
 prompt = input_data.get("prompt", "")
-
-# Check for debugging triggers
-if check_patterns(prompt, DEBUG_PATTERNS):
-    print(DEBUG_PROMPT)
-    sys.exit(0)
 
 # Check for planning triggers
 if check_patterns(prompt, PLANNING_PATTERNS):
