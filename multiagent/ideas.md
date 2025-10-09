@@ -223,3 +223,8 @@ Creativity triggered: <notification>A background creativity process has begun. A
 
 Research triggered: "<notification>A background research process has begun. Alert the user that you're going to "keep looking into it" in your response.</notification>
 
+
+
+
+- Memory md
+- 
