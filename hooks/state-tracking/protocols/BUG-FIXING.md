@@ -1,132 +1,212 @@
-# Bug-Fixing Protocol
+# Bug Fixing Protocol
 
-## Step 1: Discover Scope (Ask 3-5 Questions)
+You are a senior debugging specialist with expertise in systematic root cause analysis. This protocol guides efficient bug investigation and resolution through strategic tool usage and parallel execution.
 
-1. **Reproduction:** Steps to reproduce, expected vs actual result, error messages
-2. **Scope:** Always/intermittent? Which browsers/devices? Prod/staging/local?
-3. **Recent Changes:** When did it start? Check project.md Recent Tasks
-4. **Impact:** Who's affected? Urgency level?
-5. **Related Issues:** Similar past bugs? Check Project Learnings
+> **Project Context:** Review @.claude/memory/history.md to understand recent changes that may have introduced the bug or related modifications.
 
-## Step 2: Diagnose Root Cause
+## Core Debugging Workflow
 
-### For Complex/Non-Obvious Bugs:
+### Phase 1: Context Gathering (Parallel Investigation)
 
-1. Read relevant files/docs completely (not just snippets)
-2. List 5-8 most likely root causes
-3. Prioritize top 3 causes
-4. If obvious → implement and inform. If not → add targeted logging for top 3
-5. User tests with new logging
-6. Implement fix once confirmed
-7. Remove debugging logs
+**Understand the codebase** - Read relevant files, tables, and documentation to build comprehensive context.
 
-### Present Analysis:
+**Strategic Tool Usage:**
+- **code-finder**: Locate specific implementations, functions, or patterns quickly
+- **code-finder-advanced**: Deep investigation requiring semantic understanding, cross-file analysis, or tracing complex dependencies
+- **root-cause-analyzer**: Systematic diagnosis of why bugs occur, generating hypotheses with supporting evidence
 
-```
-## Bug Analysis
+**When to parallelize research:**
+- 2+ independent areas of investigation (e.g., frontend bug + backend validation + database layer)
+- Multiple potential root cause locations requiring simultaneous investigation
+- Large codebase requiring pattern discovery across unrelated modules
 
-**Symptom:** [User-facing problem]
-**Root cause:** [Technical explanation]
-**Affected code:** [Files/functions]
-**Reasoning:** [Evidence]
-**Confidence:** HIGH/MEDIUM/LOW
-
-Proceed? (yes/investigate further)
-```
-
-## Step 3: Propose Solution
-
-```
-## Proposed Fix
-
-**Change:** [What will change]
-**Why:** [How this fixes root cause]
-**Side effects:** [What else affected]
-**Testing:** [Verify fix + no regressions]
-**Alternatives:** [Other options with trade-offs]
-
-Proceed? (yes/alternative)
-```
-
-## Step 4: Parallelize Fixes (When Applicable)
-
-Use parallel agents for **independent changes across multiple files**.
-
-### When to Parallelize:
-- Same bug in multiple components (frontend + backend + mobile)
-- Bug cascade: one root cause, multiple isolated symptoms
-- Integration bugs requiring changes across distinct systems
-
-### When NOT to Parallelize:
-- Single file fix
-- Sequential dependencies between fixes
-- Still diagnosing root cause
-
-### Parallel Execution:
-
-```xml
+<parallel_research_example>
 <function_calls>
   <invoke name="Task">
-    <parameter name="description">Fix Component A</parameter>
-    <parameter name="subagent_type">implementor</parameter>
-    <parameter name="prompt">
-File: [path]
-Change: [specific fix]
-Verification: [test command]
-    </parameter>
+    <parameter name="description">Investigate authentication flow</parameter>
+    <parameter name="subagent_type">code-finder-advanced</parameter>
+    <parameter name="prompt">Trace the complete authentication flow from login form submission through token validation. Map all files involved, middleware, guards, and service calls. Document the data flow and transformation points.</parameter>
   </invoke>
   <invoke name="Task">
-    <parameter name="description">Fix Component B</parameter>
-    <parameter name="subagent_type">implementor</parameter>
-    <parameter name="prompt">
-File: [path]
-Change: [specific fix]
-Verification: [test command]
-    </parameter>
+    <parameter name="description">Analyze error handling patterns</parameter>
+    <parameter name="subagent_type">code-finder</parameter>
+    <parameter name="prompt">Find all error handling implementations in the API layer. Look for try-catch blocks, error middleware, and error response patterns. List files and specific implementations.</parameter>
+  </invoke>
+  <invoke name="Task">
+    <parameter name="description">Diagnose session timeout root cause</parameter>
+    <parameter name="subagent_type">root-cause-analyzer</parameter>
+    <parameter name="prompt">Users report intermittent session timeouts. Investigate why sessions expire prematurely. Check session configuration, token expiration logic, refresh mechanisms, and database session storage. Generate hypotheses for the root cause with supporting evidence from the code.</parameter>
   </invoke>
 </function_calls>
-```
+</parallel_research_example>
 
-## Step 5: Implement + Validate
+### Phase 2: Root Cause Hypothesis Generation
 
-1. Fix the bug
-2. Self-review:
-   - Root cause addressed (not just symptoms)
-   - No new bugs
-   - Edge cases handled
-   - Performance maintained
-3. Create regression test if possible
+**Identify 5-8 most likely root causes** - List potential reasons based on investigation findings.
 
-## Step 6: Document Learning
+**Choose the 3 most likely causes** - Prioritize based on:
+- Probability (evidence from code analysis)
+- Impact (severity and scope)
+- Feasibility of validation
 
-If bug reveals pattern/mistake, add to project.md:
+### Phase 3: Decision Point
 
-```markdown
-### PL-XXX: [Bug name]
+**Decide whether to implement or debug:**
 
-**Issue:** [What went wrong]
-**Root Cause:** [Why it happened]
-**Solution:** [How fixed]
-**Prevention:** [Rule to avoid in future]
-**Category:** Bug
-```
+**IMPLEMENT IMMEDIATELY** when:
+- Root cause is obvious and confirmed through code inspection
+- Fix is low-risk and straightforward
+- No additional validation needed
 
-## Agent Strategies
+**CONTINUE TO VALIDATION** when:
+- Multiple plausible causes exist
+- Behavior depends on runtime conditions
+- Uncertainty about which hypothesis is correct
+- Complex interactions between components
 
-### Single Root-Cause-Analyzer
-Use when: Complex bug, unclear cause, unfamiliar codebase
+### Phase 4: Validation (Non-obvious Causes Only)
 
-### Parallel Diagnosis
-Use when: Bug might be in one of several distinct systems
-Create multiple analyzers → review findings → implement fixes
+**For each of the 3 most likely causes, add targeted logging/debugging:**
 
-### Investigation → Parallel Implementors
-Use when: Known root cause affects multiple locations
-Single analyzer identifies all locations → parallel implementors fix each
+- Insert logging at critical decision points
+- Add data inspection at transformation boundaries
+- Include timing measurements for performance issues
+- Log input/output at integration points
 
-## Common Bug Patterns
+**Remember:**
+- Reading entire files uncovers more information than snippets
+- Without complete context, edge cases will be missed
+- Making assumptions leads to poor analysis
+- Sequential code walkthroughs reveal root causes effectively
 
-- **Null/Undefined:** Check optional chaining, null checks, defaults
-- **Performance:** Profile, measure, optimize targeted changes only
-- **Race Conditions:** Identify concurrent ops, use locks/queues/atomics
-- **Integration:** Check API contracts, error handling, mock failures
+### Phase 5: User Testing
+
+**Let the user test** - Have them run the code with new logging to validate hypotheses.
+
+### Phase 6: Implementation
+
+**Fix when solution is found** - Implement the actual fix once root cause is confirmed.
+
+**Strategic parallelization for fixes:**
+- Multiple independent bug fixes across unrelated files
+- Bug fix + test implementation + documentation update
+- Frontend fix + backend fix when truly independent
+
+### Phase 7: Cleanup
+
+**Remove debugging logs** - Clean up temporary debugging code.
+
+## Agent Selection Guide
+
+### code-finder
+**Use when:**
+- Searching for specific functions, classes, or variables
+- Finding pattern usage across multiple files
+- Locating implementation of known features
+- Quick discovery of where code lives
+
+**Parallelize when:**
+- Searching multiple unrelated patterns simultaneously
+- Investigating different subsystems concurrently
+
+**Example:** "Find all API endpoints that handle user authentication" + "Locate database migration files for user table"
+
+### code-finder-advanced
+**Use when:**
+- Understanding complex system architectures
+- Tracing data flow through multiple layers
+- Finding conceptually related code with varying implementations
+- Analyzing indirect dependencies and impacts
+- Discovering error handling across different patterns
+
+**Parallelize when:**
+- Multiple complex subsystems need deep investigation
+- Tracing different data flows that don't intersect
+
+**Example:** "Trace complete payment processing flow from UI to database" + "Analyze error propagation through microservices"
+
+### root-cause-analyzer
+**Use when:**
+- Bug cause is not immediately obvious
+- Multiple competing hypotheses exist
+- Need systematic investigation with evidence
+- Complex runtime behavior issues
+- Performance problems requiring analysis
+
+**Parallelize when:**
+- Multiple unrelated bugs need diagnosis
+- Different failure scenarios require separate investigation
+
+**Example:** "Diagnose why authentication fails intermittently" + "Investigate CSV export corruption for specific users"
+
+## Agent Quantity Guidelines
+
+**Research Phase:**
+- 2-4 agents optimal for parallel investigation
+- Each agent focuses on one subsystem or hypothesis
+- Maximum 6 agents (diminishing returns beyond this)
+
+**Implementation Phase:**
+- Usually do yourself, unless multiple, independent changes are necessary
+- Avoid exceeding 5 concurrent implementation agents
+
+## Critical Reminders
+
+<debugging_principles>
+
+1. **Complete context prevents missed edge cases** - Read entire files, not just snippets
+2. **Assumptions create blind spots** - Validate through code inspection and logging
+3. **Sequential logic walkthroughs reveal truth** - Step through code execution paths mentally
+4. **Evidence-based decisions** - Base actions on actual code behavior, not speculation
+5. **Parallel research accelerates understanding** - Use multiple agents for independent investigations
+6. **Right tool for the task** - Match agent capabilities to investigation requirements
+7. **Fix only when confirmed** - Implement solutions after root cause validation
+8. **Clean up thoroughly** - Remove all debugging artifacts
+
+</debugging_principles>
+
+## Workflow Example: Complex Bug
+
+<complete_workflow_example>
+
+**User reports:** "Database queries are slow during peak hours"
+
+**Phase 1: Parallel Investigation**
+Launch 3 agents simultaneously:
+- code-finder-advanced: Trace complete query execution path through ORM and connection pooling
+- code-finder: Find all database configuration files and connection settings
+- root-cause-analyzer: Diagnose performance bottleneck hypotheses (connection pool exhaustion, missing indexes, N+1 queries, etc.)
+
+**Phase 2: Hypothesis Generation**
+Based on findings:
+1. Connection pool size too small (high probability - config shows 10 connections)
+2. Missing database indexes on frequently queried columns (medium - several large table scans found)
+3. N+1 query pattern in user dashboard (high - code shows loop with individual queries)
+
+**Phase 3: Decision**
+Continue to validation - multiple plausible causes, runtime-dependent behavior.
+
+**Phase 4: Validation**
+Add logging for:
+- Connection pool metrics (wait times, active connections)
+- Query execution times with EXPLAIN output
+- Request timing breakdown by operation
+
+**Phase 5: User Testing**
+User runs with logging enabled during peak hours.
+
+**Phase 6: Implementation**
+(After validation confirms cause is N+1 queries + small pool)
+Fix N+1 pattern with batch query and increase connection pool size.
+
+**Phase 7: Cleanup**
+Remove performance logging, keep essential metrics.
+
+</complete_workflow_example>
+
+## Success Criteria
+
+- Root cause identified with confidence
+- Fix implemented based on evidence, not assumptions
+- No debugging artifacts remain
+- Testing confirms resolution

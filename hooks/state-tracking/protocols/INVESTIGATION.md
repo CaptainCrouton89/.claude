@@ -1,5 +1,7 @@
 # Investigation Protocol
 
+> **Project Context:** Review @.claude/memory/history.md to understand recent changes and feature implementations that may be relevant to your investigation.
+
 ## Agent Selection
 
 **code-finder** (Haiku - fast):

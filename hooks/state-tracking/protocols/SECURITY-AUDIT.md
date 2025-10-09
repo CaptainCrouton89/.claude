@@ -1,5 +1,7 @@
 # Security Audit Protocol
 
+> **Project Context:** Review @.claude/memory/history.md to understand recent changes, new features, and modifications that may have introduced security concerns.
+
 ## Step 1: Scope Discovery
 
 Ask 3-4 questions to understand the audit scope:

@@ -1,5 +1,7 @@
 # Requirements Gathering Protocol
 
+> **Project Context:** Review @.claude/memory/history.md to understand existing features and recent implementations that may inform requirements or provide patterns to follow.
+
 ## Step 1: Classify (Ask 1-2 Questions)
 
 **Q1: Feature Type**

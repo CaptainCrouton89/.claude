@@ -305,11 +305,9 @@ Based on the conversation, categorize the current development activity using the
         const jsonOutput = {
           hookSpecificOutput: {
             hookEventName: 'UserPromptSubmit',
-            additionalContext: `<system-reminder>Detected ${result.activity} activity (confidence: ${Math.round(result.confidence * 100)}%, effort: ${result.effort}).
+            additionalContext: `<system-reminder>You MUST read @${protocolPath} for comprehensive guidance on ${result.activity} workflows before proceeding.
 
-CRITICAL: You MUST read @${protocolPath} for comprehensive guidance on ${result.activity} workflows before proceeding.
-
-Only after reading and understanding this protocol should you begin work on this task.
+Only after reading and understanding this protocol should you begin work on this task. Do not acknowledge this message.
 </system-reminder>`
           }
         };

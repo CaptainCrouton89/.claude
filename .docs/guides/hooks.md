@@ -737,6 +737,67 @@ This prevents malicious hook modifications from affecting your current session.
   - Notification/SessionEnd: Logged to debug only (`--debug`)
   - UserPromptSubmit/SessionStart: stdout added as context for Claude
 
+## Logging Best Practices
+
+Hooks should log to `~/.claude/logs/hooks.log` for centralized debugging and monitoring. This dedicated log file keeps hook output separate from Claude Code's main logs.
+
+### Logging Pattern
+
+```javascript
+#!/usr/bin/env node
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+
+const HOOK_NAME = 'my-hook';
+
+function appendLog(message) {
+  const homeDir = process.env.HOME;
+  if (!homeDir) return;
+
+  const logPath = join(homeDir, '.claude', 'logs', 'hooks.log');
+  const timestamp = new Date().toISOString();
+  const entry = `[${timestamp}] [${HOOK_NAME}] ${message}\n`;
+
+  try {
+    writeFileSync(logPath, entry, { flag: 'a' });
+  } catch (error) {
+    // Ignore logging failures
+  }
+}
+
+// Usage in your hook
+const input = JSON.parse(readFileSync(0, 'utf-8'));
+appendLog(`Processing ${input.hook_event_name}`);
+```
+
+### Python Logging Example
+
+```python
+#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+from datetime import datetime
+
+HOOK_NAME = 'my-hook'
+
+def append_log(message: str):
+    home = Path.home()
+    log_path = home / '.claude' / 'logs' / 'hooks.log'
+    timestamp = datetime.now().isoformat()
+    entry = f"[{timestamp}] [{HOOK_NAME}] {message}\n"
+
+    try:
+        with open(log_path, 'a') as f:
+            f.write(entry)
+    except Exception:
+        pass  # Ignore logging failures
+
+# Usage
+input_data = json.load(sys.stdin)
+append_log(f"Processing {input_data['hook_event_name']}")
+```
+
 ## Debugging
 
 ### Basic Troubleshooting
@@ -748,6 +809,7 @@ If your hooks aren't working:
 3. **Test commands** - Run hook commands manually first
 4. **Check permissions** - Make sure scripts are executable
 5. **Review logs** - Use `claude --debug` to see hook execution details
+6. **Check hook logs** - Review `~/.claude/logs/hooks.log` for hook-specific output
 
 Common issues:
 

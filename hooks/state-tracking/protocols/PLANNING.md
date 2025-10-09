@@ -2,6 +2,8 @@
 
 **Before creating any plan, conduct thorough investigation. NOTHING can be left to assumptions.**
 
+> **Project Context:** Review @.claude/memory/history.md to understand recent changes, existing patterns, and architectural decisions that should inform your plan.
+
 ---
 
 ## Step 1: Investigation Phase
