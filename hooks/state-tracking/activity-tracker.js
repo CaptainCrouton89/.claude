@@ -128,15 +128,19 @@ async function main() {
     - Pattern: "What should this do", "help me figure out the requirements", "what features do we need"
     - NOT: Implementing already-defined requirements
 
-10. **security-auditing**: Analyzing code for security vulnerabilities, penetration testing, threat modeling
+10. **planning**: Creating implementation plans, breaking down features into steps, documenting approach before coding
+    - Pattern: "Make a plan", "create a plan for", "plan out the implementation", converting requirements into concrete steps
+    - NOT: Actually implementing the plan
+
+11. **security-auditing**: Analyzing code for security vulnerabilities, penetration testing, threat modeling
     - Pattern: "Check for SQL injection", "audit security", "find vulnerabilities", proactive security analysis
     - NOT: General code review
 
-11. **testing**: Writing test code, improving test coverage, or verifying functionality through tests
+12. **testing**: Writing test code, improving test coverage, or verifying functionality through tests
     - Pattern: "Write tests for", "add test coverage", "verify with tests", creating automated test suites
     - NOT: Manual verification of changes
 
-12. **other**: Ambiguous requests, casual conversation, or work that doesn't fit other categories
+13. **other**: Ambiguous requests, casual conversation, or work that doesn't fit other categories
     - Pattern: "thoughts?", "hmm", "continue", unclear single-word prompts, general discussion
     - Use when confidence is low or the request doesn't match any specific category
 </activity_categories>
@@ -205,6 +209,7 @@ Based on the conversation, categorize the current development activity using the
       "documenting",
       "feature-development",
       "investigating",
+      "planning",
       "requirements-gathering",
       "security-auditing",
       "testing",
@@ -253,7 +258,8 @@ Based on the conversation, categorize the current development activity using the
       'architecting': 3,
       'requirements-gathering': 3,
       'code-review': 3,
-      'investigating': 3,
+      'planning': 4,
+      'investigating': 6,
       'security-auditing': 4,
       'feature-development': 7,
       'documenting': 7,
@@ -273,6 +279,7 @@ Based on the conversation, categorize the current development activity using the
         'documenting': 'DOCUMENTATION',
         'feature-development': 'FEATURE-DEVELOPMENT',
         'investigating': 'INVESTIGATION',
+        'planning': 'PLANNING',
         'requirements-gathering': 'REQUIREMENTS-GATHERING',
         'security-auditing': 'SECURITY-AUDIT',
       };
@@ -300,7 +307,7 @@ Based on the conversation, categorize the current development activity using the
             hookEventName: 'UserPromptSubmit',
             additionalContext: `<system-reminder>Detected ${result.activity} activity (confidence: ${Math.round(result.confidence * 100)}%, effort: ${result.effort}).
 
-CRITICAL: You MUST read ${protocolPath} for comprehensive guidance on ${result.activity} workflows before proceeding.
+CRITICAL: You MUST read @${protocolPath} for comprehensive guidance on ${result.activity} workflows before proceeding.
 
 Only after reading and understanding this protocol should you begin work on this task.
 </system-reminder>`

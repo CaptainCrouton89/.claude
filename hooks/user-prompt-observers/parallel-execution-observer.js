@@ -38,19 +38,22 @@ async function main() {
     confidence: z.number().min(0).max(1).describe("0 = Low, 1 = High"),
   });
 
-  const systemPrompt = `You are analyzing a user's prompt to determine if they are requesting parallel execution or parallelization of tasks.
+  const systemPrompt = `You are analyzing a user's prompt to determine if they want to parallelize work or execute tasks in parallel.
 
-Look for indicators such as:
-- Explicit mentions of "parallel", "parallelize", "concurrent", "simultaneously", "at the same time"
-- Phrases like "in parallel", "run in parallel", "execute in parallel"
-- Requests to do multiple things "at once" or "concurrently"
+The key metric: Does the user indicate they want to POTENTIALLY parallelize work?
+
+Trigger on ANY mention of parallelization intent:
+- Direct keywords: "parallel", "parallelize", "concurrent", "simultaneously"
+- Tentative language: "might parallelize", "could parallelize", "should parallelize"
+- Implicit requests: "at the same time", "at once", "concurrently"
+- Questions about parallelization: "can we parallelize", "should this be parallel"
 
 Do NOT trigger on:
-- Simple multi-step tasks that don't explicitly request parallel execution
-- Lists of tasks without parallelization keywords
-- General requests to "do multiple things" without parallel context
+- Simple multi-step tasks without ANY parallelization keywords
+- Lists of sequential tasks
+- General "do multiple things" without parallel/concurrent context
 
-Return needsParallelGuidance = true ONLY if the user explicitly wants parallel execution.`;
+Return needsParallelGuidance = true if the user mentions parallelization in ANY form.`;
 
   const messages = [
     { role: 'system', content: systemPrompt },
@@ -77,9 +80,7 @@ Return needsParallelGuidance = true ONLY if the user explicitly wants parallel e
             hookEventName: 'UserPromptSubmit',
             additionalContext: `<system-reminder>The user has mentioned parallel execution or parallelization.
 
-<parallelization-guide>
-${parallelGuideContent}
-</parallelization-guide>
+@${parallelGuidePath}
 
 </system-reminder>`
           }

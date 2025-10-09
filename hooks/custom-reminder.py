@@ -13,13 +13,6 @@ DEBUG_PATTERNS = [
     r'\b(stack trace|error message|exception|\^\^\^)\b'
 ]
 
-# Investigation trigger patterns
-INVESTIGATION_PATTERNS = [
-    r'\b(investigate|research|analyze|examine|explore|understand)\b',
-    r'\b(how does.*work|figure out|explain|find out)\b',
-    r'\b(code review|audit|inspect)\b'
-]
-
 # Planning trigger patterns
 PLANNING_PATTERNS = [
     r'\b(make|create|develop|write|build).*\bplan\b',
@@ -52,29 +45,6 @@ Include relevant debugging commands/tools and explain your reasoning for each st
 </debugging-workflow>
 
 </system-reminder>
-"""
-
-INVESTIGATION_PROMPT = """
-<system-reminder>The user has mentioned a key word or phrase that triggers this reminder.
-
-<investigation-workflow>
-1. **Assess scope**: Read provided files directly. Use code-finder or code-finder-advanced for unknown/large codebases, direct tools (Read/Grep/Glob) for simple searches.
-
-2. **Use code-finder or code-finder-advanced when**: Complex investigations, no clear starting point, discovering patterns across many files, unclear functionality location.
-
-3. **Use direct tools when**: Simple searches in known files, specific paths provided, trivial lookups.
-
-4. **Flow**: Start with context → code-finder or code-finder-advanced for broad discovery → understand before suggesting → answer first, implement if asked.
-
-5. **Multiple agents**: Split non-overlapping domains, launch parallel in single function_calls block. Example: backend/, frontend/, tests/ agents.
-
-Example: "How does authentication integrate with each of our services, and how could we refactor it with middleware?" → Use a code-finder first, and then multiple parallel code-finder-advanced tasks
-Example: "Investigate and make plan out Stripe integration" → Use parallel code-finder tasks
-Example: "Where is combat implemented?" → Use code-finder task
-Example: "Do we have a formatDate function" → Use grep/bash/etc tools directly
-</investigation-workflow>
-
-This workflow ensures efficient investigation based on task complexity.
 """
 
 PLANNING_PROMPT = """
@@ -154,11 +124,6 @@ prompt = input_data.get("prompt", "")
 # Check for debugging triggers
 if check_patterns(prompt, DEBUG_PATTERNS):
     print(DEBUG_PROMPT)
-    sys.exit(0)
-
-# Check for investigation triggers
-if check_patterns(prompt, INVESTIGATION_PATTERNS):
-    print(INVESTIGATION_PROMPT)
     sys.exit(0)
 
 # Check for planning triggers

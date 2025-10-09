@@ -73,7 +73,7 @@ Return isPromptImprovementRequest = true ONLY if the user is specifically workin
           hookEventName: 'UserPromptSubmit',
           additionalContext: `<system-reminder>The user has mentioned improving or enhancing prompts/prompting.
 
-CRITICAL: You MUST read ${promptingGuidePath} for comprehensive guidance on writing effective prompts before proceeding with any prompt-related suggestions.
+CRITICAL: You MUST read @${promptingGuidePath} for comprehensive guidance on writing effective prompts before proceeding with any prompt-related suggestions.
 
 Only after reading and understanding this guide should you provide prompt improvement recommendations.
 </system-reminder>`

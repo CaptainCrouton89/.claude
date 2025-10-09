@@ -158,6 +158,88 @@ Documentation will include:
 
 ---
 
+## Parallel Documentation Strategy
+
+### When to Use Agents for Documentation
+
+**Use parallel agents when:**
+- Documenting multi-component systems (API + SDK + CLI)
+- Creating docs for frontend + backend simultaneously
+- Generating multiple doc types (README + API reference + guides)
+
+**Work directly when:**
+- Single README or guide
+- Updating existing documentation
+- Small scope (<3 sections)
+
+### Agent Type Selection
+
+| Documentation Task | Recommended Agent | Why |
+|-------------------|------------------|-----|
+| API documentation | backend-developer | Understands API patterns, generates accurate examples |
+| Component docs | frontend-ui-developer | Knows React/component patterns, creates usage examples |
+| Architecture docs | general-purpose | Synthesizes cross-cutting concerns |
+| README + guides | general-purpose | Broad context, user-focused writing |
+
+### Parallel Documentation Pattern
+
+When documenting a full-stack feature:
+
+```xml
+<function_calls>
+  <invoke name="Task">
+    <parameter name="description">Document backend API</parameter>
+    <parameter name="subagent_type">backend-developer</parameter>
+    <parameter name="prompt">
+      Create API documentation for the authentication system:
+
+      Read: src/routes/auth.ts, src/services/authService.ts
+
+      Generate:
+      - Endpoint reference (POST /auth/login, POST /auth/register, etc.)
+      - Request/response schemas with TypeScript types
+      - Authentication flow diagram
+      - Error codes and handling
+      - Code examples for each endpoint
+
+      Format: Markdown, follow API docs template from DOCUMENTATION.md lines 406-450
+    </parameter>
+  </invoke>
+  <invoke name="Task">
+    <parameter name="description">Document frontend auth components</parameter>
+    <parameter name="subagent_type">frontend-ui-developer</parameter>
+    <parameter name="prompt">
+      Create component documentation for authentication UI:
+
+      Read: components/LoginForm.tsx, hooks/useAuth.ts
+
+      Generate:
+      - Component API (props, events, usage)
+      - Integration guide (how to add auth to new page)
+      - State management explanation
+      - Code examples with common scenarios
+
+      Format: Markdown, include live code examples
+    </parameter>
+  </invoke>
+</function_calls>
+```
+
+After agents complete, consolidate into unified documentation ensuring consistent terminology and no contradictions.
+
+### Example: Multi-Part Documentation
+
+Task: "Document our new notification system"
+
+Strategy:
+1. Use backend-developer agent for API docs (webhooks, event schemas)
+2. Use frontend-ui-developer agent for component docs (NotificationBell, toast system)
+3. Use general-purpose agent for user guide (how notifications work end-to-end)
+
+Launch all three in parallel function_calls block.
+
+---
+
 ## Step 3: Write Documentation
 
 After approval, write following the plan:

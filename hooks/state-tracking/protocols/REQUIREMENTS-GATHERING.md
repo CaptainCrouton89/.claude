@@ -27,6 +27,110 @@ This determines how much discovery we need."
 
 ---
 
+## Discovery Agent Strategy
+
+### When to Use Agents for Requirements Gathering
+
+**Use code-finder-advanced agents when:**
+- User wants to enhance existing feature (need to understand current implementation)
+- Integration requirements unclear (investigate existing integrations)
+- Technical constraints unknown (explore codebase capabilities)
+
+**Work directly when:**
+- Green field feature (nothing to investigate)
+- User has complete requirements already
+- Simple feature with clear scope
+
+### Pre-Requirements Investigation Pattern
+
+Before asking questions, investigate the existing system:
+
+```xml
+Example: User says "Add real-time notifications"
+
+Before asking requirements questions, understand existing system:
+
+<function_calls>
+  <invoke name="Task">
+    <parameter name="description">Investigate existing notification system</parameter>
+    <parameter name="subagent_type">code-finder-advanced</parameter>
+    <parameter name="prompt">
+      Search the codebase for existing notification or messaging functionality:
+
+      Find:
+      - Any existing notification components/services
+      - Current user communication methods (email, SMS, etc.)
+      - WebSocket or real-time infrastructure already in place
+      - Notification data models in database
+
+      Report what exists and what's missing for real-time notifications.
+      This will inform which requirements questions to ask.
+    </parameter>
+  </invoke>
+</function_calls>
+```
+
+Use findings to ask informed questions:
+- "I see you have email notifications via SendGrid. Should real-time notifications replace or complement these?"
+- "Found WebSocket server for chat feature. Can we reuse this infrastructure?"
+
+### Parallel Domain Investigation
+
+For complex features touching multiple systems:
+
+```xml
+Example: "Add multi-factor authentication"
+
+<function_calls>
+  <invoke name="Task">
+    <parameter name="description">Investigate current auth system</parameter>
+    <parameter name="subagent_type">code-finder-advanced</parameter>
+    <parameter name="prompt">
+      Analyze existing authentication:
+      - Current auth method (JWT, sessions, OAuth?)
+      - Login flow files and logic
+      - User model and database schema
+      - Password storage and validation
+
+      Return: What exists and what needs to change for MFA
+    </parameter>
+  </invoke>
+  <invoke name="Task">
+    <parameter name="description">Research MFA integration points</parameter>
+    <parameter name="subagent_type">backend-developer</parameter>
+    <parameter name="prompt">
+      Identify where MFA would integrate:
+      - Login endpoints that need MFA step
+      - Session management for MFA state
+      - User settings for MFA configuration
+      - API clients that need MFA support
+
+      Return: Integration points and dependencies
+    </parameter>
+  </invoke>
+</function_calls>
+```
+
+After investigation completes, ask requirements questions informed by findings.
+
+### Investigation-Informed Questions
+
+Transform generic questions into specific ones based on codebase findings:
+
+❌ Generic: "What authentication methods should we support?"
+✅ Informed: "I see you use JWT with refresh tokens. For MFA, should we:
+  - Add TOTP (Google Authenticator)?
+  - Support SMS codes?
+  - Require for all users or optional?"
+
+❌ Generic: "How should notifications be delivered?"
+✅ Informed: "You have WebSocket infrastructure for chat (socket.io on port 3001). Should we:
+  - Reuse this for notifications?
+  - Create separate notification WebSocket?
+  - Use Server-Sent Events instead?"
+
+---
+
 ## Step 2: Universal Discovery (Always Ask)
 
 ### UQ-1: Happy Path Narrative
