@@ -1,6 +1,6 @@
 # Planning Protocol
 
-> **Project Context:** Review @.claude/memory/history.md to understand recent changes, existing patterns, and architectural decisions that should inform your plan.
+> **Project Context:** Review {cwd}/.claude/memory/history.md to understand recent changes, existing patterns, and architectural decisions that should inform your plan.
 
 ---
 
@@ -309,6 +309,8 @@ Assistant: Let me begin investigating the current architecture.
 ## Step 3: Create the Plan
 
 **After thorough investigation, create a comprehensive, evidence-based plan.**
+
+**IMPORTANT: Write the final plan to `.docs/plans/[relevant-name].md` in the project repository.**
 
 ### Plan Template
 

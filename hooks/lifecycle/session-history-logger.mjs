@@ -120,6 +120,9 @@ Your task: Identify substantive changes and log them using the logHistoryEntry t
 - Use past tense action verbs: implemented, added, fixed, refactored, updated, removed
 - Use relative file paths from project root (e.g., src/file.ts)
 - For modifications, explain what changed AND the resulting behavior
+- CRITICAL: Keep entries EXTREMELY concise - history.md has 250-line hard limit
+- Use technical shorthand, remove obvious context, compress verbose explanations
+- Prioritize recent substantive work over comprehensive documentation
 </requirements>
 
 <tool_usage>

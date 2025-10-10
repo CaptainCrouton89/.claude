@@ -100,7 +100,33 @@ function logHistoryEntry(cwd, title, bullets) {
   const updatedFrontmatter = updateFrontmatterTimestamp(frontmatter);
 
   const newEntry = formatEntry(title, bullets);
-  const newContent = `---\n${updatedFrontmatter}\n---\n${newEntry}${body}`;
+
+  // Enforce 250-line limit: trim oldest entries if necessary
+  const MAX_LINES = 250;
+  const frontmatterText = `---\n${updatedFrontmatter}\n---\n`;
+  const fullContent = frontmatterText + newEntry + body;
+  const totalLines = fullContent.split('\n').length;
+
+  let trimmedBody = body;
+  if (totalLines > MAX_LINES) {
+    // Calculate how many lines to keep from body (oldest entries get removed)
+    const frontmatterLines = frontmatterText.split('\n').length;
+    const newEntryLines = newEntry.split('\n').length;
+    const maxBodyLines = MAX_LINES - frontmatterLines - newEntryLines;
+
+    if (maxBodyLines <= 0) {
+      // New entry alone exceeds limit - keep only new entry
+      trimmedBody = '';
+      log(`WARNING: New entry uses ${newEntryLines} lines, removing all old entries`);
+    } else {
+      // Keep most recent entries from body (trim from end, which contains oldest entries)
+      const bodyLines = body.split('\n');
+      trimmedBody = bodyLines.slice(0, maxBodyLines).join('\n');
+      log(`Trimmed history from ${bodyLines.length} to ${maxBodyLines} body lines (total: ${MAX_LINES} lines)`);
+    }
+  }
+
+  const newContent = `---\n${updatedFrontmatter}\n---\n${newEntry}${trimmedBody}`;
 
   writeFileSync(historyPath, newContent, 'utf-8');
   log(`Successfully added entry: ${title}`);

@@ -1,9 +1,5 @@
 # Code Review Protocol
 
-Review code changes for quality, security, performance, and maintainability.
-
----
-
 ## Step 1: Determine Strategy
 
 Choose approach based on scope:

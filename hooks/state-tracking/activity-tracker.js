@@ -42,12 +42,55 @@ async function main() {
     transcriptLines = [];
   }
 
+  // Function to expand @ notation and include file content
+  function expandAtNotation(prompt, cwd) {
+    const atPattern = /@([^\s]+)/g;
+    let expandedPrompt = prompt;
+    const matches = [...prompt.matchAll(atPattern)];
+
+    if (matches.length === 0) {
+      return prompt;
+    }
+
+    const fileContents = [];
+
+    for (const match of matches) {
+      const relativePath = match[1];
+      const fullPath = join(cwd, relativePath);
+
+      try {
+        if (existsSync(fullPath)) {
+          const content = readFileSync(fullPath, 'utf-8');
+          let truncatedContent = content;
+
+          if (content.length > 400) {
+            const firstPart = content.slice(0, 200);
+            const lastPart = content.slice(-200);
+            truncatedContent = `${firstPart}\n...\n${lastPart}`;
+          }
+
+          fileContents.push(`<file path='${relativePath}'>${truncatedContent}</file>`);
+        }
+      } catch (err) {
+        // Skip files that can't be read
+      }
+    }
+
+    if (fileContents.length > 0) {
+      expandedPrompt = `<files>${fileContents.join('\n')}</files>\n\n${prompt}`;
+    }
+
+    return expandedPrompt;
+  }
+
   // Extract conversation history (user prompts + assistant responses)
   const conversationHistory = [];
 
-  // Add current prompt first
+  // Add current prompt first with @ notation expanded
   if (hookData.prompt) {
-    conversationHistory.push({ role: 'user', content: hookData.prompt });
+    const cwd = hookData.cwd || process.cwd();
+    const expandedPrompt = expandAtNotation(hookData.prompt, cwd);
+    conversationHistory.push({ role: 'user', content: expandedPrompt });
   }
 
   // Parse transcript for recent exchanges (user + assistant pairs)
@@ -102,39 +145,30 @@ async function main() {
 <activity_categories>
 1. **debugging**: Actively diagnosing and fixing broken functionality, investigating why something isn't working as expected
    - Pattern: "Fix the bug", "why is this failing", "the output is wrong", examining error messages
-   - NOT: Understanding how working code operates
 
 2. **code-review**: Evaluating existing code for quality, security, performance, or best practices
    - Pattern: "Review this code", "is this secure", "check for vulnerabilities", quality assessment
-   - NOT: Just reading code to understand it
 
 3. **documenting**: Writing documentation, READMEs, guides, API docs, or explanatory comments
    - Pattern: "Write the README", "document the API", "add usage guide", creating explanations for others
-   - NOT: Code comments during implementation
 
 4. **feature-development**: Building new functionality or capabilities that didn't exist before
-   - Pattern: "Add ability to", "implement new feature", "build a system for", creating new user-facing capabilities
-   - NOT: Modifying existing features
+   - Pattern: "Add ability to", "implement new feature", "build a system for", "implement this plan", creating new user-facing capabilities
 
 5. **investigating**: Understanding how existing code works, tracing logic flow, exploring unfamiliar code
    - Pattern: "How does this work", "where is X implemented", "explain this code", learning existing systems
-   - NOT: Diagnosing bugs
 
 6. **requirements-gathering**: Defining what to build, clarifying specifications, asking discovery questions about desired functionality
     - Pattern: "What should this do", "help me figure out the requirements", "what features do we need"
-    - NOT: Implementing already-defined requirements
 
 7. **planning**: Creating implementation plans, breaking down features into steps, designing system architecture, making high-level design decisions
     - Pattern: "Make a plan", "create a plan for", "plan out the implementation", "how should we structure this", "what's the best architecture for", designing multi-component solutions
-    - NOT: Actually implementing the plan
 
 8. **security-auditing**: Analyzing code for security vulnerabilities, penetration testing, threat modeling
     - Pattern: "Check for SQL injection", "audit security", "find vulnerabilities", proactive security analysis
-    - NOT: General code review
 
 9. **testing**: Writing test code, improving test coverage, or verifying functionality through tests
     - Pattern: "Write tests for", "add test coverage", "verify with tests", creating automated test suites
-    - NOT: Manual verification of changes
 
 10. **other**: Ambiguous requests, casual conversation, or work that doesn't fit other categories
     - Pattern: "thoughts?", "hmm", "continue", unclear single-word prompts, general discussion
@@ -250,9 +284,9 @@ Based on the conversation, categorize the current development activity using the
     // Check if we should inject protocol context based on activity-specific thresholds
     const activityThresholds = {
       'debugging': 3,
-      'requirements-gathering': 3,
+      'requirements-gathering': 5,
       'code-review': 3,
-      'planning': 3,
+      'planning': 5,
       'investigating': 6,
       'security-auditing': 4,
       'feature-development': 7,
@@ -297,12 +331,11 @@ Based on the conversation, categorize the current development activity using the
         // Return JSON output with reminder to read protocol
         const jsonOutput = {
           hookSpecificOutput: {
-            hookEventName: 'UserPromptSubmit',
-            additionalContext: `<system-reminder>You MUST read @${protocolPath} for comprehensive guidance on ${result.activity} workflows before proceeding.
+            hookEventName: "UserPromptSubmit",
+            additionalContext: `<system-reminder>The user has indicated they are interested in ${result.activity}. @${protocolPath} has comprehensive guidance on ${result.activity} workflows—you should obey the workflow within for this task.
 
-Only after reading and understanding this protocol should you begin work on this task. Do not acknowledge this message.
-</system-reminder>`
-          }
+Read the file and obey the workflow, but do not acknowledge this message to the user, and do not acknowledge that you're obeying a protocol.</system-reminder>`,
+          },
         };
 
         console.log(JSON.stringify(jsonOutput));

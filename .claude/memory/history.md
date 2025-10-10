@@ -1,7 +1,50 @@
 ---
 created: 2025-10-09T18:35:23.539Z
-last_updated: 2025-10-09T22:55:27.195Z
+last_updated: 2025-10-10T05:59:18.720Z
 ---
+## 2025-10-10: updated PLANNING.md protocol to specify .docs/plans output directory
+
+- modified hooks/state-tracking/protocols/PLANNING.md
+  - added instruction to write final plans to .docs/plans/[relevant-name].md
+  - clarified Step 3: Create the Plan section with explicit file path requirement
+
+## 2025-10-10: enhanced activity-tracker with @ notation file expansion
+
+- implemented @ notation expansion in activity-tracker.js for file context inclusion
+  - added expandAtNotation() function to resolve @filepath patterns relative to cwd
+  - file contents wrapped in <files><file path='..'>content</file></files> structure
+  - truncates files over 400 chars to first/last 200 chars for token efficiency
+  - integrated into conversation history building before activity categorization
+- updated hooks/lifecycle/history-mcp.mjs with enhanced functionality (28 line additions)
+- refined hooks/lifecycle/session-history-logger.mjs (3 line additions)
+- updated hooks/state-tracking/protocols/CODE-REVIEW.md (4 line removal)
+- minor fix in hooks/validation/claude-md-manager.mjs
+- updated .claude/memory/history.md with 25 line additions
+- reorganized command documentation: deleted commands/better-init.md, appears to be restructuring
+
+## 2025-10-10: improved better-init command prompt with enhanced clarity and structure
+
+- refactored commands/better-init.md with clearer role definition and workflow phases
+  - added explicit task and workflow sections with numbered steps
+  - enhanced critical_content section with specific examples
+  - expanded exclusions to prevent obvious/redundant content
+  - improved format section with required prefix and style guidelines
+- applied prompting guide principles to command structure
+  - used XML tags for clear section organization
+  - added positive framing and explicit instructions
+  - included context and motivation for constraints
+  - provided aligned example of good CLAUDE.md output
+
+## 2025-10-10: re-enabled claude-md-manager hook and streamlined activity tracker
+
+- re-enabled claude-md-manager.mjs validation hook in hooks/validation/
+  - hook automatically creates/updates CLAUDE.md files when editing files in directories
+  - uses background worker pattern with detached process for non-blocking execution
+  - targets ~150 lines for root, ~100 for complex dirs, ~50 for medium, <25 for simple
+- updated activity-tracker.js configuration
+  - modified effort threshold or confidence scoring for feature-development category
+  - ensures proper protocol injection based on activity classification
+
 ## 2025-10-09: refactored session history logger to focus on functional changes only
 
 - modified session-history-logger.mjs in hooks/lifecycle/ to exclude assistant responses and track only functional codebase changes
