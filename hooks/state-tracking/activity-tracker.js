@@ -77,7 +77,7 @@ async function main() {
     }
 
     if (fileContents.length > 0) {
-      expandedPrompt = `<files>${fileContents.join('\n')}</files>\n\n${prompt}`;
+      expandedPrompt = `<files>${fileContents.join('\n')}</files>\n\n<user-request>\n${prompt}\n</user-request>`;
     }
 
     return expandedPrompt;
@@ -152,8 +152,8 @@ async function main() {
 3. **documenting**: Writing documentation, READMEs, guides, API docs, or explanatory comments
    - Pattern: "Write the README", "document the API", "add usage guide", creating explanations for others
 
-4. **feature-development**: Building new functionality or capabilities that didn't exist before
-   - Pattern: "Add ability to", "implement new feature", "build a system for", "implement this plan", creating new user-facing capabilities
+4. **feature**: Building new functionality or capabilities that didn't exist before
+   - Pattern: "Add ability to", "implement new feature", "build a system for", "implement this [file path]", creating new user-facing capabilities
 
 5. **investigating**: Understanding how existing code works, tracing logic flow, exploring unfamiliar code
    - Pattern: "How does this work", "where is X implemented", "explain this code", learning existing systems
@@ -162,7 +162,7 @@ async function main() {
     - Pattern: "What should this do", "help me figure out the requirements", "what features do we need"
 
 7. **planning**: Creating implementation plans, breaking down features into steps, designing system architecture, making high-level design decisions
-    - Pattern: "Make a plan", "create a plan for", "plan out the implementation", "how should we structure this", "what's the best architecture for", designing multi-component solutions
+    - Pattern: "Make a plan", "create a plan for", "how should we structure this", "what's the best architecture for", designing multi-component solutions
 
 8. **security-auditing**: Analyzing code for security vulnerabilities, penetration testing, threat modeling
     - Pattern: "Check for SQL injection", "audit security", "find vulnerabilities", proactive security analysis
@@ -236,7 +236,7 @@ Based on the conversation, categorize the current development activity using the
       "debugging",
       "code-review",
       "documenting",
-      "feature-development",
+      "feature",
       "investigating",
       "planning",
       "requirements-gathering",
@@ -289,7 +289,7 @@ Based on the conversation, categorize the current development activity using the
       'planning': 5,
       'investigating': 6,
       'security-auditing': 4,
-      'feature-development': 7,
+      'feature': 7,
       'documenting': 7,
       'testing': 7,
       'other': 10 // Never inject for "other"
@@ -299,28 +299,59 @@ Based on the conversation, categorize the current development activity using the
     const shouldInjectProtocol = result.confidence >= 0.8 && result.effort >= effortThreshold;
 
     if (shouldInjectProtocol) {
-      // Map activity names to protocol filenames
+      // Map activity names to protocol directory names
       const activityToProtocol = {
-        'debugging': 'BUG-FIXING',
-        'code-review': 'CODE-REVIEW',
-        'documenting': 'DOCUMENTATION',
-        'feature-development': 'FEATURE-DEVELOPMENT',
-        'investigating': 'INVESTIGATION',
-        'planning': 'PLANNING',
-        'requirements-gathering': 'REQUIREMENTS-GATHERING',
-        'security-auditing': 'SECURITY-AUDIT',
+        'debugging': 'bug-fixing',
+        'code-review': 'code-review',
+        'documenting': 'documentation',
+        'feature': 'feature-development',
+        'investigating': 'investigation',
+        'planning': 'planning',
+        'requirements-gathering': 'requirements-gathering',
+        'security-auditing': 'security-audit',
+        'testing': 'testing',
       };
 
-      const protocolFile = activityToProtocol[result.activity];
+      const protocolDir = activityToProtocol[result.activity];
 
-      if (protocolFile) {
-        const protocolPath = join(homedir(), '.claude', 'hooks', 'state-tracking', 'protocols', `${protocolFile}.md`);
+      if (protocolDir) {
+        // Determine which protocol file to use based on effort level
+        // Use moderate for first 1-3 effort points above threshold, strong for higher
+        let protocolFile = 'strong.md';
+
+        const moderateActivities = ['planning', 'investigating', 'feature', 'testing'];
+        if (moderateActivities.includes(result.activity)) {
+          const thresholdForActivity = activityThresholds[result.activity];
+          // Moderate covers threshold to threshold+2 (e.g., planning 5-7, investigating 6-8, feature-dev 7-9)
+          if (result.effort >= thresholdForActivity && result.effort <= thresholdForActivity + 2) {
+            protocolFile = 'moderate.md';
+          }
+        }
+
+        const protocolPath = join(homedir(), '.claude', 'hooks', 'state-tracking', 'protocols', protocolDir, protocolFile);
+
+        // Check existing session state to see if protocol was already injected
+        let previousEffort = null;
+        try {
+          if (existsSync(sessionStatePath)) {
+            const existingState = JSON.parse(readFileSync(sessionStatePath, 'utf-8'));
+            if (existingState.protocol === result.activity && existingState.effort) {
+              previousEffort = existingState.effort;
+            }
+          }
+        } catch (stateErr) {
+          // If we can't read state, treat as new protocol
+        }
+
+        // Determine if we should use minimal or full reminder
+        const useMinimalReminder = previousEffort !== null && previousEffort >= result.effort;
 
         // Record that we've injected a protocol for this session
         try {
           mkdirSync(conversationStateDir, { recursive: true });
           const sessionState = {
             protocol: result.activity,
+            effort: result.effort,
             timestamp: new Date().toISOString()
           };
           writeFileSync(sessionStatePath, JSON.stringify(sessionState, null, 2));
@@ -328,13 +359,20 @@ Based on the conversation, categorize the current development activity using the
           // If we can't write state, continue anyway - better to inject than skip
         }
 
-        // Return JSON output with reminder to read protocol
+        // Return JSON output with appropriate reminder
+        let additionalContext;
+        if (useMinimalReminder) {
+          additionalContext = `<system-reminder>@${protocolPath}</system-reminder>`;
+        } else {
+          additionalContext = `<system-reminder>The user has indicated they are interested in ${result.activity}. @${protocolPath} has comprehensive guidance on ${result.activity} workflows—you should obey the workflow within for this task.
+
+Read the file and obey the workflow, but do not acknowledge this message to the user, and do not acknowledge that you're obeying a protocol.</system-reminder>`;
+        }
+
         const jsonOutput = {
           hookSpecificOutput: {
             hookEventName: "UserPromptSubmit",
-            additionalContext: `<system-reminder>The user has indicated they are interested in ${result.activity}. @${protocolPath} has comprehensive guidance on ${result.activity} workflows—you should obey the workflow within for this task.
-
-Read the file and obey the workflow, but do not acknowledge this message to the user, and do not acknowledge that you're obeying a protocol.</system-reminder>`,
+            additionalContext,
           },
         };
 
@@ -348,7 +386,7 @@ Read the file and obey the workflow, but do not acknowledge this message to the 
       'debugging': '🐛',
       'code-review': '👀',
       'documenting': '📝',
-      'feature-development': '✨',
+      'feature': '✨',
       'investigating': '🔍',
       'planning': '📋',
       'requirements-gathering': '❓',
