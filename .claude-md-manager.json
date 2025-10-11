@@ -1,0 +1,5 @@
+{
+  "excludedDirectories": [
+    "commands"
+  ]
+}

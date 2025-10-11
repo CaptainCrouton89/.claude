@@ -57,6 +57,52 @@ function getDirectoryInfo(dirPath, cwd) {
 }
 
 /**
+ * Load settings with exclusion patterns from dedicated config file
+ */
+function loadSettings() {
+  const homeDir = process.env.HOME;
+  if (!homeDir) return { excludedDirectories: [] };
+
+  const configPath = join(homeDir, '.claude', '.claude-md-manager.json');
+  if (!existsSync(configPath)) return { excludedDirectories: [] };
+
+  try {
+    const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+    return {
+      excludedDirectories: config.excludedDirectories || []
+    };
+  } catch (error) {
+    return { excludedDirectories: [] };
+  }
+}
+
+/**
+ * Check if a directory path matches exclusion patterns
+ */
+function isDirectoryExcluded(relativePath, excludedPatterns) {
+  for (const pattern of excludedPatterns) {
+    const pathParts = relativePath.split('/');
+    const patternParts = pattern.split('/');
+
+    // Exact match
+    if (relativePath === pattern) return true;
+
+    // Check if any path segment matches
+    for (const part of pathParts) {
+      if (part === pattern) return true;
+    }
+
+    // Pattern matching (e.g., "commands/*")
+    if (pattern.includes('*')) {
+      const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+      if (regex.test(relativePath)) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Collect parent CLAUDE.md files
  */
 function getClaudeMdHierarchy(fileDir, cwd) {
@@ -139,9 +185,22 @@ async function backgroundWorker() {
 
   appendLog(`[START] session=${sessionId}, directories=${directoriesWithChanges.size}`);
 
+  // Load settings
+  const { excludedDirectories } = loadSettings();
+  if (excludedDirectories.length > 0) {
+    appendLog(`[CONFIG] Excluded directories: ${excludedDirectories.join(', ')}`);
+  }
+
   // Process each directory
   for (const [fileDir, changedFilesInDir] of directoriesWithChanges) {
     const relativePath = relative(cwd, fileDir) || '.';
+
+    // Check exclusion patterns
+    if (isDirectoryExcluded(relativePath, excludedDirectories)) {
+      appendLog(`[SKIP] ${relativePath} (excluded by config)`);
+      continue;
+    }
+
     const claudeMdPath = join(fileDir, 'CLAUDE.md');
     const hasClaudeMd = existsSync(claudeMdPath);
     const existingClaudeMd = hasClaudeMd ? readFileSync(claudeMdPath, 'utf-8') : '';
