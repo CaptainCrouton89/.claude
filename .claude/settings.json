@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/pre-tool-use/agent-interceptor.js"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/agent-monitor.mjs",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/agent-cleanup.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

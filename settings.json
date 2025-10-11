@@ -1,0 +1,253 @@
+{
+  "cleanupPeriodDays": 30,
+
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "Edit(*)",
+      "WebFetch",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(git:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(rg:*)",
+      "Bash(pnpm:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(claude:*)",
+      "Bash(wait:*)",
+      "Write(*)",
+      "Search",
+      "WebSearch",
+      "WebFetch(domain:*)",
+      "Context7(resolve-library-id:*)",
+      "Context7(get-library-docs:*)",
+      "Read(**)",
+      "Edit(**)",
+      "MultiEdit(**)",
+      "Write(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "LS(**)",
+      "TodoRead",
+      "TodoWrite(**)",
+      "Task(**)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git blame:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote -v:*)",
+      "Bash(git config --get:*)",
+      "Bash(cat:*)",
+      "Bash(less:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(pwd:*)",
+      "Bash(wc:*)",
+      "Bash(diff:*)",
+      "Bash(sed -n:*)",
+      "Bash(awk:*)",
+      "Bash(cut:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(basename:*)",
+      "Bash(dirname:*)",
+      "Bash(realpath:*)",
+      "Bash(readlink:*)",
+      "Bash(curl:*)",
+      "Bash(jq:*)",
+      "Bash(yq eval:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(npm list:*)",
+      "Bash(npm run:*)",
+      "Bash(black --check:*)",
+      "Bash(black --diff:*)",
+      "Bash(pylint:*)",
+      "Bash(flake8:*)",
+      "Bash(mypy:*)",
+      "Bash(eslint:*)",
+      "Bash(pytest:*)",
+      "Bash(make test:*)",
+      "Bash(npm test:*)",
+      "Bash(make -n:*)",
+      "Bash(man:*)",
+      "Bash(pydoc:*)",
+      "Bash(which:*)",
+      "Bash(type:*)",
+      "Bash(echo:*)",
+      "Bash(printf:*)",
+      "Bash(test:*)",
+      "Bash(true:*)",
+      "Bash(false:*)",
+      "mcp__json-mcp__json_read",
+      "mcp__json-mcp__json_stats",
+      "mcp__json-mcp__json_query",
+      "mcp__json-mcp__json_filter",
+      "mcp__json-mcp__json_slice",
+      "mcp__json-mcp__json_search",
+      "mcp__json-mcp__json_transform",
+      "mcp__json-mcp__json_validate",
+      "mcp__sql__execute-sql",
+      "mcp__sql__describe-table",
+      "mcp__sql__describe-functions",
+      "mcp__sql__list-tables",
+      "mcp__sql__get-function-definition",
+      "mcp__sql__upload-file",
+      "mcp__sql__delete-file",
+      "mcp__sql__list-files",
+      "mcp__sql__download-file",
+      "mcp__sql__create-bucket",
+      "mcp__sql__delete-bucket",
+      "mcp__sql__move-file",
+      "mcp__sql__copy-file",
+      "mcp__sql__generate-signed-url",
+      "mcp__sql__get-file-info",
+      "mcp__sql__list-buckets",
+      "mcp__sql__empty-bucket",
+      "mcp__ide__getDiagnostics",
+      "mcp__ide__executeCode",
+      "mcp__validation__saveValidationFailure",
+      "mcp__validation__removeValidationFailure"
+    ]
+  },
+  "model": "sonnet",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/pre-tool-use/npm-to-pnpm-warning.py"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-submit/git-hook.py"
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/state-tracking/activity-tracker.js",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/klaude-handler.js",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-observers/parallel-execution-observer.js",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-observers/prompt-improvement-observer.js",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/state-tracking/todo-stats.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/post-tool-use/code-quality-checker.py"
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/post-tool-use/parallel.py"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/klaude-handler.js",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/notifications/play-sound.sh"
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/post-tool-use/typescript-error-fixer.py"
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/notifications/pushover-notification.py"
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/klaude-handler.js",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/notifications/notification-sound.sh"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/session-history-logger.mjs"
+          },
+          {
+            "type": "command",
+            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/claude-md-manager.mjs"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/silasrhyneer/.claude/hooks/statusline/statusline-wrapper.sh"
+  },
+  "alwaysThinkingEnabled": false
+}
