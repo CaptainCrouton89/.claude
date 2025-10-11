@@ -7,7 +7,6 @@ statsig/
 todos/
 mcp.json
 .update.lock
-settings.json
 settings.local.json
 update.lock
 __store.db
@@ -22,3 +21,4 @@ debug/
 **/node_modules/
 conversation-state/
 **/*.log
+agent-responses
