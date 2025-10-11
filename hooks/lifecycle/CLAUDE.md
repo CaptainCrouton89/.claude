@@ -15,6 +15,10 @@ SessionEnd hooks that run background workers after conversations complete.
 ## Hook Responsibilities
 
 - `claude-md-manager.mjs`: Auto-generates/updates CLAUDE.md files for directories with changes
+  - **Configuration**: Uses gitignore-style exclusion patterns from:
+    - Global: `~/.claude-md-manager-ignore`
+    - Local: `.claude/.claude-md-manager-ignore`
+  - Patterns support wildcards, one per line, `#` for comments
 - `session-history-logger.mjs`: Logs substantive changes to history.md via history-mcp
 - `agent-cleanup.mjs`: Terminates tracked agent processes, updates logs to "interrupted" status
 - `agent-monitor.mjs`: Tracks agent response file changes, notifies on completion/interruption

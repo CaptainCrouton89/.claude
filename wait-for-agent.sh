@@ -141,14 +141,3 @@ if [ ${#AGENT_IDS[@]} -eq 1 ]; then
 else
   echo "✅ All agents completed!"
 fi
-echo ""
-echo "Full output:"
-echo "---"
-for AGENT_ID in "${AGENT_IDS[@]}"; do
-  if [ ${#AGENT_IDS[@]} -gt 1 ]; then
-    echo ""
-    echo "=== $AGENT_ID ==="
-    echo ""
-  fi
-  cat "$AGENTS_DIR/${AGENT_ID}.md"
-done

@@ -59,23 +59,40 @@ function getDirectoryInfo(dirPath, cwd) {
 }
 
 /**
- * Load settings with exclusion patterns from dedicated config file
+ * Load ignore patterns from a file (one pattern per line, # for comments)
  */
-function loadSettings() {
-  const homeDir = process.env.HOME;
-  if (!homeDir) return { excludedDirectories: [] };
-
-  const configPath = join(homeDir, '.claude', '.claude-md-manager.json');
-  if (!existsSync(configPath)) return { excludedDirectories: [] };
+function loadIgnoreFile(filePath) {
+  if (!existsSync(filePath)) return [];
 
   try {
-    const config = JSON.parse(readFileSync(configPath, 'utf-8'));
-    return {
-      excludedDirectories: config.excludedDirectories || []
-    };
+    const content = readFileSync(filePath, 'utf-8');
+    return content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#'));
   } catch (error) {
-    return { excludedDirectories: [] };
+    return [];
   }
+}
+
+/**
+ * Load settings with exclusion patterns from ignore files
+ */
+function loadSettings(cwd) {
+  const homeDir = process.env.HOME;
+  const excludedDirectories = [];
+
+  // Load from global ignore file
+  if (homeDir) {
+    const globalIgnorePath = join(homeDir, '.claude-md-manager-ignore');
+    excludedDirectories.push(...loadIgnoreFile(globalIgnorePath));
+  }
+
+  // Load from local ignore file
+  const localIgnorePath = join(cwd, '.claude', '.claude-md-manager-ignore');
+  excludedDirectories.push(...loadIgnoreFile(localIgnorePath));
+
+  return { excludedDirectories };
 }
 
 /**
@@ -198,7 +215,7 @@ async function backgroundWorker() {
   appendLog(`[START] session=${sessionId}, directories=${directoriesWithChanges.size}${skippedGitIgnored > 0 ? `, skipped=${skippedGitIgnored} git-ignored files` : ''}`);
 
   // Load settings
-  const { excludedDirectories } = loadSettings();
+  const { excludedDirectories } = loadSettings(cwd);
   if (excludedDirectories.length > 0) {
     appendLog(`[CONFIG] Excluded directories: ${excludedDirectories.join(', ')}`);
   }

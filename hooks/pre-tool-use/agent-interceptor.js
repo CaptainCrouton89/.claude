@@ -4,6 +4,8 @@ const { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync } = r
 const { join } = require('path');
 const { homedir } = require('os');
 
+const MAX_RECURSION_DEPTH = 3;
+
 async function main() {
   const chunks = [];
   for await (const chunk of process.stdin) {
@@ -22,6 +24,23 @@ async function main() {
     process.exit(0);
   }
 
+  // Get current depth from hookData metadata
+  const currentDepth = hookData.metadata?.agentDepth || 0;
+  const parentAgentId = hookData.metadata?.agentId || null;
+
+  // Block if max depth reached
+  if (currentDepth >= MAX_RECURSION_DEPTH) {
+    const output = {
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: `Maximum agent recursion depth (${MAX_RECURSION_DEPTH}) reached. Current depth: ${currentDepth}. Cannot spawn more nested agents.`
+      }
+    };
+    console.log(JSON.stringify(output));
+    process.exit(0);
+  }
+
   const agentId = `agent_${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
 
   // Create agents directory structure
@@ -36,8 +55,9 @@ async function main() {
   const prompt = toolInput.prompt || '';
   const subagentType = toolInput.subagent_type || 'general-purpose';
 
-  // Extract agent content for outputStyle
+  // Extract agent content for outputStyle and check forbidden agents
   let outputStyleContent = null;
+  let forbiddenAgents = [];
   try {
     const agentFilePath = join(homedir(), '.claude', 'agents', `${subagentType}.md`);
     if (existsSync(agentFilePath)) {
@@ -45,6 +65,16 @@ async function main() {
       const frontmatterMatch = agentFileContent.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
       if (frontmatterMatch) {
         outputStyleContent = frontmatterMatch[2].trim();
+
+        // Parse frontmatter YAML to get forbiddenAgents
+        const frontmatter = frontmatterMatch[1];
+        const forbiddenAgentsMatch = frontmatter.match(/forbiddenAgents:\s*\[(.*?)\]/);
+        if (forbiddenAgentsMatch) {
+          forbiddenAgents = forbiddenAgentsMatch[1]
+            .split(',')
+            .map(a => a.trim().replace(/['"]/g, ''))
+            .filter(Boolean);
+        }
       } else {
         outputStyleContent = agentFileContent.trim();
       }
@@ -53,11 +83,16 @@ async function main() {
     // Fall back to no outputStyle if agent file reading fails
   }
 
+  // Always forbid an agent from spawning itself
+  forbiddenAgents.push(subagentType);
+
   const initialLog = `---
 Task: ${description}
 Instructions: ${prompt}
 Started: ${new Date().toISOString()}
 Status: in-progress
+Depth: ${currentDepth}
+ParentAgent: ${parentAgentId || 'root'}
 ---
 
 `;
@@ -74,12 +109,43 @@ const agentLogPath = ${JSON.stringify(agentLogPath)};
 const prompt = ${JSON.stringify(prompt)};
 const cwd = ${JSON.stringify(hookData.cwd)};
 const outputStyleContent = ${JSON.stringify(outputStyleContent)};
+const forbiddenAgents = ${JSON.stringify(forbiddenAgents)};
+const agentId = ${JSON.stringify(agentId)};
+const childDepth = ${currentDepth + 1};
 
 (async () => {
   try {
     const queryOptions = {
       cwd,
-      permissionMode: 'bypassPermissions'
+      permissionMode: 'bypassPermissions',
+      metadata: {
+        agentId,
+        agentDepth: childDepth
+      },
+      hooks: {
+        PreToolUse: [
+          {
+            hooks: [
+              async (input) => {
+                // Block forbidden agents
+                if (input.tool_name === 'Task') {
+                  const subagentType = input.tool_input?.subagent_type;
+                  if (subagentType && forbiddenAgents.includes(subagentType)) {
+                    return {
+                      hookSpecificOutput: {
+                        hookEventName: 'PreToolUse',
+                        permissionDecision: 'deny',
+                        permissionDecisionReason: \`This agent cannot spawn a '\${subagentType}' agent. Forbidden agents: \${forbiddenAgents.join(', ')}\`
+                      }
+                    };
+                  }
+                }
+                return {};
+              }
+            ]
+          }
+        ]
+      }
     };
 
     if (outputStyleContent) {
@@ -128,7 +194,7 @@ const outputStyleContent = ${JSON.stringify(outputStyleContent)};
     stdio: 'ignore'
   });
 
-  // Track PID in registry
+  // Track PID in registry with depth info
   const registryPath = join(agentsDir, '.active-pids.json');
   let registry = {};
   if (existsSync(registryPath)) {
@@ -138,7 +204,11 @@ const outputStyleContent = ${JSON.stringify(outputStyleContent)};
       registry = {};
     }
   }
-  registry[agentId] = childProcess.pid;
+  registry[agentId] = {
+    pid: childProcess.pid,
+    depth: currentDepth,
+    parentId: parentAgentId
+  };
   writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
 
   childProcess.unref();
@@ -153,9 +223,9 @@ const outputStyleContent = ${JSON.stringify(outputStyleContent)};
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
       permissionDecision: 'deny',
-      permissionDecisionReason: `Delegated to agent. Response logged to: ${displayPath}
+      permissionDecisionReason: `Delegated to an agent. Response logged to ${displayPath} in real time.
 
-A hook will alert when complete. To wait: \`./wait-for-agent.sh ${agentId}\` (or \`--watch\` for first update).`
+A hook will alert when complete. To wait you must run \`./wait-for-agent.sh ${agentId}\` (or \`--watch\` for first update). **You are responsible for reviewing and monitoring progress and results—do not simply inform the user and exit—instead monitor results if there is nothing left to do.**`
     }
   };
 

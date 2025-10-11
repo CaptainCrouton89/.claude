@@ -70,6 +70,10 @@ Now launching parallel agents for the API and UI implementation:
 
 </agent_delegation>
 
+### Asynchronous Agents
+
+Agents work asynchronously in the background, so delegate when possible. Letting other agents handle independent complexity allows you to focus on what's important.
+
 ## Workflow Patterns
 
 **Optimal Execution Flow**:
