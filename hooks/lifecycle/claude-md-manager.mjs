@@ -2,6 +2,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { basename, dirname, join, relative } from "path";
+import { execSync } from "child_process";
 import { query } from "/Users/silasrhyneer/.claude/claude-cli/sdk.mjs";
 
 const HOOK_NAME = 'claude-md-manager';
@@ -26,11 +27,12 @@ function appendLog(message) {
 function getDirectoryInfo(dirPath, cwd) {
   const dirContents = readdirSync(dirPath);
 
-  const fileTypes = dirContents
-    .filter(f => {
-      const fullPath = join(dirPath, f);
-      return statSync(fullPath).isFile();
-    })
+  const files = dirContents.filter(f => {
+    const fullPath = join(dirPath, f);
+    return statSync(fullPath).isFile();
+  });
+
+  const fileTypes = files
     .map(f => f.split('.').pop())
     .filter(ext => ext && ext.length < 10);
 
@@ -53,7 +55,7 @@ function getDirectoryInfo(dirPath, cwd) {
     targetLines = '~50';
   }
 
-  return { fileTypes, subdirs, relativeDirPath, isRoot, targetLines };
+  return { fileCount: files.length, fileTypes, subdirs, relativeDirPath, isRoot, targetLines };
 }
 
 /**
@@ -140,7 +142,6 @@ async function backgroundWorker() {
   const { sessionId, cwd } = JSON.parse(input);
 
   // Get all changed files via git
-  const { execSync } = await import('child_process');
   let changedFiles = [];
   try {
     const gitOutput = execSync('git diff --name-only HEAD', { cwd, encoding: 'utf8' });
@@ -157,6 +158,7 @@ async function backgroundWorker() {
 
   // Group files by directory
   const directoriesWithChanges = new Map();
+  let skippedGitIgnored = 0;
 
   for (const file of changedFiles) {
     const filePath = join(cwd, file);
@@ -172,6 +174,16 @@ async function backgroundWorker() {
     // Skip files outside cwd
     if (relativePath.startsWith('..')) continue;
 
+    // Skip git-ignored files
+    try {
+      execSync(`git check-ignore -q "${file}"`, { cwd, stdio: 'pipe' });
+      // Exit code 0 means file is ignored
+      skippedGitIgnored++;
+      continue;
+    } catch (error) {
+      // Non-zero exit code means file is NOT ignored, process it
+    }
+
     if (!directoriesWithChanges.has(fileDir)) {
       directoriesWithChanges.set(fileDir, []);
     }
@@ -179,11 +191,11 @@ async function backgroundWorker() {
   }
 
   if (directoriesWithChanges.size === 0) {
-    appendLog(`[START] session=${sessionId} | [SKIP] No eligible directories with changes`);
+    appendLog(`[START] session=${sessionId} | [SKIP] No eligible directories with changes${skippedGitIgnored > 0 ? ` (${skippedGitIgnored} git-ignored files skipped)` : ''}`);
     process.exit(0);
   }
 
-  appendLog(`[START] session=${sessionId}, directories=${directoriesWithChanges.size}`);
+  appendLog(`[START] session=${sessionId}, directories=${directoriesWithChanges.size}${skippedGitIgnored > 0 ? `, skipped=${skippedGitIgnored} git-ignored files` : ''}`);
 
   // Load settings
   const { excludedDirectories } = loadSettings();
@@ -202,10 +214,24 @@ async function backgroundWorker() {
     }
 
     const claudeMdPath = join(fileDir, 'CLAUDE.md');
+
+    // Skip ~/.claude/CLAUDE.md (global config)
+    const homeDir = process.env.HOME;
+    if (homeDir && claudeMdPath === join(homeDir, '.claude', 'CLAUDE.md')) {
+      appendLog(`[SKIP] ${relativePath} (global CLAUDE.md - not managed by hook)`);
+      continue;
+    }
     const hasClaudeMd = existsSync(claudeMdPath);
     const existingClaudeMd = hasClaudeMd ? readFileSync(claudeMdPath, 'utf-8') : '';
 
-    const { fileTypes, subdirs, isRoot, targetLines } = getDirectoryInfo(fileDir, cwd);
+    const { fileCount, fileTypes, subdirs, isRoot, targetLines } = getDirectoryInfo(fileDir, cwd);
+
+    // Skip if doesn't meet minimum file count (unless updating existing or root)
+    if (!hasClaudeMd && !isRoot && fileCount < 4) {
+      appendLog(`[SKIP] ${relativePath} (only ${fileCount} files, need ≥4)`);
+      continue;
+    }
+
     const claudeMdHierarchy = getClaudeMdHierarchy(fileDir, cwd);
 
     // Build hierarchy context
