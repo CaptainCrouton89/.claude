@@ -1,0 +1,8 @@
+# Global ignore patterns for claude-md-manager
+# Prevents CLAUDE.md generation in these directories
+
+# Claude configuration and commands
+commands/*
+agents/*
+.claude/
+output-styles/

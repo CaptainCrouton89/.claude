@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Find and kill all Claude processes
+pgrep -i claude | grep -v "$$" | xargs -r kill -9
+
+echo "All Claude processes terminated"

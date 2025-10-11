@@ -84,12 +84,12 @@ function loadSettings(cwd) {
 
   // Load from global ignore file
   if (homeDir) {
-    const globalIgnorePath = join(homeDir, '.claude-md-manager-ignore');
+    const globalIgnorePath = join(homeDir, '.claude', '.claude-md-manager-ignore');
     excludedDirectories.push(...loadIgnoreFile(globalIgnorePath));
   }
 
   // Load from local ignore file
-  const localIgnorePath = join(cwd, '.claude', '.claude-md-manager-ignore');
+  const localIgnorePath = join(cwd, '.claude-md-manager-ignore');
   excludedDirectories.push(...loadIgnoreFile(localIgnorePath));
 
   return { excludedDirectories };
@@ -100,20 +100,25 @@ function loadSettings(cwd) {
  */
 function isDirectoryExcluded(relativePath, excludedPatterns) {
   for (const pattern of excludedPatterns) {
+    // Normalize pattern: remove trailing slashes
+    const normalizedPattern = pattern.replace(/\/$/, '');
+
     const pathParts = relativePath.split('/');
-    const patternParts = pattern.split('/');
 
     // Exact match
-    if (relativePath === pattern) return true;
+    if (relativePath === normalizedPattern) return true;
+
+    // Check if path starts with pattern (handles "foo/" matching "foo/bar")
+    if (relativePath.startsWith(normalizedPattern + '/')) return true;
 
     // Check if any path segment matches
     for (const part of pathParts) {
-      if (part === pattern) return true;
+      if (part === normalizedPattern) return true;
     }
 
     // Pattern matching (e.g., "commands/*")
-    if (pattern.includes('*')) {
-      const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    if (normalizedPattern.includes('*')) {
+      const regex = new RegExp('^' + normalizedPattern.replace(/\*/g, '.*') + '$');
       if (regex.test(relativePath)) return true;
     }
   }

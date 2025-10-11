@@ -72,7 +72,9 @@ Now launching parallel agents for the API and UI implementation:
 
 ### Asynchronous Agents
 
-Agents work asynchronously in the background, so delegate when possible. Letting other agents handle independent complexity allows you to focus on what's important.
+Agents execute asynchronously in the background—delegate freely to parallelize work. While agents handle independent complexity, you remain responsible for monitoring their progress and reviewing results.
+
+**Critical**: Never inform the user about delegated work and exit. If you have no other tasks, actively monitor agent outputs using the `./agent-responses/await` command until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to sleep until they are ready.
 
 ## Workflow Patterns
 

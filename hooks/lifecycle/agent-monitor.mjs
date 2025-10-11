@@ -1,53 +1,45 @@
 #!/usr/bin/env node
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
-import { homedir } from 'os';
-import { basename, join, relative } from 'path';
+import { basename, join } from 'path';
 
-const AGENT_RESPONSES_DIR = join(homedir(), '.claude', 'agent-responses');
-const STATE_FILE = join(AGENT_RESPONSES_DIR, '.monitor-state.json');
-const REGISTRY_PATH = join(AGENT_RESPONSES_DIR, '.active-pids.json');
-
-// Ensure directory exists
-mkdirSync(AGENT_RESPONSES_DIR, { recursive: true });
-
-function loadState() {
-  if (!existsSync(STATE_FILE)) {
+function loadState(stateFile) {
+  if (!existsSync(stateFile)) {
     return {};
   }
   try {
-    return JSON.parse(readFileSync(STATE_FILE, 'utf-8'));
+    return JSON.parse(readFileSync(stateFile, 'utf-8'));
   } catch {
     return {};
   }
 }
 
-function saveState(state) {
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), 'utf-8');
+function saveState(stateFile, state) {
+  writeFileSync(stateFile, JSON.stringify(state, null, 2), 'utf-8');
 }
 
-function removePidFromRegistry(agentId) {
-  if (!existsSync(REGISTRY_PATH)) {
+function removePidFromRegistry(registryPath, agentId) {
+  if (!existsSync(registryPath)) {
     return;
   }
 
   try {
-    const registry = JSON.parse(readFileSync(REGISTRY_PATH, 'utf-8'));
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
     delete registry[agentId];
-    writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2), 'utf-8');
+    writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
   } catch {
     // Ignore errors
   }
 }
 
-function getAgentFiles() {
-  if (!existsSync(AGENT_RESPONSES_DIR)) {
+function getAgentFiles(agentResponsesDir) {
+  if (!existsSync(agentResponsesDir)) {
     return [];
   }
 
-  return readdirSync(AGENT_RESPONSES_DIR)
+  return readdirSync(agentResponsesDir)
     .filter(file => file.endsWith('.md') && file.startsWith('agent_'))
-    .map(file => join(AGENT_RESPONSES_DIR, file));
+    .map(file => join(agentResponsesDir, file));
 }
 
 function getFileInfo(filePath) {
@@ -66,8 +58,11 @@ function getFileInfo(filePath) {
 }
 
 function getRelativePath(cwd, filePath) {
-  const rel = relative(cwd, filePath);
-  return `@${rel}`;
+  // Remove cwd prefix if present, otherwise use basename
+  if (filePath.startsWith(cwd)) {
+    return `@${filePath.slice(cwd.length).replace(/^\//, '')}`;
+  }
+  return `@${basename(filePath)}`;
 }
 
 async function main() {
@@ -84,8 +79,17 @@ async function main() {
 
   const hookData = JSON.parse(input);
   const cwd = hookData.cwd;
-  const state = loadState();
-  const agentFiles = getAgentFiles();
+
+  // Use cwd-relative agent-responses directory
+  const agentResponsesDir = join(cwd, 'agent-responses');
+  const stateFile = join(agentResponsesDir, '.monitor-state.json');
+  const registryPath = join(agentResponsesDir, '.active-pids.json');
+
+  // Ensure directory exists
+  mkdirSync(agentResponsesDir, { recursive: true });
+
+  const state = loadState(stateFile);
+  const agentFiles = getAgentFiles(agentResponsesDir);
   const updates = [];
 
   for (const filePath of agentFiles) {
@@ -107,7 +111,7 @@ async function main() {
           updates.push(`Agent completed: ${relativePath}`);
           // Remove PID from registry
           const agentId = basename(filePath, '.md');
-          removePidFromRegistry(agentId);
+          removePidFromRegistry(registryPath, agentId);
           // Mark as notified
           fileInfo.notified = true;
         } else if (fileInfo.status === 'interrupted') {
@@ -115,7 +119,7 @@ async function main() {
           if (previousState?.status !== 'interrupted' && !previousState?.notified) {
             updates.push(`Agent interrupted: ${relativePath}`);
             const agentId = basename(filePath, '.md');
-            removePidFromRegistry(agentId);
+            removePidFromRegistry(registryPath, agentId);
             fileInfo.notified = true;
           }
           // Keep in state to prevent re-notification
@@ -134,16 +138,27 @@ async function main() {
   // State cleanup happens when agent files are deleted
 
   // Save updated state
-  saveState(state);
+  saveState(stateFile, state);
 
   // Return notifications
   if (updates.length > 0) {
-    const output = {
-      hookSpecificOutput: {
-        hookEventName: hookData.hook_event_name,
-        additionalContext: updates.join('\n')
-      }
-    };
+    const eventName = hookData.hook_event_name;
+    let output;
+
+    if (eventName === 'PostToolUse') {
+      output = {
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          additionalContext: updates.join('\n')
+        }
+      };
+    } else {
+      // For Stop and other events, use systemMessage (shown to user only)
+      output = {
+        systemMessage: updates.join('\n')
+      };
+    }
+
     console.log(JSON.stringify(output));
   }
 

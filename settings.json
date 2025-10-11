@@ -1,6 +1,5 @@
 {
   "cleanupPeriodDays": 30,
-
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
