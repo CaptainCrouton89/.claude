@@ -63,35 +63,36 @@ Ask: "Review scenarios, inferences, and answer questions. Reply 'approve' to pro
 
 ### 2D: Parallelization Analysis
 
-After approval, determine task independence:
+**Parallelization is your primary execution strategy.** After approval, analyze task independence to maximize concurrent execution.
 
-**Parallelize when:**
-- 2+ independent tasks (different files, no shared state)
-- Optimal: 3-5 tasks per batch
+**ALWAYS parallelize when you have:**
+- **2+ independent tasks** — Different files, modules, or layers with no shared dependencies
+- **Research and investigation** — Exploring multiple aspects of the problem space
+- **Multi-file refactoring** — Changes that don't affect each other's state
+- **Optimal batch size: 3-5 concurrent tasks** — Sweet spot for efficiency gains
 
-**Sequential when:**
-- Single file modification
-- Shared files/state
-- Complex interdependencies
+**Execute sequentially ONLY when:**
+- **Single file modification** — One focused change in one location
+- **Shared resource conflicts** — Multiple tasks modifying the same file
+- **Hard dependencies exist** — Task B requires Task A's completed output
 
-**Agent types:** frontend-ui-developer, backend-developer, code, security, test
+**Default mindset: "Can these run in parallel?" Not "Should they?"**
+
+Available agents: frontend-ui-developer, backend-developer, implementor, code-finder, root-cause-analyzer
 
 ---
 
 ## Phase 3: Task Breakdown
 
 ```markdown
-TASK-001: [Atomic unit]
-Agent: [type]
-Deliverable: [What works after]
-Dependencies: [None | TASK-XXX]
+Batch 1 (parallel)
+- Task 1: [Atomic unit - agent type]
+- Task 2: [Atomic unit - agent type]
+- Task 3: [Atomic unit - agent type]
 
-TASK-002: [Next unit]
-...
-
-## Execution Plan
-Batch 1 (parallel): TASK-001, TASK-002, TASK-003
-Batch 2 (sequential): TASK-004, TASK-005
+Batch 2 (sequential)
+- Task 4: [Atomic unit - agent type]
+- Task 5: [Atomic unit - agent type]
 ```
 
 **Atomic = One session, working code, clear success criteria**
@@ -102,32 +103,46 @@ Update project.md Current Focus section. Present: "Ready to execute TASK-001?"
 
 ## Phase 3.5: Parallel Execution
 
-### Execution Patterns
+### Common Execution Patterns
 
-**Layer-Based:** DB schema + Types → Services + API + UI → Tests + Docs
-**Feature-Based:** Independent features → Integrations → Cross-cutting
+**Layer-Based Parallelization:**
+```
+Batch 1: DB schema + Type definitions + Core utilities (parallel)
+Batch 2: Service layer + API endpoints + Frontend components (parallel)
+Batch 3: Tests + Documentation + Configuration (parallel)
+```
+
+**Feature-Based Parallelization:**
+```
+Batch 1: Independent feature implementations (parallel)
+Batch 2: Integration points between features (parallel when possible)
+Batch 3: Cross-cutting concerns and polish (parallel)
+```
 
 ### Agent Prompt Template
+
+**Critical: Provide context, be explicit, enable success**
 
 ```xml
 <function_calls>
   <invoke name="Task">
-    <parameter name="description">[5-10 words]</parameter>
+    <parameter name="description">[5-10 words describing deliverable]</parameter>
     <parameter name="subagent_type">[agent-type]</parameter>
     <parameter name="prompt">
-Read [file1.ts] for patterns.
+Read [file1.ts, file2.ts] for existing patterns and conventions.
 
-Implement [deliverable]:
-- [Requirement 1]
-- [Requirement 2]
+Implement [specific deliverable]:
+- [Explicit requirement 1]
+- [Explicit requirement 2]
+- [Explicit requirement 3]
 
-Success: [What "done" looks like]
+Success criteria: [Clear definition of "done"]
     </parameter>
   </invoke>
 </function_calls>
 ```
 
-### Execution Example (ONE kept)
+### Execution Example: Search Feature (3 Parallel Tasks)
 
 ```xml
 <function_calls>
@@ -135,45 +150,62 @@ Success: [What "done" looks like]
     <parameter name="description">Search API endpoint</parameter>
     <parameter name="subagent_type">backend-developer</parameter>
     <parameter name="prompt">
-Read src/api/products.ts for API patterns.
+Read src/api/products.ts for API patterns and error handling.
 
-Create POST /api/search:
-- Accept query string, filters
-- Return paginated results
-- Fast response (<100ms)
+Create POST /api/search endpoint:
+- Accept query string and filter parameters
+- Return paginated results (limit, offset)
+- Target response time <100ms
+- Include proper validation and error responses
+
+Success: Endpoint returns correctly formatted results with pagination
     </parameter>
   </invoke>
   <invoke name="Task">
     <parameter name="description">SearchBar UI component</parameter>
     <parameter name="subagent_type">frontend-ui-developer</parameter>
     <parameter name="prompt">
-Read src/components/Input.tsx for patterns.
+Read src/components/Input.tsx for component patterns and styling.
 
-Create SearchBar:
-- Debounced input (300ms)
-- Loading indicator
-- Keyboard navigation
-- Clear button
+Create SearchBar component:
+- Debounced input (300ms delay)
+- Loading spinner during search
+- Full keyboard navigation support
+- Clear button with proper focus management
+- Accessible labels and ARIA attributes
+
+Success: Component renders with all interactive states working
     </parameter>
   </invoke>
   <invoke name="Task">
-    <parameter name="description">Search database indexes</parameter>
+    <parameter name="description">Search database optimization</parameter>
     <parameter name="subagent_type">backend-developer</parameter>
     <parameter name="prompt">
-Read migrations/001_initial.sql for format.
+Read migrations/001_initial.sql for migration format and naming.
 
-Add indexes:
-- products.name (full-text)
-- products.description (full-text)
-- products.category
+Create migration to add search indexes:
+- products.name (full-text search index)
+- products.description (full-text search index)
+- products.category (standard index)
+
+Success: Migration runs successfully and improves query performance
     </parameter>
   </invoke>
 </function_calls>
 ```
 
+**Why this works:** Three independent tasks touching different files with no shared state — perfect for parallel execution.
+
 ### Post-Batch Review
 
-After batch: List completed, discovered issues, unblocked tasks, next batch.
+After each batch completes:
+1. **Review accomplishments** — What got done, what's working
+2. **Identify blockers** — New dependencies or issues discovered
+3. **Determine unblocked work** — What can now proceed
+4. **Plan next batch** — Group newly available independent tasks
+5. **Continue** — Launch next parallel batch
+
+**Remember: Think in batches of parallel work, not sequential tasks.**
 
 ---
 
