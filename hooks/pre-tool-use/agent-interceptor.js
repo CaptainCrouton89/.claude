@@ -65,7 +65,7 @@ async function main() {
   // Create initial log file
   const toolInput = hookData.tool_input || {};
   const description = toolInput.description || 'Unnamed task';
-  const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task (1-2 sentences, max. Incomplete sentences are fine). Only give these updates if you have important information to share. Prepend updates with this emoji: 📝";
+  const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task (1-2 sentences, max. Incomplete sentences are fine). Only give these updates if you have important information to share. Prepend updates with: [UPDATE]";
   const subagentType = toolInput.subagent_type || 'general-purpose';
 
   // Extract agent content for outputStyle and check forbidden agents
@@ -96,8 +96,10 @@ async function main() {
     // Fall back to no outputStyle if agent file reading fails
   }
 
-  // Always forbid an agent from spawning itself
-  forbiddenAgents.push(subagentType);
+  // Only forbid self-spawning for non-general agents
+  if (subagentType !== 'general-purpose') {
+    forbiddenAgents.push(subagentType);
+  }
 
   // Check if parent agent type is trying to spawn a forbidden agent (including itself)
   if (parentAgentId && existsSync(registryPath)) {
@@ -263,7 +265,7 @@ const childDepth = ${currentDepth + 1};
       permissionDecision: "deny",
       permissionDecisionReason: `Delegated to an agent. Response logged to @${relativePath} in real time.
 
-A hook will alert on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\` (or \`--watch\` for first update). *The user cannot monitor progress themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
+A hook will alert on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\`. *The user cannot monitor progress themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
     },
   };
 

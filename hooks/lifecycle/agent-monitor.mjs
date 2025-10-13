@@ -32,6 +32,21 @@ function removePidFromRegistry(registryPath, agentId) {
   }
 }
 
+function getCurrentAgentId() {
+  return process.env.CLAUDE_AGENT_ID || null;
+}
+
+function loadRegistry(registryPath) {
+  if (!existsSync(registryPath)) {
+    return {};
+  }
+  try {
+    return JSON.parse(readFileSync(registryPath, 'utf-8'));
+  } catch {
+    return {};
+  }
+}
+
 function getAgentFiles(agentResponsesDir) {
   if (!existsSync(agentResponsesDir)) {
     return [];
@@ -63,13 +78,13 @@ function extractUpdateContent(content, previousContent) {
   const currentLines = content.split('\n');
   const previousLines = previousContent ? previousContent.split('\n') : [];
 
-  // Find lines with 📝 emoji that are new
+  // Find lines with [UPDATE] marker that are new
   const updateLines = [];
   for (let i = 0; i < currentLines.length; i++) {
     const line = currentLines[i];
-    if (line.includes('📝') && (i >= previousLines.length || previousLines[i] !== line)) {
-      // Extract content after the emoji
-      const contentAfter = line.substring(line.indexOf('📝') + 1).trim();
+    if (line.includes('[UPDATE]') && (i >= previousLines.length || previousLines[i] !== line)) {
+      // Extract content after the marker
+      const contentAfter = line.substring(line.indexOf('[UPDATE]') + 8).trim();
       if (contentAfter) {
         updateLines.push(contentAfter);
       }
@@ -114,6 +129,9 @@ async function main() {
   const agentFiles = getAgentFiles(agentResponsesDir);
   const updates = [];
 
+  const currentAgentId = getCurrentAgentId();
+  const registry = loadRegistry(registryPath);
+
   for (const filePath of agentFiles) {
     const fileInfo = getFileInfo(filePath);
     const fileId = filePath;
@@ -130,28 +148,51 @@ async function main() {
                               previousState?.status !== fileInfo.status;
 
         if (justCompleted && !previousState?.notified) {
+          // Extract agent ID and check if it's our direct child
+          const agentId = basename(filePath, '.md');
+          const registryEntry = registry[agentId];
+
+          // Skip if not our direct child
+          if (registryEntry && registryEntry.parentId !== currentAgentId) {
+            continue;
+          }
+
           updates.push(`Agent completed: ${relativePath}`);
           // Remove PID from registry
-          const agentId = basename(filePath, '.md');
           removePidFromRegistry(registryPath, agentId);
           // Mark as notified
           fileInfo.notified = true;
         } else if (fileInfo.status === 'interrupted') {
           // Agent was interrupted - notify once and track in state
           if (previousState?.status !== 'interrupted' && !previousState?.notified) {
-            updates.push(`Agent interrupted: ${relativePath}`);
+            // Extract agent ID and check if it's our direct child
             const agentId = basename(filePath, '.md');
+            const registryEntry = registry[agentId];
+
+            // Skip if not our direct child
+            if (registryEntry && registryEntry.parentId !== currentAgentId) {
+              continue;
+            }
+
+            updates.push(`Agent interrupted: ${relativePath}`);
             removePidFromRegistry(registryPath, agentId);
             fileInfo.notified = true;
           }
           // Keep in state to prevent re-notification
         } else if (previousState) {
+          // Extract agent ID and check if it's our direct child
+          const agentId = basename(filePath, '.md');
+          const registryEntry = registry[agentId];
+
+          // Skip if not our direct child
+          if (registryEntry && registryEntry.parentId !== currentAgentId) {
+            continue;
+          }
+
           // File was updated but not completed - extract update content
           const updateContent = extractUpdateContent(fileInfo.content, previousState.content);
           if (updateContent) {
-            updates.push(`Agent update (${relativePath}): ${updateContent}`);
-          } else {
-            updates.push(`Agent updated: ${relativePath}`);
+            updates.push(`${agentId} update: ${updateContent}`);
           }
         }
       }

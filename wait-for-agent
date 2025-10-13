@@ -1,32 +1,19 @@
 #!/usr/bin/env bash
 
 # Parse flags
-WATCH_MODE=false
 AGENT_IDS=()
 
 while [[ $# -gt 0 ]]; do
-  case $1 in
-    --watch)
-      WATCH_MODE=true
-      shift
-      ;;
-    *)
-      AGENT_IDS+=("$1")
-      shift
-      ;;
-  esac
+  AGENT_IDS+=("$1")
+  shift
 done
 
 if [ ${#AGENT_IDS[@]} -eq 0 ]; then
-  echo "Usage: ./wait-for-agent.sh [--watch] <agent_id> [agent_id...]"
-  echo ""
-  echo "Options:"
-  echo "  --watch    Exit on first update from any agent (agents continue in background)"
+  echo "Usage: ./wait-for-agent.sh <agent_id> [agent_id...]"
   echo ""
   echo "Examples:"
   echo "  ./wait-for-agent.sh agent_001                 # wait for completion"
   echo "  ./wait-for-agent.sh agent_001 agent_002       # wait for both to complete"
-  echo "  ./wait-for-agent.sh --watch agent_001         # exit on first update"
   exit 1
 fi
 
@@ -43,17 +30,9 @@ done
 
 # Display monitoring info
 if [ ${#AGENT_IDS[@]} -eq 1 ]; then
-  if [ "$WATCH_MODE" = true ]; then
-    echo "⏳ Monitoring agent ${AGENT_IDS[0]} (will exit on first update)..."
-  else
-    echo "⏳ Waiting for agent ${AGENT_IDS[0]} to complete..."
-  fi
+  echo "⏳ Waiting for agent ${AGENT_IDS[0]} to complete..."
 else
-  if [ "$WATCH_MODE" = true ]; then
-    echo "⏳ Monitoring ${#AGENT_IDS[@]} agents (will exit on first update from any)..."
-  else
-    echo "⏳ Waiting for ${#AGENT_IDS[@]} agents to complete..."
-  fi
+  echo "⏳ Waiting for ${#AGENT_IDS[@]} agents to complete..."
   for AGENT_ID in "${AGENT_IDS[@]}"; do
     echo "   - $AGENT_ID"
   done
@@ -93,18 +72,6 @@ while true; do
       NEW_LINES=$(diff <(echo "${LAST_CONTENTS[$AGENT_ID]}") <(echo "$CURRENT_CONTENT") | grep "^>" | sed 's/^> //')
 
       if [ -n "$NEW_LINES" ]; then
-        # In watch mode, only show lines with 📝 emoji
-        if [ "$WATCH_MODE" = true ]; then
-          FILTERED_LINES=$(echo "$NEW_LINES" | grep "📝")
-          if [ -z "$FILTERED_LINES" ]; then
-            # No update lines found, skip
-            LAST_MTIMES[$AGENT_ID]=$CURRENT_MTIME
-            LAST_CONTENTS[$AGENT_ID]=$CURRENT_CONTENT
-            continue
-          fi
-          NEW_LINES="$FILTERED_LINES"
-        fi
-
         # Print header only on first update
         if [ "$FIRST_UPDATE" = true ]; then
           echo "---"
@@ -123,18 +90,6 @@ while true; do
         fi
         echo "$NEW_LINES"
         echo ""
-
-        # Exit immediately in watch mode
-        if [ "$WATCH_MODE" = true ]; then
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✨ First update received!"
-          if [ ${#AGENT_IDS[@]} -gt 1 ]; then
-            echo "Note: Other agents continue running in background"
-          else
-            echo "Note: Agent continues running in background"
-          fi
-          exit 0
-        fi
       fi
 
       LAST_MTIMES[$AGENT_ID]=$CURRENT_MTIME
