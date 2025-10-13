@@ -168,7 +168,6 @@ Perform comprehensive impact analysis for [feature/refactor]:
 - Agents write real-time responses to `agent-responses/{agent_id}.md` files
 - Hook system alerts automatically on updates and completion
 - Use `./agent-responses/await {agent_id}` to actively wait for specific agents
-- Add `--watch` flag to return after first update instead of completion
 - Status tracking: in-progress → done/failed/interrupted
 
 **Recursion Depth Limits:**

@@ -78,7 +78,7 @@ Ask: "Review scenarios, inferences, and answer questions. Reply 'approve' to pro
 
 **Default mindset: "Can these run in parallel?" Not "Should they?"**
 
-Available agents: frontend-ui-developer, backend-developer, implementor, code-finder, root-cause-analyzer
+Available agents: frontend-ui-developer, backend-developer, code-finder, root-cause-analyzer
 
 ---
 

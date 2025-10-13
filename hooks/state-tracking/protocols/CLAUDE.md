@@ -53,7 +53,6 @@ All protocols emphasize parallelization when appropriate:
 - **root-cause-analyzer** - Systematic bug diagnosis
 - **frontend-ui-developer** - UI component creation following design patterns
 - **backend-developer** - API/service implementation with architectural consistency
-- **implementor** - Parallel task execution from master plans
 
 ### Evidence-Based Approach
 - Read files directly to verify behavior
