@@ -142,59 +142,7 @@ Success criteria: [Clear definition of "done"]
 </function_calls>
 ```
 
-### Execution Example: Search Feature (3 Parallel Tasks)
-
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Search API endpoint</parameter>
-    <parameter name="subagent_type">backend-developer</parameter>
-    <parameter name="prompt">
-Read src/api/products.ts for API patterns and error handling.
-
-Create POST /api/search endpoint:
-- Accept query string and filter parameters
-- Return paginated results (limit, offset)
-- Target response time <100ms
-- Include proper validation and error responses
-
-Success: Endpoint returns correctly formatted results with pagination
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">SearchBar UI component</parameter>
-    <parameter name="subagent_type">frontend-ui-developer</parameter>
-    <parameter name="prompt">
-Read src/components/Input.tsx for component patterns and styling.
-
-Create SearchBar component:
-- Debounced input (300ms delay)
-- Loading spinner during search
-- Full keyboard navigation support
-- Clear button with proper focus management
-- Accessible labels and ARIA attributes
-
-Success: Component renders with all interactive states working
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Search database optimization</parameter>
-    <parameter name="subagent_type">backend-developer</parameter>
-    <parameter name="prompt">
-Read migrations/001_initial.sql for migration format and naming.
-
-Create migration to add search indexes:
-- products.name (full-text search index)
-- products.description (full-text search index)
-- products.category (standard index)
-
-Success: Migration runs successfully and improves query performance
-    </parameter>
-  </invoke>
-</function_calls>
-```
-
-**Why this works:** Three independent tasks touching different files with no shared state — perfect for parallel execution.
+**Example parallel execution approach:** Search feature with 3 independent tasks (API endpoint, UI component, database optimization) touching different files with no shared state — perfect for parallel execution.
 
 ### Post-Batch Review
 

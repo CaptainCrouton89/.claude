@@ -7,29 +7,6 @@ Choose approach based on scope:
 **Single-Agent:** <5 files, single concern, simple fixes
 **Parallel Multi-Agent:** >5 files, multiple concerns, architectural changes, critical deployments
 
-For parallel reviews, launch specialized agents in one call:
-
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Security review</parameter>
-    <parameter name="prompt">Review security in [files]. Check: auth, input validation, secrets, SQL injection, XSS/CSRF. Report CRITICAL and IMPORTANT only.</parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Performance review</parameter>
-    <parameter name="prompt">Review performance in [files]. Check: algorithms, re-renders, queries, memory, bundle size.</parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Accessibility review</parameter>
-    <parameter name="prompt">Review accessibility in [files]. Check: ARIA, keyboard nav, contrast, screen readers. Verify WCAG 2.1 AA.</parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Impact analysis</parameter>
-    <parameter name="prompt">Use code-finder-advanced to: 1) Find import sites of changed exports, 2) Identify breaking changes, 3) Check test coverage.</parameter>
-  </invoke>
-</function_calls>
-```
-
 ---
 
 ## Step 2: Report Findings

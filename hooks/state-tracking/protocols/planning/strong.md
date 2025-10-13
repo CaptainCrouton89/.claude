@@ -122,43 +122,7 @@ This is critical for both features and refactors. Many plans fail because they m
 
 **Standard Impact Analysis (Use for 90% of tasks):**
 
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Comprehensive impact analysis</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-Perform comprehensive impact analysis for [feature/refactor]:
-
-**Investigation Goals:**
-1. Find ALL files that will be affected by this change
-2. Identify every usage, call site, and dependency
-3. Map integration points across the entire codebase
-4. Discover patterns to follow or anti-patterns to avoid
-5. Identify potential breaking changes or ripple effects
-
-**Specific Areas to Investigate:**
-- [Domain 1: e.g., authentication flows]
-- [Domain 2: e.g., API endpoints]
-- [Domain 3: e.g., UI components]
-- [Domain 4: e.g., database schemas]
-
-**For Refactors, MUST include:**
-- All call sites of functions/classes being changed
-- All imports and dependencies
-- All tests that reference affected code
-- All configuration files that might reference these structures
-
-**Deliverables:**
-1. Complete list of affected files with file:line references
-2. Current patterns and conventions in use
-3. Integration points and dependencies map
-4. Ripple effect analysis (what breaks if we change X?)
-5. Recommended approach based on findings
-    </parameter>
-  </invoke>
-</function_calls>
-```
+Use code-finder-advanced to perform comprehensive impact analysis: find ALL affected files, identify every usage/call site/dependency, map integration points, discover patterns, identify breaking changes and ripple effects. For refactors, MUST include all call sites, imports, tests, and configuration references.
 
 **Why this matters:** Plans are incomplete when they miss affected areas. Code-finder agents excel at comprehensive codebase analysis.
 
@@ -198,95 +162,10 @@ Perform comprehensive impact analysis for [feature/refactor]:
 - Need to understand complete system architecture
 - Multiple independent domains to investigate
 
-**Example:**
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Investigate backend impact</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-Analyze backend for [feature/refactor]:
-
-**Impact Analysis:**
-- All affected services and controllers
-- API endpoints that need changes or additions
-- Database models and repositories impacted
-- All call sites if refactoring existing code
-- External service integrations affected
-
-**Pattern Analysis:**
-- Service architecture patterns to follow
-- API conventions (endpoint naming, response formats)
-- Database schema patterns
-- Validation approaches
-- Error handling strategies
-
-**Deliverables:**
-- Complete list of affected backend files (file:line)
-- All call sites and dependencies
-- Ripple effects from proposed changes
-- Patterns to follow
-- Integration points that will be affected
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate frontend impact</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-Analyze frontend for [feature/refactor]:
-
-**Impact Analysis:**
-- All components affected by this change
-- State management updates needed
-- API client changes required
-- All usages if refactoring existing components
-- UI components that depend on affected code
-
-**Pattern Analysis:**
-- Component organization patterns
-- State management approach (Redux/Zustand/Context)
-- API integration patterns
-- Form/validation patterns
-- Design system components available
-
-**Deliverables:**
-- Complete list of affected frontend files (file:line)
-- Component dependency tree
-- State management impacts
-- UI/UX patterns to follow
-- Breaking changes and migration needs
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate data layer impact</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-Analyze data layer for [feature/refactor]:
-
-**Impact Analysis:**
-- Schema changes required
-- All queries affected by schema changes
-- Migration dependencies and order
-- Data integrity considerations
-- Performance implications
-
-**Pattern Analysis:**
-- Database schema conventions
-- Migration file patterns
-- Repository/DAO patterns
-- Query optimization patterns
-- Indexing strategies
-
-**Deliverables:**
-- Schema change requirements (file:line)
-- All affected queries and repositories
-- Migration strategy
-- Data validation updates needed
-- Performance considerations
-    </parameter>
-  </invoke>
-</function_calls>
-```
+**Investigation areas:**
+- Backend: Services, controllers, API endpoints, database models, call sites, external integrations
+- Frontend: Components, state management, API clients, component dependencies, UI patterns
+- Data layer: Schema changes, affected queries, migrations, data integrity, performance implications
 
 #### Pattern 2: Architecture + Integration Investigation
 
@@ -295,59 +174,7 @@ Analyze data layer for [feature/refactor]:
 - Need to understand both current system and external integration needs
 - Evaluating multiple architectural approaches
 
-**Example:**
-<example>
-Assistant: Let me begin investigating the current architecture.
-
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Analyze existing architecture</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Analyze existing system architecture:
-
-      **Focus areas:**
-      - Overall system organization and layer separation
-      - Technology stack (frameworks, libraries, databases)
-      - Current patterns and conventions
-      - Service boundaries and responsibilities
-      - Configuration management
-      - Deployment architecture
-
-      **Deliverables:**
-      - Architecture overview
-      - Technology decisions and constraints
-      - Patterns to follow
-      - Integration points with other systems
-      - Configuration approach
-      - File:line references for key architectural patterns
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Research integration requirements</parameter>
-    <parameter name="subagent_type">backend-developer</parameter>
-    <parameter name="prompt">
-      Research integration requirements for [feature]:
-
-      **Focus areas:**
-      - External APIs and third-party services
-      - Authentication/authorization integrations
-      - Database connections and data sources
-      - Message queues or event systems
-      - Shared libraries and utilities
-      - Deployment dependencies
-
-      **Deliverables:**
-      - External service requirements
-      - Integration patterns to follow
-      - Authentication/security considerations
-      - Data flow between systems
-      - Configuration requirements
-      - File:line references for similar integrations
-    </parameter>
-  </invoke>
-</function_calls>
-</example>
+**Investigation approach:** Analyze existing system architecture (organization, technology stack, patterns, service boundaries, configuration) and research integration requirements (external APIs, authentication, database connections, message queues, shared libraries).
 
 #### Pattern 3: Single Domain Impact Investigation
 
@@ -357,46 +184,7 @@ Assistant: Let me begin investigating the current architecture.
 - Need to trace complex flows within one layer
 - Refactoring utilities, helpers, or shared code
 
-**Example:**
-```xml
-<invoke name="Task">
-  <parameter name="description">Deep impact analysis of [domain]</parameter>
-  <parameter name="subagent_type">code-finder-advanced</parameter>
-  <parameter name="prompt">
-Perform comprehensive investigation of [domain] for [feature/refactor]:
-
-**Impact Analysis Goals:**
-1. Find ALL files affected by this change
-2. Identify all call sites and usages (critical for refactors)
-3. Map dependency chains and ripple effects
-4. Locate all imports and references
-5. Find tests that will need updates
-6. Identify configuration or build files affected
-
-**Pattern Analysis Goals:**
-1. Document existing patterns and conventions
-2. Identify similar implementations to follow
-3. Trace data flows and state management
-4. Find reusable components and utilities
-5. Understand anti-patterns to avoid
-
-**For Refactors, MUST include:**
-- Every file that imports the code being changed
-- Every function/component that calls the code being changed
-- Every test that references the code
-- Every type/interface that depends on the code
-- Every configuration that references the code
-
-**Deliverables:**
-- Complete list of affected files (file:line)
-- Full dependency/usage tree
-- Ripple effect analysis
-- Migration requirements for breaking changes
-- Patterns to follow
-- Test update requirements
-  </parameter>
-</invoke>
-```
+**Investigation approach:** Perform comprehensive investigation finding ALL affected files, call sites/usages, dependency chains, imports, tests, and configuration. Document patterns, data flows, reusable components. For refactors, MUST find every import, call site, test reference, type dependency, and configuration reference.
 
 ### Direct Investigation (Rare - Only for Trivial Changes)
 
@@ -613,34 +401,7 @@ NotificationCenter re-renders → Toast appears
 
 **Step 2: Impact Analysis Investigation**
 
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Comprehensive impact analysis</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-Perform comprehensive impact analysis for notification feature:
-
-**Investigation Goals:**
-1. Find ALL files that will be affected by adding notifications
-2. Identify integration points (WebSocket, database, frontend state)
-3. Map patterns to follow
-4. Identify potential conflicts or ripple effects
-
-**Specific Areas:**
-- Backend: Services, API, WebSocket setup
-- Frontend: Components, state management, real-time connections
-- Database: Schema patterns, migration conventions
-
-**Deliverables:**
-- Complete list of files to create/modify (file:line)
-- Integration points with existing systems
-- Patterns to follow
-- Ripple effects
-    </parameter>
-  </invoke>
-</function_calls>
-```
+Use code-finder-advanced to perform comprehensive impact analysis identifying ALL affected files, integration points (WebSocket, database, frontend state), patterns to follow, and potential conflicts across backend, frontend, and database layers.
 
 **Step 3: Create Plan** → [Use template with findings, including complete impact analysis]
 
@@ -654,41 +415,7 @@ Perform comprehensive impact analysis for notification feature:
 
 **Step 2: Critical Impact Analysis**
 
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Complete auth refactor impact analysis</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-Perform comprehensive impact analysis for auth service refactor:
-
-**CRITICAL: This is a refactor - find EVERY usage**
-
-**Investigation Goals:**
-1. Find EVERY file that imports or uses the auth service
-2. Identify ALL call sites of auth functions
-3. Map complete dependency chain
-4. Find all tests that reference auth
-5. Identify integration points (middleware, guards, hooks, components)
-6. Find configuration files that reference auth
-
-**Specific Areas:**
-- Backend: All auth service usages, middleware, guards, API routes
-- Frontend: All auth hooks, components using auth, protected routes
-- Tests: All test files that mock or use auth
-- Config: Environment variables, app config, build config
-
-**Deliverables:**
-- Complete list of affected files (file:line for every usage)
-- Full call site map (every function that calls auth methods)
-- Dependency tree (what depends on what)
-- Test files requiring updates
-- Breaking change analysis
-- Migration requirements for each affected file
-    </parameter>
-  </invoke>
-</function_calls>
-```
+Use code-finder-advanced to perform complete refactor impact analysis. CRITICAL: Find EVERY file that imports/uses the auth service, ALL call sites, complete dependency chain, all tests, integration points (middleware, guards, hooks, components), and configuration files that reference auth across backend, frontend, tests, and config.
 
 **Agent returns:** 47 files affected across backend (12), frontend (23), tests (10), config (2)
 

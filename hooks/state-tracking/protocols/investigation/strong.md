@@ -51,74 +51,10 @@ When investigations span multiple independent domains, use parallel agents to ma
 - End-to-end flow analysis
 - Cross-layer debugging
 
-**Structure:**
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Investigate backend implementation</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate the backend implementation of [feature]:
-
-      Focus areas:
-      - Services and controllers (services/, controllers/)
-      - Database models and queries (models/, repositories/)
-      - API endpoints and routing (routes/, api/)
-      - Business logic and validation
-      - External service integrations
-
-      Return:
-      - Service architecture diagram
-      - API contract details (endpoints, payloads)
-      - Database schema involved
-      - External dependencies
-      - File:line references for key logic
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate frontend implementation</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate the frontend implementation of [feature]:
-
-      Focus areas:
-      - UI components (components/, pages/)
-      - State management (store/, hooks/, contexts/)
-      - API client calls (api/, services/)
-      - User interaction flow
-      - Error handling and UX
-
-      Return:
-      - Component hierarchy
-      - State flow diagram
-      - API calls made (with endpoints)
-      - User journey steps
-      - File:line references for key components
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate integration layer</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate integration and testing for [feature]:
-
-      Focus areas:
-      - Test coverage (tests/, spec/, __tests__/)
-      - Configuration files (config/, .env templates)
-      - Documentation (docs/, README files)
-      - CI/CD pipeline integration
-      - Deployment considerations
-
-      Return:
-      - Test coverage summary
-      - Configuration requirements
-      - Documentation gaps
-      - Integration points with other features
-      - File:line references for tests
-    </parameter>
-  </invoke>
-</function_calls>
-```
+**Focus areas for investigation:**
+- Backend: Services, controllers, database models, API endpoints, business logic, external integrations
+- Frontend: UI components, state management, API client calls, user interaction flow, error handling
+- Integration: Test coverage, configuration files, documentation, CI/CD, deployment considerations
 
 ### Pattern 2: Multi-Service Architecture Investigation
 
@@ -127,75 +63,10 @@ When investigations span multiple independent domains, use parallel agents to ma
 - Distributed system analysis
 - Service-to-service communication tracing
 
-**Example: Authentication Flow Across Services**
-
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Investigate auth service</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate authentication service implementation:
-
-      Focus areas:
-      - Authentication endpoints (login, register, refresh)
-      - Token generation and validation (JWT, sessions)
-      - Password hashing and security measures
-      - User credentials storage
-      - OAuth/SSO integration (if any)
-
-      Return:
-      - Auth flow diagram
-      - Token format and claims
-      - Security measures implemented
-      - External dependencies (OAuth providers, etc.)
-      - File:line references for core logic
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate authorization middleware</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate authorization and permission checking:
-
-      Focus areas:
-      - Middleware/guards for route protection
-      - Role-based access control (RBAC) implementation
-      - Permission checking logic
-      - Token verification and validation
-      - Session management
-
-      Return:
-      - Authorization flow diagram
-      - Role/permission structure
-      - Protected routes mapping
-      - Token validation process
-      - File:line references for middleware
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate user service integration</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate how user service integrates with auth:
-
-      Focus areas:
-      - User profile retrieval
-      - User-auth data synchronization
-      - User metadata and preferences
-      - Cross-service communication (API calls, message queues)
-      - Cache layer (if any)
-
-      Return:
-      - Integration architecture
-      - Communication patterns (REST, gRPC, events)
-      - Data consistency mechanisms
-      - Caching strategy
-      - File:line references for integration code
-    </parameter>
-  </invoke>
-</function_calls>
-```
+**Focus areas for service investigation:**
+- Auth service: Authentication endpoints, token generation/validation, password hashing, OAuth/SSO integration
+- Authorization: Middleware/guards, RBAC implementation, permission checking, token verification, session management
+- User service: Profile retrieval, data synchronization, cross-service communication, caching strategy
 
 ### Pattern 3: Performance Investigation Across Layers
 
@@ -204,72 +75,10 @@ When investigations span multiple independent domains, use parallel agents to ma
 - Identifying multiple optimization opportunities
 - Systematic performance audit
 
-**Example: Dashboard Performance Investigation**
-
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Investigate frontend rendering performance</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate frontend rendering and client-side performance:
-
-      Focus areas:
-      - Component render cycles (unnecessary re-renders)
-      - Large lists or tables (virtualization)
-      - Heavy computations in render path
-      - Bundle size and code splitting
-      - Image/asset loading strategies
-
-      Return:
-      - Performance bottlenecks identified
-      - Component render analysis
-      - Optimization opportunities
-      - File:line references for slow components
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate API and network performance</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate API calls and network layer performance:
-
-      Focus areas:
-      - Number of API calls made (N+1 queries)
-      - Request/response payload sizes
-      - Sequential vs parallel requests
-      - Caching headers and strategies
-      - API response times
-
-      Return:
-      - API call patterns
-      - Network waterfall analysis
-      - Optimization opportunities (batching, caching)
-      - File:line references for API calls
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate backend query performance</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate backend database and processing performance:
-
-      Focus areas:
-      - Database query efficiency (N+1, missing indexes)
-      - Algorithm complexity in business logic
-      - External service call latency
-      - Caching implementation
-      - Resource-intensive operations
-
-      Return:
-      - Slow queries identified
-      - Algorithm complexity analysis
-      - Optimization opportunities
-      - File:line references for slow operations
-    </parameter>
-  </invoke>
-</function_calls>
-```
+**Focus areas for performance investigation:**
+- Frontend: Component render cycles, large lists/tables, heavy computations, bundle size, asset loading
+- API/Network: N+1 queries, payload sizes, sequential vs parallel requests, caching headers, response times
+- Backend: Query efficiency, algorithm complexity, external service latency, caching implementation, resource-intensive operations
 
 ---
 
@@ -369,96 +178,10 @@ Practical examples showing complete investigation patterns with agent usage.
 
 **Strategy:** Parallel multi-domain investigation
 
-**Agent Deployment:**
-
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Trace frontend payment flow</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate the frontend payment flow from user perspective:
-
-      **Starting points:**
-      - Checkout page/component (likely in components/checkout/ or pages/checkout/)
-      - Payment form components
-      - State management for cart and payment
-
-      **Investigation goals:**
-      1. Find checkout UI components and user interaction handlers
-      2. Trace payment form submission logic
-      3. Identify API calls made during payment process
-      4. Map state changes (cart → processing → confirmation)
-      5. Document error handling and user feedback
-
-      **Deliverables:**
-      - Component flow diagram: Checkout → Payment → Confirmation
-      - File:line references for each step
-      - API endpoints called with payloads
-      - State management approach (Redux/Context/etc)
-      - Error handling UX patterns
-
-      Start by reading package.json and searching components/ and pages/ directories.
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Trace backend payment processing</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate backend payment processing logic:
-
-      **Starting points:**
-      - Payment routes/controllers (likely /api/payment or /api/checkout)
-      - Payment service/business logic
-      - Database models for orders and transactions
-
-      **Investigation goals:**
-      1. Find payment API endpoints (create, confirm, webhook)
-      2. Trace payment gateway integration (Stripe, PayPal, etc)
-      3. Identify database transactions and data persistence
-      4. Map webhook handlers for async payment events
-      5. Document security measures (idempotency, validation)
-
-      **Deliverables:**
-      - API endpoint documentation with request/response schemas
-      - Service layer flow: validation → gateway → DB → response
-      - External API integration details (Stripe SDK usage, etc)
-      - Database schema for payments/orders
-      - Error handling and rollback logic
-
-      Start by searching routes/, controllers/, and services/ directories.
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate payment confirmation and notifications</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Investigate post-payment processing and notifications:
-
-      **Starting points:**
-      - Email/notification services
-      - Order confirmation logic
-      - Webhook processing for payment events
-
-      **Investigation goals:**
-      1. Find confirmation email/notification triggers
-      2. Trace order status update logic
-      3. Identify webhook handlers (payment.succeeded, payment.failed)
-      4. Map inventory/fulfillment integration
-      5. Document notification templates and content
-
-      **Deliverables:**
-      - Confirmation flow: payment complete → notifications → order update
-      - Webhook event handling details
-      - Email/SMS template locations
-      - Integration with fulfillment systems
-      - File:line references for all handlers
-
-      Start by searching for notification/, email/, and webhook/ directories.
-    </parameter>
-  </invoke>
-</function_calls>
-```
+**Investigation focus areas:**
+- Frontend: Checkout UI components, payment form submission, API calls, state management, error handling
+- Backend: Payment API endpoints, gateway integration (Stripe/PayPal), database transactions, webhooks, security measures
+- Post-payment: Confirmation emails/notifications, order status updates, webhook handlers, fulfillment integration
 
 **Why Parallel:**
 - Three distinct domains (frontend, backend API, post-payment processing)
@@ -482,63 +205,11 @@ Practical examples showing complete investigation patterns with agent usage.
 
 **Phase 1: Locate the Slow Operation**
 
-Use code-finder-advanced to identify where slowness occurs:
-
-```xml
-<invoke name="Task">
-  <parameter name="description">Locate slow operation in codebase</parameter>
-  <parameter name="subagent_type">code-finder-advanced</parameter>
-  <parameter name="prompt">
-    Locate and analyze the slow operation: [describe what is slow]
-
-    **Investigation goals:**
-    1. Find the entry point (API endpoint, component, function)
-    2. Trace execution path through the codebase
-    3. Identify all operations in the flow (DB queries, API calls, computations)
-    4. Look for obvious inefficiencies (N+1 queries, nested loops, large payloads)
-
-    **Return:**
-    - Entry point with file:line
-    - Complete execution flow with file:line references
-    - List of all operations with estimated cost/complexity
-    - Initial performance hypotheses
-  </parameter>
-</invoke>
-```
+Use code-finder-advanced to identify where slowness occurs by finding the entry point, tracing execution path, identifying all operations (DB queries, API calls, computations), and looking for obvious inefficiencies (N+1 queries, nested loops, large payloads).
 
 **Phase 2: Root Cause Analysis (if needed)**
 
-If Phase 1 doesn't reveal clear cause, deploy root-cause-analyzer:
-
-```xml
-<invoke name="Task">
-  <parameter name="description">Diagnose performance bottleneck</parameter>
-  <parameter name="subagent_type">root-cause-analyzer</parameter>
-  <parameter name="prompt">
-    Diagnose the root cause of slowness in [operation]:
-
-    **Context from Phase 1:**
-    [Paste findings from code-finder-advanced]
-
-    **Symptoms:**
-    - Observed time: [X]ms
-    - Expected time: [Y]ms
-    - Frequency: [always/intermittent/under load]
-
-    **Investigation approach:**
-    1. Generate 5-8 hypotheses for slowness causes
-    2. Prioritize top 3 most likely causes
-    3. For each cause, identify validation method
-    4. Provide performance profiling recommendations
-
-    **Return:**
-    - Ranked hypotheses with evidence
-    - Testing approach for each hypothesis
-    - Recommended profiling/instrumentation points
-    - Quick wins vs deep fixes
-  </parameter>
-</invoke>
-```
+If Phase 1 doesn't reveal clear cause, deploy root-cause-analyzer to generate hypotheses for slowness causes, prioritize top 3 most likely causes, identify validation methods, and provide performance profiling recommendations.
 
 **Phase 3: Implementation**
 
@@ -575,99 +246,10 @@ Phase 3:
 
 **Strategy:** Parallel subsystem investigation
 
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Investigate notification triggers and events</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Map all notification trigger points in the codebase:
-
-      **Investigation goals:**
-      1. Find all locations that trigger notifications
-      2. Identify event types and data payloads
-      3. Map trigger → notification type relationships
-      4. Document trigger contexts (API calls, scheduled jobs, webhooks)
-
-      **Return:**
-      - Complete list of notification triggers with file:line
-      - Event taxonomy (user actions, system events, external webhooks)
-      - Trigger frequency and patterns
-      - Data flow: trigger → event bus/queue
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate notification delivery layer</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="parameter name="prompt">
-      Map the notification delivery infrastructure:
-
-      **Investigation goals:**
-      1. Find notification service/worker implementation
-      2. Identify delivery channels (email, SMS, push, in-app)
-      3. Map queueing and retry logic
-      4. Document external service integrations (SendGrid, Twilio, etc)
-
-      **Return:**
-      - Service architecture diagram
-      - Channel implementations with file:line references
-      - Queue/job processing logic
-      - External API integrations
-      - Retry and error handling strategies
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate notification templates and content</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Map notification templates and content generation:
-
-      **Investigation goals:**
-      1. Find template files for each notification type
-      2. Identify localization/i18n support
-      3. Map dynamic content generation logic
-      4. Document personalization mechanisms
-
-      **Return:**
-      - Template inventory (all notification types)
-      - Template engine and rendering logic
-      - Localization strategy
-      - Personalization variables and logic
-      - File:line references for templates and renderers
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Investigate user preferences and settings</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
-    <parameter name="prompt">
-      Map notification preferences and user controls:
-
-      **Investigation goals:**
-      1. Find user preference storage (DB schema, models)
-      2. Identify preference options (opt-in/out, frequency, channels)
-      3. Map preference enforcement logic
-      4. Document UI for preference management
-
-      **Return:**
-      - Preference data model
-      - Preference checking logic with file:line
-      - User-facing preference UI components
-      - Default preferences and opt-out mechanisms
-    </parameter>
-  </invoke>
-</function_calls>
-```
-
-**Why Parallel:**
-- Four distinct subsystems (triggers, delivery, templates, preferences)
+**Investigation approach:**
+- Four distinct subsystems to investigate: triggers, delivery, templates, preferences
 - Each can be investigated independently
-- Combining results provides complete architecture picture
-
-**Expected Output:**
-- Comprehensive architecture document
-- Data flow diagrams for each subsystem
-- Integration points between subsystems
-- Complete file reference map
+- Combining results provides complete architecture picture with data flow diagrams and integration points
 
 ---
 

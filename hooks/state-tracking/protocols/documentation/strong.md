@@ -61,38 +61,6 @@
 | Architecture | general-purpose | Cross-cutting synthesis |
 | README/guides | general-purpose | Broad context, user focus |
 
-### Example Pattern
-
-```xml
-<function_calls>
-  <invoke name="Task">
-    <parameter name="description">Document backend API</parameter>
-    <parameter name="subagent_type">backend-developer</parameter>
-    <parameter name="prompt">
-Read: src/routes/auth.ts, src/services/authService.ts
-
-Generate API docs:
-- Endpoints (POST /auth/login, etc.)
-- Request/response schemas
-- Error codes
-- Code examples
-    </parameter>
-  </invoke>
-  <invoke name="Task">
-    <parameter name="description">Document frontend components</parameter>
-    <parameter name="subagent_type">frontend-ui-developer</parameter>
-    <parameter name="prompt">
-Read: components/LoginForm.tsx, hooks/useAuth.ts
-
-Generate component docs:
-- Props, events, usage
-- Integration guide
-- Code examples
-    </parameter>
-  </invoke>
-</function_calls>
-```
-
 After completion, consolidate for consistency.
 
 ---
