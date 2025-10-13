@@ -35,7 +35,7 @@ Map each feature/module change that needs documentation:
   <!-- Agent for Feature A Documentation -->
   <invoke name="Task">
     <parameter name="description">Document feature A</parameter>
-    <parameter name="subagent_type">implementor</parameter>
+    <parameter name="subagent_type">general-purpose</parameter>
     <parameter name="prompt">
       Create documentation for Feature A:
 
@@ -52,7 +52,7 @@ Map each feature/module change that needs documentation:
   <!-- Agent for Feature B Documentation (if independent) -->
   <invoke name="Task">
     <parameter name="description">Document feature B</parameter>
-    <parameter name="subagent_type">implementor</parameter>
+    <parameter name="subagent_type">general-purpose</parameter>
     <parameter name="prompt">
       Create documentation for Feature B:
 
@@ -66,7 +66,7 @@ Map each feature/module change that needs documentation:
   <!-- Agent for CLAUDE.md Update (ONLY if major architectural change) -->
   <invoke name="Task">
     <parameter name="description">Update module CLAUDE.md</parameter>
-    <parameter name="subagent_type">implementor</parameter>
+    <parameter name="subagent_type">general-purpose</parameter>
     <parameter name="prompt">
       Update CLAUDE.md for major architectural change:
 

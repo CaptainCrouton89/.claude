@@ -6,13 +6,13 @@ prompts Claude to fix them using parallel agents for different files.
 """
 
 import json
-import sys
-import subprocess
 import os
 import re
-from pathlib import Path
-from typing import Dict, List, Set, Optional, NamedTuple
+import subprocess
+import sys
 from collections import defaultdict
+from pathlib import Path
+from typing import Dict, List, NamedTuple, Optional, Set
 
 
 class TypeScriptError(NamedTuple):
@@ -258,7 +258,7 @@ I need to fix these TypeScript errors using parallel agents:
 
 {chr(10).join(agent_tasks)}
 
-Please use the Task tool with subagent_type 'implementor' to fix these errors in parallel - one agent per file."""
+Please use Task tool to fix these errors in parallel - one agent per file."""
         else:
             # Single sequential approach
             all_errors = []
