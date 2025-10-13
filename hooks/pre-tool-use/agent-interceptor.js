@@ -47,12 +47,12 @@ async function main() {
   const agentsDir = join(hookData.cwd, 'agent-responses');
   mkdirSync(agentsDir, { recursive: true });
 
-  // Copy wait-for-agent.sh to agent-responses directory as 'await'
+  // Copy await script to agent-responses directory
   const { copyFileSync } = require('fs');
-  const waitForAgentSource = join(homedir(), '.claude', 'wait-for-agent.sh');
+  const awaitSource = join(homedir(), '.claude', 'await');
   const awaitDest = join(agentsDir, 'await');
   try {
-    copyFileSync(waitForAgentSource, awaitDest);
+    copyFileSync(awaitSource, awaitDest);
     const { chmodSync } = require('fs');
     chmodSync(awaitDest, 0o755);
   } catch (error) {

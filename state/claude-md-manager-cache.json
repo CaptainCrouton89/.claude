@@ -1,7 +1,15 @@
 {
-  "universal-context-menu/universal_context_menuApp.swift": {
+  "hooks/pre-tool-use/agent-interceptor.js": {
     "deleted": false,
-    "mtimeMs": 1760393130313.3733,
-    "size": 6972
+    "mtimeMs": 1760394537333.9128,
+    "size": 9502
+  },
+  "wait-for-agent": {
+    "deleted": true
+  },
+  "state/claude-md-manager-cache.json": {
+    "deleted": false,
+    "mtimeMs": 1760395279348.4238,
+    "size": 294
   }
 }
