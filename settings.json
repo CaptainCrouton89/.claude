@@ -119,7 +119,6 @@
       "mcp__validation__removeValidationFailure"
     ]
   },
-  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
