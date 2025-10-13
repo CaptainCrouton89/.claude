@@ -1,51 +1,7 @@
 {
-  "commands/execute/implement-plan.md": {
-    "deleted": true
-  },
-  "commands/execute/quick-with-subtasks.md": {
-    "deleted": true
-  },
-  "hooks/state-tracking/protocols/bug-fixing/strong.md": {
+  "universal-context-menu/universal_context_menuApp.swift": {
     "deleted": false,
-    "mtimeMs": 1760388761416.597,
-    "size": 7320
-  },
-  "hooks/state-tracking/protocols/code-review/strong.md": {
-    "deleted": false,
-    "mtimeMs": 1760388774793.9531,
-    "size": 2240
-  },
-  "hooks/state-tracking/protocols/documentation/strong.md": {
-    "deleted": false,
-    "mtimeMs": 1760388785917.2244,
-    "size": 3542
-  },
-  "hooks/state-tracking/protocols/feature-development/strong.md": {
-    "deleted": false,
-    "mtimeMs": 1760388914945.96,
-    "size": 6611
-  },
-  "hooks/state-tracking/protocols/investigation/strong.md": {
-    "deleted": false,
-    "mtimeMs": 1760388896688.0437,
-    "size": 26394
-  },
-  "hooks/state-tracking/protocols/planning/strong.md": {
-    "deleted": false,
-    "mtimeMs": 1760389007097.131,
-    "size": 16572
-  },
-  "output-styles/planning.md": {
-    "deleted": true
-  },
-  "settings.json": {
-    "deleted": false,
-    "mtimeMs": 1760390614520.4966,
-    "size": 6636
-  },
-  "hooks/lifecycle/claude-md-manager.mjs": {
-    "deleted": false,
-    "mtimeMs": 1760390276170.474,
-    "size": 20083
+    "mtimeMs": 1760393130313.3733,
+    "size": 6972
   }
 }
