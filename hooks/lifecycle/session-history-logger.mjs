@@ -69,10 +69,18 @@ async function backgroundWorker() {
   const { execSync } = await import('child_process');
   let gitStatus = '';
   let gitDiff = '';
+  let gitCommit = undefined;
   let gitCheckFailed = false;
   try {
     gitStatus = execSync('git status --porcelain', { cwd, encoding: 'utf8' });
     gitDiff = execSync('git diff --stat HEAD', { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
+
+    // Get current commit SHA
+    try {
+      gitCommit = execSync('git rev-parse HEAD', { cwd, encoding: 'utf8' }).trim();
+    } catch {
+      // No commits yet or git error - leave undefined
+    }
 
     // Skip if no changes or only trivial changes (whitespace, comments)
     if (!gitStatus.trim() && !gitDiff) {
@@ -131,10 +139,14 @@ Call logHistoryEntry with:
 - bullets: Array of specific file changes with paths
   - text: "added [component] to [path]" or "modified [component] in [path] so that [behavior]"
   - subbullets: Optional nested details (1 level deep max)
+- sessionId: "${sessionId}" (REQUIRED - use this exact value)
+- gitCommit: "${gitCommit || ''}" (optional - omit if empty string)
 
 Example:
 {
   title: "implemented user authentication system",
+  sessionId: "${sessionId}",
+  ${gitCommit ? `gitCommit: "${gitCommit}",` : ''}
   bullets: [
     { text: "added AuthProvider component to src/contexts/AuthContext.tsx" },
     { text: "modified login form in src/pages/Login.tsx so that it validates credentials before submission" },

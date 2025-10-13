@@ -3,8 +3,9 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
 const LOG_PATH = '/Users/silasrhyneer/.claude/mcp-server-debug.log';
 function log(message) {
@@ -14,9 +15,14 @@ function log(message) {
 }
 
 const HISTORY_FILE = '.claude/memory/history.md';
+const ARCHIVE_FILE = '.claude/memory/archive.jsonl';
 
 function getHistoryPath(cwd) {
   return join(cwd, HISTORY_FILE);
+}
+
+function getArchivePath(cwd) {
+  return join(cwd, ARCHIVE_FILE);
 }
 
 function getMemoryDir(cwd) {
@@ -37,11 +43,46 @@ function ensureHistoryFile(cwd) {
     const template = `---
 created: ${now}
 last_updated: ${now}
+archive: .claude/memory/archive.jsonl
 ---
+
+> **Extended History:** For complete project history beyond the 250-line limit, see [archive.jsonl](./archive.jsonl)
 
 `;
     log(`Creating history file: ${historyPath}`);
     writeFileSync(historyPath, template, 'utf-8');
+  } else {
+    // Ensure existing file has archive link in header
+    ensureArchiveHeader(cwd);
+  }
+}
+
+function ensureArchiveHeader(cwd) {
+  const historyPath = getHistoryPath(cwd);
+  const content = readFileSync(historyPath, 'utf-8');
+
+  // Check if archive already referenced
+  if (content.includes('archive.jsonl')) {
+    return;
+  }
+
+  try {
+    const { frontmatter, body } = parseFrontmatter(content);
+
+    // Add archive field to frontmatter if missing
+    let updatedFrontmatter = frontmatter;
+    if (!frontmatter.includes('archive:')) {
+      updatedFrontmatter = frontmatter + '\narchive: .claude/memory/archive.jsonl';
+    }
+
+    // Add archive reference after frontmatter if missing
+    const archiveSection = '\n> **Extended History:** For complete project history beyond the 250-line limit, see [archive.jsonl](./archive.jsonl)\n';
+    const newContent = `---\n${updatedFrontmatter}\n---\n${archiveSection}\n${body}`;
+
+    writeFileSync(historyPath, newContent, 'utf-8');
+    log('Added archive header to existing history.md');
+  } catch (error) {
+    log(`Could not add archive header: ${error.message}`);
   }
 }
 
@@ -90,8 +131,46 @@ function formatEntry(title, bullets) {
   return entry;
 }
 
-function logHistoryEntry(cwd, title, bullets) {
+function appendToArchive(cwd, title, bullets, sessionId, gitCommit) {
+  const archivePath = getArchivePath(cwd);
+  const timestamp = new Date().toISOString();
+  const date = timestamp.split('T')[0];
+
+  const archiveEntry = {
+    timestamp,
+    date,
+    sessionId,
+    cwd,
+    ...(gitCommit && { gitCommit }),
+    title,
+    bullets,
+  };
+
+  try {
+    const tempPath = join(tmpdir(), `archive-${Date.now()}.tmp`);
+    const jsonLine = JSON.stringify(archiveEntry) + '\n';
+
+    writeFileSync(tempPath, jsonLine, 'utf-8');
+
+    // Atomic append via rename
+    if (existsSync(archivePath)) {
+      const existing = readFileSync(archivePath, 'utf-8');
+      writeFileSync(tempPath, existing + jsonLine, 'utf-8');
+    }
+
+    renameSync(tempPath, archivePath);
+    log(`Appended to archive: ${title}`);
+  } catch (error) {
+    log(`ERROR appending to archive: ${error.message}`);
+    // Don't throw - archive failure shouldn't block history.md
+  }
+}
+
+function logHistoryEntry(cwd, title, bullets, sessionId, gitCommit) {
   ensureHistoryFile(cwd);
+
+  // Append to permanent archive first
+  appendToArchive(cwd, title, bullets, sessionId, gitCommit);
 
   const historyPath = getHistoryPath(cwd);
   const content = readFileSync(historyPath, 'utf-8');
@@ -152,7 +231,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: 'logHistoryEntry',
-        description: 'Log a history entry to .claude/memory/history.md with title and structured bullets',
+        description: 'Log a history entry to .claude/memory/history.md and archive.jsonl with title and structured bullets',
         inputSchema: {
           type: 'object',
           properties: {
@@ -179,8 +258,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 required: ['text'],
               },
             },
+            sessionId: {
+              type: 'string',
+              description: 'Session identifier',
+            },
+            gitCommit: {
+              type: 'string',
+              description: 'Git commit SHA (optional)',
+            },
           },
-          required: ['title', 'bullets'],
+          required: ['title', 'bullets', 'sessionId'],
         },
       },
     ],
@@ -196,7 +283,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
       log('logHistoryEntry handler executing');
 
-      const { title, bullets } = request.params.arguments;
+      const { title, bullets, sessionId, gitCommit } = request.params.arguments;
 
       if (!title || typeof title !== 'string') {
         throw new Error('title is required and must be a string');
@@ -204,6 +291,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       if (!Array.isArray(bullets) || bullets.length === 0) {
         throw new Error('bullets is required and must be a non-empty array');
+      }
+
+      if (!sessionId || typeof sessionId !== 'string') {
+        throw new Error('sessionId is required and must be a string');
       }
 
       for (const bullet of bullets) {
@@ -215,13 +306,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
       }
 
-      const historyPath = logHistoryEntry(cwd, title, bullets);
+      const historyPath = logHistoryEntry(cwd, title, bullets, sessionId, gitCommit);
 
       return {
         content: [
           {
             type: 'text',
-            text: `Successfully logged history entry "${title}" to ${historyPath}`,
+            text: `Successfully logged history entry "${title}" to ${historyPath} and archive`,
           },
         ],
       };
