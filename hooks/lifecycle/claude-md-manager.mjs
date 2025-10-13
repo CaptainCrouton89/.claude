@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { basename, dirname, join, relative } from "path";
 import { execSync } from "child_process";
 import { query } from "/Users/silasrhyneer/.claude/claude-cli/sdk.mjs";
 
 const HOOK_NAME = 'claude-md-manager';
+const STATE_FILE_NAME = 'claude-md-manager-cache.json';
 
 function appendLog(message) {
   const homeDir = process.env.HOME;
@@ -21,15 +22,95 @@ function appendLog(message) {
   }
 }
 
+function getStateFilePath() {
+  const homeDir = process.env.HOME;
+  if (!homeDir) return null;
+  return join(homeDir, '.claude', 'state', STATE_FILE_NAME);
+}
+
+function loadProcessingCache() {
+  const statePath = getStateFilePath();
+  if (!statePath || !existsSync(statePath)) return {};
+
+  try {
+    return JSON.parse(readFileSync(statePath, 'utf-8'));
+  } catch (error) {
+    appendLog(`[WARN] Failed to load cache: ${error.message}`);
+    return {};
+  }
+}
+
+function saveProcessingCache(cache) {
+  const statePath = getStateFilePath();
+  if (!statePath) return;
+
+  try {
+    mkdirSync(dirname(statePath), { recursive: true });
+    writeFileSync(statePath, JSON.stringify(cache, null, 2));
+  } catch (error) {
+    appendLog(`[WARN] Failed to persist cache: ${error.message}`);
+  }
+}
+
+function getFileSignature(filePath) {
+  try {
+    const stats = statSync(filePath);
+    return { deleted: false, mtimeMs: stats.mtimeMs, size: stats.size };
+  } catch (error) {
+    return { deleted: true };
+  }
+}
+
+function signaturesEqual(current, cached) {
+  if (!current || !cached) return false;
+  if (current.deleted !== cached.deleted) return false;
+  if (current.deleted) return true;
+  return current.mtimeMs === cached.mtimeMs && current.size === cached.size;
+}
+
+function markFilesAsHandled(filesInDir, filesHandled) {
+  for (const { file, signature } of filesInDir) {
+    filesHandled.set(file, signature);
+  }
+}
+
+function pruneCache(cache, activeFiles) {
+  if (!cache) return {};
+  const pruned = {};
+  for (const [file, signature] of Object.entries(cache)) {
+    if (activeFiles.has(file)) {
+      pruned[file] = signature;
+    }
+  }
+  return pruned;
+}
+
 /**
  * Get directory info for CLAUDE.md analysis
  */
 function getDirectoryInfo(dirPath, cwd) {
+  if (!existsSync(dirPath)) {
+    const relativeDirPath = relative(cwd, dirPath);
+    const isRoot = relativeDirPath === '';
+    return {
+      fileCount: 0,
+      fileTypes: [],
+      subdirs: [],
+      relativeDirPath,
+      isRoot,
+      targetLines: isRoot ? '~150' : '<25'
+    };
+  }
+
   const dirContents = readdirSync(dirPath);
 
   const files = dirContents.filter(f => {
     const fullPath = join(dirPath, f);
-    return statSync(fullPath).isFile();
+    try {
+      return statSync(fullPath).isFile();
+    } catch (error) {
+      return false;
+    }
   });
 
   const fileTypes = files
@@ -38,7 +119,11 @@ function getDirectoryInfo(dirPath, cwd) {
 
   const subdirs = dirContents.filter(f => {
     const fullPath = join(dirPath, f);
-    return statSync(fullPath).isDirectory() && !f.startsWith('.');
+    try {
+      return statSync(fullPath).isDirectory() && !f.startsWith('.');
+    } catch (error) {
+      return false;
+    }
   });
 
   const relativeDirPath = relative(cwd, dirPath);
@@ -161,7 +246,30 @@ async function backgroundWorker() {
     chunks.push(chunk);
   }
   const input = Buffer.concat(chunks).toString('utf-8');
-  const { sessionId, cwd } = JSON.parse(input);
+  const { sessionId, cwd, parentSessionId } = JSON.parse(input);
+
+  // Use parent session ID for tracking to prevent duplicate processing across child sessions
+  const trackingSessionId = parentSessionId || sessionId;
+
+  const homeDir = process.env.HOME;
+  const lockPath = homeDir ? join(homeDir, '.claude', 'state', `claude-md-${trackingSessionId}.lock`) : null;
+
+  // Check if already processing this session
+  if (lockPath && existsSync(lockPath)) {
+    appendLog(`[SKIP] session=${sessionId} | Already processed for parent session=${trackingSessionId}`);
+    process.exit(0);
+  }
+
+  // Create lock file
+  if (lockPath) {
+    try {
+      const lockDir = dirname(lockPath);
+      execSync(`mkdir -p "${lockDir}"`, { stdio: 'ignore' });
+      writeFileSync(lockPath, JSON.stringify({ sessionId, parentSessionId, timestamp: new Date().toISOString() }));
+    } catch (error) {
+      appendLog(`[WARN] session=${sessionId} | Could not create lock file: ${error.message}`);
+    }
+  }
 
   // Get all changed files via git
   let changedFiles = [];
@@ -178,9 +286,12 @@ async function backgroundWorker() {
     process.exit(0);
   }
 
-  // Group files by directory
-  const directoriesWithChanges = new Map();
+  const processingCache = loadProcessingCache();
+  const changedFileSet = new Set();
+  const directoryFiles = new Map();
+  const relativeDirLookup = new Map();
   let skippedGitIgnored = 0;
+  let unchangedSinceLastRun = 0;
 
   for (const file of changedFiles) {
     const filePath = join(cwd, file);
@@ -199,64 +310,136 @@ async function backgroundWorker() {
     // Skip git-ignored files
     try {
       execSync(`git check-ignore -q "${file}"`, { cwd, stdio: 'pipe' });
-      // Exit code 0 means file is ignored
       skippedGitIgnored++;
       continue;
     } catch (error) {
-      // Non-zero exit code means file is NOT ignored, process it
+      // Non-zero exit code means file is NOT ignored
     }
 
-    if (!directoriesWithChanges.has(fileDir)) {
-      directoriesWithChanges.set(fileDir, []);
+    changedFileSet.add(file);
+
+    const signature = getFileSignature(filePath);
+    const cachedSignature = processingCache[file];
+    if (cachedSignature && signaturesEqual(signature, cachedSignature)) {
+      unchangedSinceLastRun++;
+      continue;
     }
-    directoriesWithChanges.get(fileDir).push(basename(filePath));
+
+    if (!directoryFiles.has(fileDir)) {
+      directoryFiles.set(fileDir, []);
+      relativeDirLookup.set(fileDir, relativePath);
+    }
+
+    directoryFiles.get(fileDir).push({
+      file,
+      signature
+    });
   }
 
-  if (directoriesWithChanges.size === 0) {
-    appendLog(`[START] session=${sessionId} | [SKIP] No eligible directories with changes${skippedGitIgnored > 0 ? ` (${skippedGitIgnored} git-ignored files skipped)` : ''}`);
+  if (directoryFiles.size === 0) {
+    const prunedCache = pruneCache(processingCache, changedFileSet);
+    saveProcessingCache(prunedCache);
+    const detailParts = [];
+    if (unchangedSinceLastRun > 0) {
+      detailParts.push(`unchanged=${unchangedSinceLastRun}`);
+    }
+    if (skippedGitIgnored > 0) {
+      detailParts.push(`git-ignored=${skippedGitIgnored}`);
+    }
+    const detailSuffix = detailParts.length > 0 ? ` (${detailParts.join(', ')})` : '';
+    appendLog(`[START] session=${sessionId}, cwd=${cwd} | [SKIP] No new file changes since last run${detailSuffix}`);
     process.exit(0);
   }
 
-  appendLog(`[START] session=${sessionId}, directories=${directoriesWithChanges.size}${skippedGitIgnored > 0 ? `, skipped=${skippedGitIgnored} git-ignored files` : ''}`);
-
-  // Load settings
   const { excludedDirectories } = loadSettings(cwd);
-  if (excludedDirectories.length > 0) {
-    appendLog(`[CONFIG] Excluded directories: ${excludedDirectories.join(', ')}`);
-  }
 
-  // Process each directory
-  for (const [fileDir, changedFilesInDir] of directoriesWithChanges) {
-    const relativePath = relative(cwd, fileDir) || '.';
+  const filesHandled = new Map();
+  const directoriesToProcess = [];
 
-    // Check exclusion patterns
+  for (const [fileDir, filesInDir] of directoryFiles.entries()) {
+    const relativePath = relativeDirLookup.get(fileDir) || '.';
+
     if (isDirectoryExcluded(relativePath, excludedDirectories)) {
       appendLog(`[SKIP] ${relativePath} (excluded by config)`);
+      markFilesAsHandled(filesInDir, filesHandled);
       continue;
     }
 
     const claudeMdPath = join(fileDir, 'CLAUDE.md');
-
-    // Skip ~/.claude/CLAUDE.md (global config)
-    const homeDir = process.env.HOME;
-    if (homeDir && claudeMdPath === join(homeDir, '.claude', 'CLAUDE.md')) {
+    const globalClaudePath = homeDir ? join(homeDir, '.claude', 'CLAUDE.md') : null;
+    if (globalClaudePath && claudeMdPath === globalClaudePath) {
       appendLog(`[SKIP] ${relativePath} (global CLAUDE.md - not managed by hook)`);
+      markFilesAsHandled(filesInDir, filesHandled);
       continue;
     }
+
     const hasClaudeMd = existsSync(claudeMdPath);
     const existingClaudeMd = hasClaudeMd ? readFileSync(claudeMdPath, 'utf-8') : '';
-
     const { fileCount, fileTypes, subdirs, isRoot, targetLines } = getDirectoryInfo(fileDir, cwd);
 
-    // Skip if doesn't meet minimum file count (unless updating existing or root)
     if (!hasClaudeMd && !isRoot && fileCount < 4) {
       appendLog(`[SKIP] ${relativePath} (only ${fileCount} files, need ≥4)`);
+      markFilesAsHandled(filesInDir, filesHandled);
       continue;
     }
 
     const claudeMdHierarchy = getClaudeMdHierarchy(fileDir, cwd);
+    const changedFilesInDir = filesInDir.map(({ file }) => basename(file));
 
-    // Build hierarchy context
+    directoriesToProcess.push({
+      relativePath,
+      claudeMdPath,
+      hasClaudeMd,
+      existingClaudeMd,
+      fileTypes,
+      subdirs,
+      isRoot,
+      targetLines,
+      claudeMdHierarchy,
+      changedFilesInDir,
+      filesInDir
+    });
+  }
+
+  const startParts = [
+    `session=${sessionId}`,
+    `directories=${directoriesToProcess.length}`
+  ];
+  if (skippedGitIgnored > 0) {
+    startParts.push(`git-ignored=${skippedGitIgnored}`);
+  }
+  if (unchangedSinceLastRun > 0) {
+    startParts.push(`unchanged=${unchangedSinceLastRun}`);
+  }
+  appendLog(`[START] ${startParts.join(', ')}`);
+
+  if (excludedDirectories.length > 0) {
+    appendLog(`[CONFIG] Excluded directories: ${excludedDirectories.join(', ')}`);
+  }
+
+  if (directoriesToProcess.length === 0) {
+    const finalCache = pruneCache(processingCache, changedFileSet);
+    for (const [file, signature] of filesHandled.entries()) {
+      finalCache[file] = signature;
+    }
+    saveProcessingCache(finalCache);
+    appendLog('[SKIP] No directories qualified after filtering');
+    process.exit(0);
+  }
+
+  for (const {
+    relativePath,
+    claudeMdPath,
+    hasClaudeMd,
+    existingClaudeMd,
+    fileTypes,
+    subdirs,
+    isRoot,
+    targetLines,
+    claudeMdHierarchy,
+    changedFilesInDir,
+    filesInDir
+  } of directoriesToProcess) {
     let hierarchyContext = '';
     if (claudeMdHierarchy.length > 0) {
       hierarchyContext = '\n\n## Parent CLAUDE.md Files (for context)\n\n';
@@ -378,18 +561,24 @@ If none apply, do nothing.`;
         }
       });
 
-      // Consume the response
       for await (const message of result) {
-        // Just consume the stream
+        // Consume the stream
       }
 
       appendLog(`[PROCESSED] ${relativePath}`);
+      markFilesAsHandled(filesInDir, filesHandled);
     } catch (error) {
       appendLog(`[ERROR] ${relativePath}: ${error.message}`);
     }
   }
 
-  appendLog(`[DONE] session=${sessionId} | processed ${directoriesWithChanges.size} directories`);
+  const finalCache = pruneCache(processingCache, changedFileSet);
+  for (const [file, signature] of filesHandled.entries()) {
+    finalCache[file] = signature;
+  }
+  saveProcessingCache(finalCache);
+
+  appendLog(`[DONE] session=${sessionId} | processed ${directoriesToProcess.length} directories`);
   process.exit(0);
 }
 
@@ -422,11 +611,37 @@ async function main() {
     process.exit(0);
   }
 
+  // Determine parent session ID from transcript to track actual user session
+  let parentSessionId = null;
+  try {
+    const transcriptPath = inputData.transcript_path;
+    if (transcriptPath && existsSync(transcriptPath)) {
+      const transcript = readFileSync(transcriptPath, 'utf-8');
+      const lines = transcript.trim().split('\n').filter(Boolean);
+
+      // Find the first session start event to get the original session ID
+      for (const line of lines) {
+        try {
+          const event = JSON.parse(line);
+          if (event.type === 'session_start') {
+            parentSessionId = event.sessionId || sessionId;
+            break;
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
+  } catch (error) {
+    // Ignore errors reading transcript
+  }
+
   // Spawn detached background process
   const { spawn } = await import('child_process');
 
   const workerData = JSON.stringify({
     sessionId,
+    parentSessionId,
     cwd,
   });
 
