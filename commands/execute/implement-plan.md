@@ -17,7 +17,7 @@ Each agent should:
 
 It is critical that these agents be used in batches—deploy all the agents in a batch in the same function call.
 
-4. After each batch of agents finishes, identify which tasks can be run next. There may be multiple tasks that have all of their dependent tasks done. In this case, run those tasks in parallel as well.
+4. After deploying agents, monitor their completion asynchronously. As soon as any agent completes, check if new tasks have all their dependencies satisfied and immediately deploy agents for those tasks. You don't need to wait for entire batches to complete—deploy new agents as soon as their dependencies are met. Use `./agent-responses/await {agent_id}` to check status or wait for the agent monitor to alert you. Maximize parallelism by continuously deploying agents whose dependencies are satisfied, rather than waiting for arbitrary batch boundaries.
 
 Remember:
 Agents need to be delegated with dependency orchestration in mind. For example, if one agent creates an api endpoint, and a later agent consumes it, that later agent needs to be given the contract or a link to the api endpoint so that their types match. Likewise, if one agent creates a type file, the other agents should respect it rather than duplicating efforts. It is your job to orchestrate this, and therefore your fault if delegated agents fail.

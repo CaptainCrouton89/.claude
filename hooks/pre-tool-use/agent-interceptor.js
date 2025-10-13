@@ -65,7 +65,7 @@ async function main() {
   // Create initial log file
   const toolInput = hookData.tool_input || {};
   const description = toolInput.description || 'Unnamed task';
-  const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task—even at risk of too little information.";
+  const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task (1-2 sentences, max. Incomplete sentences are fine). Only give these updates if you have important information to share. Prepend updates with this emoji: 📝";
   const subagentType = toolInput.subagent_type || 'general-purpose';
 
   // Extract agent content for outputStyle and check forbidden agents

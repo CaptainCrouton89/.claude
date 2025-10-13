@@ -70,15 +70,19 @@ Before planning implementation:
 - [ ] Map key integration points
 - [ ] Identify existing components/utilities to leverage
 
-### Investigation Strategy: Direct Search + Targeted Agent Use
+### Investigation Strategy: Agent-First with Lifecycle Monitoring
 
-**Start with direct search to get oriented:**
+**For most tasks, start with agents to identify affected areas:**
 
-1. Use Grep to find relevant files and patterns
-2. Use Read to examine key files
-3. Use Glob to locate related components
+Use code-finder agents to systematically discover patterns and affected code. Agents write real-time responses to `agent-responses/{agent_id}.md` files—monitor via hook alerts or use `./agent-responses/await {agent_id}` to wait for completion.
 
-**When direct search isn't enough, use code-finder:**
+**Use agents when:**
+- Working in unfamiliar codebases (default)
+- Multiple integration points to trace
+- Complex dependency chains
+- Refactoring shared utilities
+
+**Example targeted investigation:**
 
 ```xml
 <invoke name="Task">
@@ -100,12 +104,6 @@ Investigate [feature/refactor] focusing on:
   </parameter>
 </invoke>
 ```
-
-**Use agents when:**
-- Working in unfamiliar codebases
-- Multiple integration points to trace
-- Complex dependency chains
-- Refactoring shared utilities
 
 ---
 

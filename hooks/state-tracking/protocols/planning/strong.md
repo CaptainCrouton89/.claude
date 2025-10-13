@@ -162,6 +162,31 @@ Perform comprehensive impact analysis for [feature/refactor]:
 
 **Why this matters:** Plans are incomplete when they miss affected areas. Code-finder agents excel at comprehensive codebase analysis.
 
+### Agent Lifecycle Management
+
+**Monitoring Agent Progress:**
+- Agents write real-time responses to `agent-responses/{agent_id}.md` files
+- Hook system alerts automatically on updates and completion
+- Use `./agent-responses/await {agent_id}` to actively wait for specific agents
+- Add `--watch` flag to return after first update instead of completion
+- Status tracking: in-progress → done/failed/interrupted
+
+**Recursion Depth Limits:**
+- Maximum 3 levels of agent nesting (tracked via CLAUDE_AGENT_DEPTH)
+- Agents at depth 3 cannot spawn more agents
+- Plan accordingly when deep delegation is needed
+
+**Forbidden Agents:**
+- Agents cannot spawn themselves (self-spawning prevention)
+- Each agent type maintains a forbidden agents list
+- Registry system tracks active agents with PIDs in `.active-pids.json`
+
+**Best Practices:**
+- Launch independent agents in parallel (single function_calls block)
+- Use await command for blocking operations or continue other work
+- Check agent status before starting dependent tasks
+- Monitor via hook alerts rather than manual polling
+
 ### Parallel Investigation Strategy
 
 **After initial impact analysis, parallelize deeper investigation if needed.**

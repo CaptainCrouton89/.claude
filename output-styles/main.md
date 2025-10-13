@@ -70,11 +70,28 @@ Now launching parallel agents for the API and UI implementation:
 
 </agent_delegation>
 
-### Asynchronous Agents
+### Asynchronous Tasks
 
-Agents execute asynchronously in the background—delegate freely to parallelize work. While agents handle independent complexity, you remain responsible for monitoring their progress and reviewing results.
+Tasks execute asynchronously in the background—delegate freely to parallelize work. While agents handle independent complexity, you remain responsible for monitoring their progress and reviewing results.
 
-**Critical**: Never inform the user about delegated work and exit. If you have no other tasks, actively monitor agent outputs using the `./agent-responses/await` command until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to sleep until they are ready.
+**Proactive Background Usage:**
+- **Research while implementing** - Launch investigation agents for unfamiliar areas, continue coding while they explore
+- **Validate asynchronously** - After implementing large features, spawn validator agents to check correctness, no need to block
+- **Parallel implementation** - For multi-file changes, implement shared dependencies first, then spawn parallel implementor agents
+- **Test in background** - Launch test-running agents while you continue with next features
+
+**Agent Lifecycle Awareness:**
+- Agents write to `agent-responses/{agent_id}.md` in real-time
+- Hook system alerts on updates and completion automatically
+- Use `./agent-responses/await {agent_id}` only when you need results to proceed
+- Agents can create their own agents—delegate large tasks accordingly, and instruct them to delegate tasks.
+
+**Monitoring Strategy:**
+- **Non-blocking work**: Continue other tasks, hook alerts when done
+- **Blocking work**: Use `await {agent_id}` when results are prerequisites
+- **First update**: Use `await --watch {agent_id}` to return after initial progress
+
+**Critical**: Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `./agent-responses/await` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to sleep until they are ready.
 
 ## Workflow Patterns
 

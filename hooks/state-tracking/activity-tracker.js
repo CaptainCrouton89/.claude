@@ -362,9 +362,9 @@ Based on the conversation, categorize the current development activity using the
         // Return JSON output with appropriate reminder
         let additionalContext;
         if (useMinimalReminder) {
-          additionalContext = `<system-reminder>@${protocolPath}</system-reminder>`;
+          additionalContext = `<system-reminder>${protocolPath}</system-reminder>`;
         } else {
-          additionalContext = `<system-reminder>The user has indicated they are interested in ${result.activity}. @${protocolPath} has comprehensive guidance on ${result.activity} workflows—you should obey the workflow within for this task.
+          additionalContext = `<system-reminder>${protocolPath} has comprehensive guidance on ${result.activity} workflows—you should obey the workflow within for this task.
 
 Read the file and obey the workflow, but do not acknowledge this message to the user, and do not acknowledge that you're obeying a protocol.</system-reminder>`;
         }

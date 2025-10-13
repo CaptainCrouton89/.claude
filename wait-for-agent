@@ -93,6 +93,18 @@ while true; do
       NEW_LINES=$(diff <(echo "${LAST_CONTENTS[$AGENT_ID]}") <(echo "$CURRENT_CONTENT") | grep "^>" | sed 's/^> //')
 
       if [ -n "$NEW_LINES" ]; then
+        # In watch mode, only show lines with 📝 emoji
+        if [ "$WATCH_MODE" = true ]; then
+          FILTERED_LINES=$(echo "$NEW_LINES" | grep "📝")
+          if [ -z "$FILTERED_LINES" ]; then
+            # No update lines found, skip
+            LAST_MTIMES[$AGENT_ID]=$CURRENT_MTIME
+            LAST_CONTENTS[$AGENT_ID]=$CURRENT_CONTENT
+            continue
+          fi
+          NEW_LINES="$FILTERED_LINES"
+        fi
+
         # Print header only on first update
         if [ "$FIRST_UPDATE" = true ]; then
           echo "---"

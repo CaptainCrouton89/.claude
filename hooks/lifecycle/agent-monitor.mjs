@@ -53,8 +53,30 @@ function getFileInfo(filePath) {
   return {
     mtime: stats.mtimeMs,
     status,
-    size: stats.size
+    size: stats.size,
+    content
   };
+}
+
+function extractUpdateContent(content, previousContent) {
+  // Get new lines added since last check
+  const currentLines = content.split('\n');
+  const previousLines = previousContent ? previousContent.split('\n') : [];
+
+  // Find lines with 📝 emoji that are new
+  const updateLines = [];
+  for (let i = 0; i < currentLines.length; i++) {
+    const line = currentLines[i];
+    if (line.includes('📝') && (i >= previousLines.length || previousLines[i] !== line)) {
+      // Extract content after the emoji
+      const contentAfter = line.substring(line.indexOf('📝') + 1).trim();
+      if (contentAfter) {
+        updateLines.push(contentAfter);
+      }
+    }
+  }
+
+  return updateLines.join('\n');
 }
 
 function getRelativePath(cwd, filePath) {
@@ -124,13 +146,24 @@ async function main() {
           }
           // Keep in state to prevent re-notification
         } else if (previousState) {
-          // File was updated but not completed
-          updates.push(`Agent updated: ${relativePath}`);
+          // File was updated but not completed - extract update content
+          const updateContent = extractUpdateContent(fileInfo.content, previousState.content);
+          if (updateContent) {
+            updates.push(`Agent update (${relativePath}): ${updateContent}`);
+          } else {
+            updates.push(`Agent updated: ${relativePath}`);
+          }
         }
       }
 
-      // Update state only for in-progress agents
-      state[fileId] = fileInfo;
+      // Update state with content for next comparison
+      state[fileId] = {
+        mtime: fileInfo.mtime,
+        status: fileInfo.status,
+        size: fileInfo.size,
+        content: fileInfo.content,
+        notified: fileInfo.notified
+      };
     }
   }
 

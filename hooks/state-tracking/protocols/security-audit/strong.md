@@ -38,7 +38,7 @@ Ask 3-4 questions to understand the audit scope:
 <function_calls>
   <invoke name="Task">
     <parameter name="description">Scan for injection vulnerabilities (A03)</parameter>
-    <parameter name="subagent_type">security</parameter>
+    <parameter name="subagent_type">general-purpose</parameter>
     <parameter name="prompt">
       Scan [paths] for injection vulnerabilities:
       - SQL injection (string concatenation in queries)
@@ -50,7 +50,7 @@ Ask 3-4 questions to understand the audit scope:
   </invoke>
   <invoke name="Task">
     <parameter name="description">Scan for auth issues (A01, A07)</parameter>
-    <parameter name="subagent_type">security</parameter>
+    <parameter name="subagent_type">general-purpose</parameter>
     <parameter name="prompt">
       Scan [paths] for authentication/authorization issues:
       - Endpoints without auth checks
@@ -61,7 +61,7 @@ Ask 3-4 questions to understand the audit scope:
   </invoke>
   <invoke name="Task">
     <parameter name="description">Scan for sensitive data exposure (A02)</parameter>
-    <parameter name="subagent_type">security</parameter>
+    <parameter name="subagent_type">general-purpose</parameter>
     <parameter name="prompt">
       Scan [paths] for sensitive data exposure:
       - Hardcoded secrets (API keys, passwords, tokens)
@@ -71,7 +71,7 @@ Ask 3-4 questions to understand the audit scope:
   </invoke>
   <invoke name="Task">
     <parameter name="description">Scan for misconfiguration (A05)</parameter>
-    <parameter name="subagent_type">security</parameter>
+    <parameter name="subagent_type">general-purpose</parameter>
     <parameter name="prompt">
       Scan [paths] for security misconfiguration:
       - Missing security headers (CSP, HSTS, X-Frame-Options)
