@@ -1,0 +1,63 @@
+
+================================================================================
+ACTIVITY TRACKER BENCHMARK REPORT
+================================================================================
+
+Total Samples: 100
+Overall Accuracy: 70.00% (70/100)
+
+────────────────────────────────────────────────────────────────────────────────
+PER-CATEGORY METRICS
+────────────────────────────────────────────────────────────────────────────────
+Activity                 Precision   Recall      F1          Support
+────────────────────────────────────────────────────────────────────────────────
+debugging                1.000       0.800       0.889       15
+code-review              1.000       0.571       0.727       7
+documenting              0.800       0.600       0.686       20
+feature                  0.857       0.923       0.889       13
+investigating            0.643       0.857       0.735       21
+planning                 0.167       1.000       0.286       1
+requirements-gathering   0.000       0.000       0.000       3
+security-auditing        0.000       0.000       0.000       0
+testing                  0.667       1.000       0.800       6
+other                    0.500       0.357       0.417       14
+
+────────────────────────────────────────────────────────────────────────────────
+EFFORT SCORING ACCURACY
+────────────────────────────────────────────────────────────────────────────────
+Average Difference: 1.03
+Maximum Difference: 3
+Within ±1: 73.0%
+Within ±2: 91.0%
+
+────────────────────────────────────────────────────────────────────────────────
+CONFUSION MATRIX (Actual → Predicted)
+────────────────────────────────────────────────────────────────────────────────
+Actual \ Predicted       debuggin code-rev document feature  investig planning requirem security testing  other    
+────────────────────────────────────────────────────────────────────────────────
+debugging                12       0        0        0        1        0        0        0        2        0        
+code-review              0        4        2        0        0        1        0        0        0        0        
+documenting              0        0        12       0        4        2        1        0        0        1        
+feature                  0        0        0        12       0        1        0        0        0        0        
+investigating            0        0        0        0        18       0        1        0        0        2        
+planning                 0        0        0        0        0        1        0        0        0        0        
+requirements-gathering   0        0        0        0        0        1        0        0        0        2        
+security-auditing        0        0        0        0        0        0        0        0        0        0        
+testing                  0        0        0        0        0        0        0        0        6        0        
+other                    0        0        1        2        5        0        0        0        1        5        
+
+────────────────────────────────────────────────────────────────────────────────
+TOP CONFUSION PAIRS
+────────────────────────────────────────────────────────────────────────────────
+other → investigating: 5
+documenting → investigating: 4
+debugging → testing: 2
+code-review → documenting: 2
+documenting → planning: 2
+investigating → other: 2
+requirements-gathering → other: 2
+other → feature: 2
+debugging → investigating: 1
+code-review → planning: 1
+
+================================================================================

@@ -1,0 +1,1332 @@
+{
+  "gpt-4.1-mini": {
+    "model": "GPT-4.1 Mini (Current)",
+    "accuracy": "77.00",
+    "avgEffortDiff": "0.95",
+    "withinOne": "75.0",
+    "metrics": {
+      "planning": {
+        "precision": 0.2,
+        "recall": 1,
+        "f1": 0.33333333333333337,
+        "support": 1
+      },
+      "investigating": {
+        "precision": 0.6785714285714286,
+        "recall": 0.9047619047619048,
+        "f1": 0.7755102040816326,
+        "support": 21
+      },
+      "testing": {
+        "precision": 0.8333333333333334,
+        "recall": 0.8333333333333334,
+        "f1": 0.8333333333333334,
+        "support": 6
+      },
+      "debugging": {
+        "precision": 1,
+        "recall": 0.8,
+        "f1": 0.888888888888889,
+        "support": 15
+      },
+      "feature": {
+        "precision": 0.8461538461538461,
+        "recall": 0.8461538461538461,
+        "f1": 0.8461538461538461,
+        "support": 13
+      },
+      "other": {
+        "precision": 0.75,
+        "recall": 0.6428571428571429,
+        "f1": 0.6923076923076924,
+        "support": 14
+      },
+      "documenting": {
+        "precision": 0.8461538461538461,
+        "recall": 0.55,
+        "f1": 0.6666666666666667,
+        "support": 20
+      },
+      "code-review": {
+        "precision": 1,
+        "recall": 0.8571428571428571,
+        "f1": 0.923076923076923,
+        "support": 7
+      },
+      "requirements-gathering": {
+        "precision": 0.6,
+        "recall": 1,
+        "f1": 0.7499999999999999,
+        "support": 3
+      }
+    },
+    "confusionMatrix": {
+      "planning": {
+        "planning": 1,
+        "investigating": 0,
+        "testing": 0,
+        "debugging": 0,
+        "feature": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "investigating": {
+        "planning": 0,
+        "investigating": 19,
+        "testing": 0,
+        "debugging": 0,
+        "feature": 0,
+        "other": 2,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "testing": {
+        "planning": 1,
+        "investigating": 0,
+        "testing": 5,
+        "debugging": 0,
+        "feature": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "debugging": {
+        "planning": 0,
+        "investigating": 2,
+        "testing": 1,
+        "debugging": 12,
+        "feature": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "feature": {
+        "planning": 1,
+        "investigating": 0,
+        "testing": 0,
+        "debugging": 0,
+        "feature": 11,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 1
+      },
+      "other": {
+        "planning": 0,
+        "investigating": 1,
+        "testing": 0,
+        "debugging": 0,
+        "feature": 2,
+        "other": 9,
+        "documenting": 2,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "documenting": {
+        "planning": 1,
+        "investigating": 6,
+        "testing": 0,
+        "debugging": 0,
+        "feature": 0,
+        "other": 1,
+        "documenting": 11,
+        "code-review": 0,
+        "requirements-gathering": 1
+      },
+      "code-review": {
+        "planning": 1,
+        "investigating": 0,
+        "testing": 0,
+        "debugging": 0,
+        "feature": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 6,
+        "requirements-gathering": 0
+      },
+      "requirements-gathering": {
+        "planning": 0,
+        "investigating": 0,
+        "testing": 0,
+        "debugging": 0,
+        "feature": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 3
+      }
+    },
+    "predictions": [
+      {
+        "activity": "planning",
+        "confidence": 0.95,
+        "effort": 8
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 1,
+        "effort": 8
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 4
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.9,
+        "effort": 5
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 8
+      },
+      {
+        "activity": "other",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.9,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.9,
+        "effort": 6
+      },
+      {
+        "activity": "other",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.9,
+        "effort": 2
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 4
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "other",
+        "confidence": 1,
+        "effort": 1
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.9,
+        "effort": 4
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.9,
+        "effort": 2
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 7
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "other",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.9,
+        "effort": 8
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.9,
+        "effort": 6
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 7
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.9,
+        "effort": 4
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "other",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 4
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.9,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "other",
+        "confidence": 1,
+        "effort": 1
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "other",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "feature",
+        "confidence": 1,
+        "effort": 7
+      },
+      {
+        "activity": "other",
+        "confidence": 1,
+        "effort": 2
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.95,
+        "effort": 1
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 4
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "other",
+        "confidence": 1,
+        "effort": 1
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.9,
+        "effort": 5
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.9,
+        "effort": 2
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.9,
+        "effort": 6
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.8,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.9,
+        "effort": 2
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.9,
+        "effort": 6
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.9,
+        "effort": 4
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.9,
+        "effort": 4
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "other",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "other",
+        "confidence": 0.95,
+        "effort": 1
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.95,
+        "effort": 3
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.9,
+        "effort": 2
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.95,
+        "effort": 5
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.9,
+        "effort": 3
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.95,
+        "effort": 4
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.95,
+        "effort": 7
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.95,
+        "effort": 2
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.95,
+        "effort": 6
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.9,
+        "effort": 1
+      },
+      {
+        "activity": "other",
+        "confidence": 0.9,
+        "effort": 1
+      }
+    ]
+  },
+  "gpt-5-nano": {
+    "model": "GPT-5 Nano",
+    "accuracy": "76.00",
+    "avgEffortDiff": "0.98",
+    "withinOne": "74.0",
+    "metrics": {
+      "feature": {
+        "precision": 0.8461538461538461,
+        "recall": 0.8461538461538461,
+        "f1": 0.8461538461538461,
+        "support": 13
+      },
+      "investigating": {
+        "precision": 0.72,
+        "recall": 0.8571428571428571,
+        "f1": 0.782608695652174,
+        "support": 21
+      },
+      "testing": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "support": 6
+      },
+      "planning": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 1
+      },
+      "debugging": {
+        "precision": 0.8666666666666667,
+        "recall": 0.8666666666666667,
+        "f1": 0.8666666666666667,
+        "support": 15
+      },
+      "other": {
+        "precision": 1,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "support": 14
+      },
+      "documenting": {
+        "precision": 0.8823529411764706,
+        "recall": 0.75,
+        "f1": 0.8108108108108107,
+        "support": 20
+      },
+      "code-review": {
+        "precision": 0.8333333333333334,
+        "recall": 0.7142857142857143,
+        "f1": 0.7692307692307692,
+        "support": 7
+      },
+      "requirements-gathering": {
+        "precision": 0.6,
+        "recall": 1,
+        "f1": 0.7499999999999999,
+        "support": 3
+      }
+    },
+    "confusionMatrix": {
+      "feature": {
+        "feature": 11,
+        "investigating": 0,
+        "testing": 0,
+        "planning": 1,
+        "debugging": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 1
+      },
+      "investigating": {
+        "feature": 0,
+        "investigating": 18,
+        "testing": 0,
+        "planning": 1,
+        "debugging": 1,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 1,
+        "requirements-gathering": 0
+      },
+      "testing": {
+        "feature": 1,
+        "investigating": 0,
+        "testing": 4,
+        "planning": 1,
+        "debugging": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "planning": {
+        "feature": 1,
+        "investigating": 0,
+        "testing": 0,
+        "planning": 0,
+        "debugging": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "debugging": {
+        "feature": 0,
+        "investigating": 1,
+        "testing": 1,
+        "planning": 0,
+        "debugging": 13,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "other": {
+        "feature": 0,
+        "investigating": 3,
+        "testing": 1,
+        "planning": 1,
+        "debugging": 1,
+        "other": 7,
+        "documenting": 1,
+        "code-review": 0,
+        "requirements-gathering": 0
+      },
+      "documenting": {
+        "feature": 0,
+        "investigating": 3,
+        "testing": 0,
+        "planning": 1,
+        "debugging": 0,
+        "other": 0,
+        "documenting": 15,
+        "code-review": 0,
+        "requirements-gathering": 1
+      },
+      "code-review": {
+        "feature": 0,
+        "investigating": 0,
+        "testing": 0,
+        "planning": 1,
+        "debugging": 0,
+        "other": 0,
+        "documenting": 1,
+        "code-review": 5,
+        "requirements-gathering": 0
+      },
+      "requirements-gathering": {
+        "feature": 0,
+        "investigating": 0,
+        "testing": 0,
+        "planning": 0,
+        "debugging": 0,
+        "other": 0,
+        "documenting": 0,
+        "code-review": 0,
+        "requirements-gathering": 3
+      }
+    },
+    "predictions": [
+      {
+        "activity": "feature",
+        "confidence": 0.72,
+        "effort": 7
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.72,
+        "effort": 6
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.75,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.75,
+        "effort": 8
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.8,
+        "effort": 7
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.8,
+        "effort": 5
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.66,
+        "effort": 3
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.66,
+        "effort": 4
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.62,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.7,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.8,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.6,
+        "effort": 4
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.72,
+        "effort": 3
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.72,
+        "effort": 6
+      },
+      {
+        "activity": "other",
+        "confidence": 0.65,
+        "effort": 1
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.72,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.75,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.65,
+        "effort": 6
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.62,
+        "effort": 3
+      },
+      {
+        "activity": "other",
+        "confidence": 0.6,
+        "effort": 1
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.75,
+        "effort": 6
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.65,
+        "effort": 6
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.62,
+        "effort": 5
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.72,
+        "effort": 5
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.8,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.62,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.72,
+        "effort": 5
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.75,
+        "effort": 5
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.6,
+        "effort": 3
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.65,
+        "effort": 7
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.9,
+        "effort": 5
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.6,
+        "effort": 1
+      },
+      {
+        "activity": "other",
+        "confidence": 0.78,
+        "effort": 5
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.72,
+        "effort": 3
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.72,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.72,
+        "effort": 6
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.65,
+        "effort": 4
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.75,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.6,
+        "effort": 1
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.72,
+        "effort": 4
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.72,
+        "effort": 5
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.65,
+        "effort": 2
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.72,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.7,
+        "effort": 4
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.68,
+        "effort": 5
+      },
+      {
+        "activity": "other",
+        "confidence": 0.65,
+        "effort": 1
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.65,
+        "effort": 4
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.6,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.7,
+        "effort": 3
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.7,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "planning",
+        "confidence": 0.65,
+        "effort": 4
+      },
+      {
+        "activity": "other",
+        "confidence": 0.62,
+        "effort": 1
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.72,
+        "effort": 7
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.75,
+        "effort": 5
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.6,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.64,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.62,
+        "effort": 3
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.75,
+        "effort": 4
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.65,
+        "effort": 7
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 1
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.65,
+        "effort": 7
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.65,
+        "effort": 4
+      },
+      {
+        "activity": "other",
+        "confidence": 0.6,
+        "effort": 1
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.65,
+        "effort": 2
+      },
+      {
+        "activity": "other",
+        "confidence": 0.55,
+        "effort": 1
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.62,
+        "effort": 7
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.62,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 2
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.72,
+        "effort": 2
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.72,
+        "effort": 4
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.65,
+        "effort": 1
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.72,
+        "effort": 5
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.75,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.85,
+        "effort": 2
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 4
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.65,
+        "effort": 5
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.65,
+        "effort": 3
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.72,
+        "effort": 3
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.57,
+        "effort": 2
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.65,
+        "effort": 4
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.72,
+        "effort": 2
+      },
+      {
+        "activity": "testing",
+        "confidence": 0.65,
+        "effort": 4
+      },
+      {
+        "activity": "documenting",
+        "confidence": 0.65,
+        "effort": 2
+      },
+      {
+        "activity": "debugging",
+        "confidence": 0.78,
+        "effort": 5
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.65,
+        "effort": 5
+      },
+      {
+        "activity": "code-review",
+        "confidence": 0.7,
+        "effort": 5
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.72,
+        "effort": 7
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.63,
+        "effort": 3
+      },
+      {
+        "activity": "feature",
+        "confidence": 0.68,
+        "effort": 7
+      },
+      {
+        "activity": "requirements-gathering",
+        "confidence": 0.78,
+        "effort": 2
+      },
+      {
+        "activity": "investigating",
+        "confidence": 0.62,
+        "effort": 1
+      }
+    ]
+  }
+}

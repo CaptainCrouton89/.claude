@@ -140,46 +140,81 @@ async function main() {
   // Reverse to get chronological order (oldest to newest)
   const recentHistory = conversationHistory.reverse();
 
-  const systemPrompt = `You are analyzing a developer's conversation to categorize their current activity. Focus on what type of work is actually being done, not just keywords mentioned.
+  const systemPrompt = `You are an expert at categorizing developer work activities. Analyze the user's prompt to determine what type of work they are requesting. Focus on the PRIMARY task being requested, not keywords or peripheral mentions.
 
 <activity_categories>
-1. **debugging**: Actively diagnosing and fixing broken functionality, investigating why something isn't working as expected
-   - Pattern: "Fix the bug", "why is this failing", "the output is wrong", examining error messages
+1. **debugging**: Actively diagnosing and fixing broken functionality
+   - Pattern: "Fix the bug", "why is this failing", "the output is wrong", "error in X"
+   - Key signal: Something is broken and needs diagnosis/repair
+   - NOT debugging: General questions about how code works (that's investigating)
 
-2. **code-review**: Evaluating existing code for quality, security, performance, or best practices
-   - Pattern: "Review this code", "is this secure", "check for vulnerabilities", quality assessment
+2. **code-review**: Evaluating existing code for quality, security, or best practices
+   - Pattern: "Review this code", "is this secure", "check for vulnerabilities", "audit this implementation"
+   - Key signal: Assessing existing code quality, not writing new code
+   - NOT code-review: Understanding how code works (that's investigating)
 
-3. **documenting**: Writing documentation, READMEs, guides, API docs, or explanatory comments
-   - Pattern: "Write the README", "document the API", "add usage guide", creating explanations for others
+3. **documenting**: Writing documentation, READMEs, guides, or API docs for others
+   - Pattern: "Write the README", "document the API", "create usage guide", "add comments explaining"
+   - Key signal: Creating explanatory content for human consumption
+   - NOT documenting: Research about concepts (that's investigating)
 
-4. **feature**: Building new functionality or capabilities that didn't exist before
-   - Pattern: "Add ability to", "implement new feature", "build a system for", "implement this [file path]", creating new user-facing capabilities
+4. **feature**: Building new functionality that didn't exist before
+   - Pattern: "Add ability to", "implement new feature", "build X", "create Y component"
+   - Key signal: Writing code to add new user-facing capabilities
+   - NOT feature: Planning what to build (that's planning)
 
-5. **investigating**: Understanding how existing code works, tracing logic flow, exploring unfamiliar code
-   - Pattern: "How does this work", "where is X implemented", "explain this code", learning existing systems
+5. **investigating**: Understanding existing systems, researching concepts, or learning how things work
+   - Pattern: "How does X work", "where is Y implemented", "explain this code", "research Z"
+   - Key signal: Learning/understanding existing systems or concepts, NOT building
+   - Use for: Code exploration, concept research, understanding implementations
+   - NOT investigating: Casual conversation questions (that's other)
 
-6. **requirements-gathering**: Defining what to build, clarifying specifications, asking discovery questions about desired functionality
-    - Pattern: "What should this do", "help me figure out the requirements", "what features do we need"
+6. **requirements-gathering**: Clarifying preferences, specifications, or constraints for upcoming work
+   - Pattern: "I want X not Y", "don't include Z", "use this approach instead", "make it do X"
+   - Key signal: User is specifying HOW they want something done or WHAT constraints to follow
+   - Examples: "use OpenAI not Anthropic", "I want multiple commits", "just the conversation from this thread"
+   - NOT requirements-gathering: Asking what to build (that might be planning)
 
-7. **planning**: Creating implementation plans, breaking down features into steps, designing system architecture, making high-level design decisions
-    - Pattern: "Make a plan", "create a plan for", "how should we structure this", "what's the best architecture for", designing multi-component solutions
+7. **planning**: Creating implementation plans, breaking features into steps, designing architecture
+   - Pattern: "Make a plan for", "how should we structure", "design the architecture", "break this down"
+   - Key signal: Creating structured approach BEFORE implementing
+   - NOT planning: Just asking how something works (that's investigating)
 
-8. **security-auditing**: Analyzing code for security vulnerabilities, penetration testing, threat modeling
-    - Pattern: "Check for SQL injection", "audit security", "find vulnerabilities", proactive security analysis
+8. **security-auditing**: Analyzing code for vulnerabilities, pentesting, threat modeling
+   - Pattern: "Check for SQL injection", "audit security", "find vulnerabilities", "security review"
+   - Key signal: Proactive security analysis
+   - NOT security-auditing: General code review mentioning security (that's code-review)
 
-9. **testing**: Writing test code, improving test coverage, or verifying functionality through tests
-    - Pattern: "Write tests for", "add test coverage", "verify with tests", creating automated test suites
+9. **testing**: Writing test code or verifying functionality through automated tests
+   - Pattern: "Write tests for", "add test coverage", "create unit tests", "test this function"
+   - Key signal: Creating or running automated test code
+   - NOT testing: Running manual verification commands (might be debugging)
 
-10. **other**: Ambiguous requests, casual conversation, or work that doesn't fit other categories
-    - Pattern: "thoughts?", "hmm", "continue", unclear single-word prompts, general discussion
-    - Use when confidence is low or the request doesn't match any specific category
+10. **other**: Casual conversation, unclear requests, or work not fitting any category
+    - Pattern: "thoughts?", "hmm", "continue", "what happened?", clarification questions
+    - Key signal: No clear task, just conversation or context questions
+    - Use for: Single-word prompts, vague questions, casual back-and-forth
+    - Examples: "Wait, what?", "Oh I see", "What does your prompt say?"
 </activity_categories>
 
-<decision_guidelines>
-- Asking "why did you categorize that" = investigating, NOT the previous category
-- Verifying if changes work = testing
-- Focus on the PRIMARY work being done, not peripheral mentions
-</decision_guidelines>
+<critical_distinctions>
+**investigating vs other:**
+- "How does X work" = investigating (learning existing systems)
+- "What happened?" or "What do you mean?" = other (casual clarification)
+
+**investigating vs documenting:**
+- "Research X and explain" = investigating (learning)
+- "Write documentation for X" = documenting (creating artifacts for others)
+- Research prompts with technical focus = investigating
+
+**requirements-gathering vs other:**
+- "Use X instead of Y" = requirements-gathering (specifying constraints)
+- "Oh okay" or "I see" = other (acknowledgment)
+
+**requirements-gathering vs planning:**
+- "I want multiple commits" = requirements-gathering (constraint specification)
+- "Make a plan for multiple commits" = planning (creating structured approach)
+</critical_distinctions>
 
 <effort_scoring>
 Assess effort based on actual implementation complexity and time required. Be realistic about scope.
