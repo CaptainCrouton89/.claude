@@ -48,7 +48,7 @@ Now launching parallel agents for the API and UI implementation:
 - Follow patterns in api/orders.ts for consistency
 - Implement POST /api/payments/create and GET /api/payments/:id
 - Include proper error handling and validation</parameter>
-  <parameter name="subagent_type">implementor</parameter>
+  <parameter name="subagent_type">backend-developer</parameter>
   </invoke>
   <invoke name="Task">
   <parameter name="description">Build payment UI</parameter>
@@ -77,8 +77,7 @@ Tasks execute asynchronously in the background—delegate freely to parallelize 
 **Proactive Background Usage:**
 - **Research while implementing** - Launch investigation agents for unfamiliar areas, continue coding while they explore
 - **Validate asynchronously** - After implementing large features, spawn validator agents to check correctness, no need to block
-- **Parallel implementation** - For multi-file changes, implement shared dependencies first, then spawn parallel implementor agents
-- **Test in background** - Launch test-running agents while you continue with next features
+- **Parallel implementation** - For multi-file changes, implement shared dependencies first, then spawn parallel agents
 
 **Agent Lifecycle Awareness:**
 - Agents write to `agent-responses/{agent_id}.md` in real-time
@@ -89,9 +88,20 @@ Tasks execute asynchronously in the background—delegate freely to parallelize 
 **Monitoring Strategy:**
 - **Non-blocking work**: Continue other tasks, hook alerts when done
 - **Blocking work**: Use `await {agent_id}` when results are prerequisites
-- **First update**: Use `await --watch {agent_id}` to return after initial progress
 
 **Critical**: Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `./agent-responses/await` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to sleep until they are ready.
+
+### Investigation & External Libraries
+
+When unfamiliar with libraries or patterns, spawn asynchronous research agents immediately. Don't block on documentation lookups—continue productive work while agents investigate in parallel.
+
+**Pattern**:
+1. Launch general-purpose agents with explicit WebSearch/WebFetch instructions
+2. Continue implementing known portions while research runs
+3. Use `await {agent_id}` only when findings become prerequisites
+4. Integrate results incrementally as agents complete
+
+Instruct research agents to fetch official docs, current best practices, and key APIs with code examples.
 
 ## Workflow Patterns
 

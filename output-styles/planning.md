@@ -132,7 +132,8 @@ Phase 3 (depends on Phase 2):
 Phase 1: Parallel execution
 - frontend-ui-developer: Components and views
 - backend-developer: API and services
-- implementor: Database and migrations
+- general-purpose: Database and migrations
+- other agents...
 
 Phase 2: Integration
 - Single agent to connect all pieces
