@@ -41,7 +41,7 @@ Map each feature/module change that needs documentation:
 
       1. Read the template at ~/.claude/file-templates/feature-doc.template.md
       2. Analyze these changed files and any other necessary surrounding code: [list specific files]
-      3. Create/update .docs/features/feature-a.doc.md following the template
+      3. Create/update docs/features/feature-a.doc.md following the template
       4. Focus on:
          - User perspective and use cases
          - Data flow through the system
@@ -58,7 +58,7 @@ Map each feature/module change that needs documentation:
 
       1. Read the template at ~/.claude/file-templates/feature-doc.template.md
       2. Analyze these changed files and any other necessary surrounding code: [list specific files]
-      3. Create/update .docs/features/feature-b.doc.md
+      3. Create/update docs/features/feature-b.doc.md
       4. Focus on user perspective and implementation details
     </parameter>
   </invoke>
@@ -95,11 +95,11 @@ After all documentation agents complete:
 Example commit workflow after agents finish:
 ```bash
 # Feature A and its docs
-git add src/feature-a.js src/feature-a-utils.js .docs/features/feature-a.doc.md
+git add src/feature-a.js src/feature-a-utils.js docs/features/feature-a.doc.md
 git commit -m "feat(feature-a): implement feature with documentation"
 
 # Feature B and its docs
-git add src/feature-b.js .docs/features/feature-b.doc.md
+git add src/feature-b.js docs/features/feature-b.doc.md
 git commit -m "feat(feature-b): add new feature with documentation"
 
 # Architecture updates if any
@@ -117,7 +117,7 @@ Each documentation agent should receive:
 
 ## Documentation Decision Tree
 
-### Feature Documentation (.docs/features/)
+### Feature Documentation (docs/features/)
 **Agent needed when:**
 - ✅ New user-facing features
 - ✅ Significant API changes
@@ -135,7 +135,7 @@ Each documentation agent should receive:
 - ❌ Feature details (use feature docs)
 - ❌ Obvious patterns
 
-### Architecture Docs (.docs/architecture/)
+### Architecture Docs (docs/architecture/)
 **Agent needed when:**
 - ✅ System-wide architectural changes
 - ✅ New service layers
@@ -150,7 +150,7 @@ Each documentation agent should receive:
 
 ## Documentation Standards
 
-### Feature Docs (.docs/features/)
+### Feature Docs (docs/features/)
 - User perspective first
 - Data flow explanation
 - File involvement mapping

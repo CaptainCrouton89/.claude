@@ -19,6 +19,7 @@ Execute the complete feature development lifecycle using strategic agent delegat
 - Each agent writes real-time responses to `agent-responses/{agent_id}.md` files
 - Use `./agent-responses/await {agent_id}` to monitor specific agents or continue other work until completion alerts
 - Investigation agents run in parallel, each producing focused documentation
+- All investigation documents MUST use the canonical template at `/Users/silasrhyneer/.claude/file-templates/investigation.template.md`
 - Main agent continues requirements gathering while investigations proceed
 - Output: 
   - Requirements document incorporating user clarifications high-level findings

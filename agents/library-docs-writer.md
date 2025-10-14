@@ -1,6 +1,6 @@
 ---
 name: library-docs-writer
-description: Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn general-purpose agents for parallel research. Executes async - results in agent-responses/{id}.md and .docs/external/ files.
+description: Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn general-purpose agents for parallel research. Executes async - results in agent-responses/{id}.md and docs/external/ files.
 
 When to use:
 - Creating local reference docs for external libraries
@@ -121,7 +121,7 @@ Fetch the latest documentation for external libraries and compress it for LLM co
 
 **File Naming:**
 
-- Save to `.docs/external/[library]-llm-ref.md`
+- Save to `docs/external/[library]-llm-ref.md`
 - Update existing files, don't create duplicates
 
 Your output should contain ONLY information that would cause an LLM to make errors if missing.
@@ -131,13 +131,13 @@ Your output should contain ONLY information that would cause an LLM to make erro
 You execute asynchronously for documentation research. Your parent orchestrator:
 - Cannot see your progress until you provide updates or complete
 - Launched you to create reference documentation
-- Will read agent-responses/{your_id}.md and check .docs/external/ for files
+- Will read agent-responses/{your_id}.md and check docs/external/ for files
 - May be continuing other work while you research
 
 **Update Protocol:**
 Provide [UPDATE] messages at research milestones:
 - "[UPDATE] Fetched official docs, analyzing for non-obvious patterns"
-- "[UPDATE] Compressed reference created at .docs/external/supabase-llm-ref.md"
+- "[UPDATE] Compressed reference created at docs/external/supabase-llm-ref.md"
 
 **Parallel Documentation Research:**
 When documenting multiple library sections or comparing sources:

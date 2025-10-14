@@ -1,19 +1,15 @@
-For this task, make a `.docs/plans/[feature-name]/parallel-plan.md` document, outlining what needs to get done, following the format here `/Users/silasrhyneer/.claude/file-templates/parallel.template.md`. You are the senior developer for this project, and you need to break down the problem into actionable tasks, optimized for parallel building.
+For this task, create a `docs/plans/[feature-name]/plan.md` document using the appropriate template:
 
-Begin by looking at existing research. Read all other documents in $ARGUMENTS, starting with shared.md and requirements.md, if they exist. If no shared.md file is present, abort the plan and tell me to run `/shared` first.
+- Small scope: `/Users/silasrhyneer/.claude/file-templates/plan.quick.template.md`
+- Medium scope: `/Users/silasrhyneer/.claude/file-templates/plan.template.md`
+- Large/cross-cutting: `/Users/silasrhyneer/.claude/file-templates/plan.comprehensive.template.md`
 
-After reading the research documents, read any other files you believe would be relevant to creating a comprehensive research plan. 
+Process:
+1. Read existing research in `docs/plans/[feature-name]/` (start with `shared.md` and `requirements.md`). If `shared.md` is missing, abort and ask to run `/shared` first.
+2. Use async agents as needed for impact analysis. Spawn `code-finder` agents; progress is tracked under `agent-responses/` (powered by `hooks/pre-tool-use/agent-interceptor.js` and `hooks/lifecycle/agent-monitor.mjs`). Save each investigation to `docs/plans/[feature-name]/investigations/[topic].md` using `/Users/silasrhyneer/.claude/file-templates/investigation.template.md`, and link outputs in the plan’s “Investigation Artifacts”.
+3. Fill the chosen template exactly. Keep tasks brief, include dependencies, file paths, and an agent assignment per task.
+4. Save to `docs/plans/[feature-name]/plan.md`.
 
-Each task in the plan should be brief (a few file changes at most), and complete:
-
-- Include the purpose of the task, along with any gotchas to be aware of
-- Include paths to specific files relevant to the task
-- Link to relevant documentation files, if present
-- Name relevant tables, if any
-- Do NOT include specific code; keep tasks more high level
-- In the header of the task, in brackets, name any previous steps (1.1, 2, none, etc) that must be completed before the task can be performed.
-- Name the agent that should be used for that task (e.g. `frontend-ui-developer`)
-
-At the top of the document, include a high level explanation of what needs to be done, as well as file paths of any relevant files so that the developer can immediately familiarize themselves with the core logic.
-
-When you write this plan, it is CRITICAL that you do not make mistakes. If there is not enough information to write a *comprehensive* plan, then _more research is required_. Remember—quality and completeness is critical, so do not be lazy—it is disasterous for the developer who relies on the accuracy of your plan during implementation.
+Quality bar:
+- Follow `protocols/planning/comprehensive.md` for investigation rigor.
+- Prefer linking templates over inline structure; do not restate the template here.

@@ -1,6 +1,6 @@
 Write a report of what changes you made. It should obey the following structure:
 
-Filename: .docs/plans/[plan-directory]/report.md
+Filename: docs/plans/[plan-directory]/report.md
 Content:
 
 ```

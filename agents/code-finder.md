@@ -102,8 +102,13 @@ For complex investigations, provide [UPDATE] messages at major milestones:
 - "[UPDATE] Flow traced from entry point through 5 layers"
 - "[UPDATE] Found 12 related implementations across service layer"
 
-**Output Format:**
-Provide structured findings with file:line references and brief code snippets showing key connections. Explain semantic relationships concisely.
+**Output Format (Canonical):**
+Populate the canonical investigation template at `/Users/silasrhyneer/.claude/file-templates/investigation.template.md`.
+
+Save results to `docs/plans/[feature-name]/investigations/[topic].md` and include:
+- File:line references and brief code snippets
+- Links to relevant docs under `docs/` (charter, product-requirements, feature-spec, system-design, api-contracts, data-plan)
+- Clear next steps (implementation, deeper dive, documentation, or planning)
 
 **Forbidden Actions:**
 - CANNOT spawn code-finder agents (would cause recursion)

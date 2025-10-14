@@ -14,55 +14,55 @@ const ACTIVITY_OBSERVERS = [
   {
     name: 'debugging',
     protocolDir: 'bug-fixing',
-    thresholds: { moderate: 3, strong: 5 },
+    thresholds: { basic: 3, comprehensive: 5 },
     emoji: '🐛'
   },
   {
     name: 'code-review',
     protocolDir: 'code-review',
-    thresholds: { moderate: 3, strong: 5 },
+    thresholds: { basic: 3, comprehensive: 5 },
     emoji: '👀'
   },
   {
     name: 'documenting',
     protocolDir: 'documentation',
-    thresholds: { moderate: 5, strong: 7 },
+    thresholds: { basic: 5, comprehensive: 7 },
     emoji: '📝'
   },
   {
     name: 'feature',
     protocolDir: 'feature-development',
-    thresholds: { moderate: 5, strong: 7 },
+    thresholds: { basic: 5, comprehensive: 7 },
     emoji: '✨'
   },
   {
     name: 'investigating',
     protocolDir: 'investigation',
-    thresholds: { moderate: 4, strong: 6 },
+    thresholds: { basic: 4, comprehensive: 6 },
     emoji: '🔍'
   },
   {
     name: 'planning',
     protocolDir: 'planning',
-    thresholds: { moderate: 3, strong: 5 },
+    thresholds: { basic: 3, comprehensive: 5 },
     emoji: '📋'
   },
   {
     name: 'requirements-gathering',
     protocolDir: 'requirements-gathering',
-    thresholds: { moderate: 3, strong: 5 },
+    thresholds: { basic: 3, comprehensive: 5 },
     emoji: '❓'
   },
   {
     name: 'security-auditing',
     protocolDir: 'security-audit',
-    thresholds: { moderate: 3, strong: 5 },
+    thresholds: { basic: 3, comprehensive: 5 },
     emoji: '🔒'
   },
   {
     name: 'testing',
     protocolDir: 'testing',
-    thresholds: { moderate: 5, strong: 7 },
+    thresholds: { basic: 5, comprehensive: 7 },
     emoji: '🧪'
   }
 ];
@@ -232,33 +232,33 @@ async function runAllObservers(userPrompt) {
  */
 function generateProtocolRecommendations(observer, effort) {
   const protocols = [];
-  const { moderate: moderateThreshold, strong: strongThreshold } = observer.thresholds;
+  const { basic: basicThreshold, comprehensive: comprehensiveThreshold } = observer.thresholds;
 
-  // Check if effort is within 1 of moderate threshold (e.g., 4-5 for moderate:5, strong:7)
-  if (effort >= moderateThreshold - 1 && effort <= moderateThreshold + 1) {
-    const moderatePath = join(
+  // Check if effort is within 1 of basic threshold (e.g., 4-5 for basic:5, comprehensive:7)
+  if (effort >= basicThreshold - 1 && effort <= basicThreshold + 1) {
+    const basicPath = join(
       homedir(),
       '.claude',
       'protocols',
       observer.protocolDir,
-      'moderate.md'
+      'basic.md'
     );
-    if (existsSync(moderatePath)) {
-      protocols.push({ level: 'moderate', path: moderatePath.replace(homedir(), '~') });
+    if (existsSync(basicPath)) {
+      protocols.push({ level: 'basic', path: basicPath.replace(homedir(), '~') });
     }
   }
 
-  // Check if effort is within 1 of strong threshold (e.g., 6-8 for strong:7)
-  if (effort >= strongThreshold - 1 && effort <= strongThreshold + 1) {
-    const strongPath = join(
+  // Check if effort is within 1 of comprehensive threshold (e.g., 6-8 for comprehensive:7)
+  if (effort >= comprehensiveThreshold - 1 && effort <= comprehensiveThreshold + 1) {
+    const comprehensivePath = join(
       homedir(),
       '.claude',
       'protocols',
       observer.protocolDir,
-      'strong.md'
+      'comprehensive.md'
     );
-    if (existsSync(strongPath)) {
-      protocols.push({ level: 'strong', path: strongPath.replace(homedir(), '~') });
+    if (existsSync(comprehensivePath)) {
+      protocols.push({ level: 'comprehensive', path: comprehensivePath.replace(homedir(), '~') });
     }
   }
 
@@ -306,7 +306,7 @@ function buildContextMessage(results) {
 
   const header = messages.length === 1
     ? 'Relevant workflow guidance for this task:'
-    : 'Relevant workflow guidance for this task (you may use one or more depending on complexity—strong protocols are more comprehensive):';
+    : 'Relevant workflow guidance for this task (you may use one or more depending on complexity—comprehensive protocols are more comprehensive):';
 
   return `<system-reminder>${header}\n\n${messages.join('\n')}\n\nRead the applicable files and follow their workflows when you begin working on their respective activities, but do not acknowledge this message to the user.</system-reminder>`;
 }
