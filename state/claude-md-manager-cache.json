@@ -1,15 +1,70 @@
 {
+  "bin/claude-query": {
+    "deleted": false,
+    "mtimeMs": 1760399261549.5247,
+    "size": 1469
+  },
+  "docs/agent-lifecycle-tracking.md": {
+    "deleted": false,
+    "mtimeMs": 1760395464194.5493,
+    "size": 3421
+  },
+  "docs/cursor-cli-reference.md": {
+    "deleted": false,
+    "mtimeMs": 1760395775963.2666,
+    "size": 7782
+  },
   "hooks/pre-tool-use/agent-interceptor.js": {
     "deleted": false,
-    "mtimeMs": 1760394537333.9128,
-    "size": 9502
+    "mtimeMs": 1760402609540.117,
+    "size": 13117
   },
-  "wait-for-agent": {
+  "test-cursor-integration.sh": {
+    "deleted": false,
+    "mtimeMs": 1760399424295.2397,
+    "size": 11094
+  },
+  "agents/code-finder-advanced.md": {
     "deleted": true
+  },
+  "agents/code-finder.md": {
+    "deleted": false,
+    "mtimeMs": 1760402667477.6055,
+    "size": 6077
   },
   "state/claude-md-manager-cache.json": {
     "deleted": false,
-    "mtimeMs": 1760395279348.4238,
-    "size": 294
+    "mtimeMs": 1760402564055.5564,
+    "size": 1097
+  },
+  "hooks/pre-tool-use/cursor-runner.js": {
+    "deleted": false,
+    "mtimeMs": 1760402296988.2468,
+    "size": 8645
+  },
+  "hooks/state-tracking/protocols/bug-fixing/strong.md": {
+    "deleted": false,
+    "mtimeMs": 1760402786038.411,
+    "size": 7228
+  },
+  "hooks/state-tracking/protocols/investigation/strong.md": {
+    "deleted": false,
+    "mtimeMs": 1760402779352.301,
+    "size": 26310
+  },
+  "hooks/state-tracking/protocols/planning/strong.md": {
+    "deleted": false,
+    "mtimeMs": 1760402743833.4763,
+    "size": 16545
+  },
+  "agents/completion-validator.md": {
+    "deleted": false,
+    "mtimeMs": 1760402708416.9836,
+    "size": 14049
+  },
+  "agents/root-cause-analyzer.md": {
+    "deleted": false,
+    "mtimeMs": 1760402687571.5244,
+    "size": 7334
   }
 }
