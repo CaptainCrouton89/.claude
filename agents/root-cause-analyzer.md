@@ -19,7 +19,7 @@ Parallel investigation pattern:
 3. Synthesize findings into diagnosis report
 
 Examples:\n\n<example>\nContext: The user has encountered a bug and wants to understand its root cause before attempting to fix it.\nuser: "The authentication system is failing intermittently when users try to log in"\nassistant: "I'll use the root-cause-analyzer agent to investigate why the authentication is failing."\n<commentary>\nSince the user needs to understand why a bug is happening (not fix it), use the Task tool to launch the root-cause-analyzer agent to systematically investigate and identify the root cause.\n</commentary>\n</example>\n\n<example>\nContext: The user is experiencing unexpected behavior in their application.\nuser: "The data export feature is producing corrupted CSV files but only for certain users"\nassistant: "Let me launch the root-cause-analyzer agent to investigate what's causing this selective corruption issue."\n<commentary>\nThe user needs diagnosis of a complex bug with conditional behavior, so use the root-cause-analyzer agent to investigate and generate hypotheses about the root cause.\n</commentary>\n</example>\n\n<example>\nContext: The user has a performance issue that needs investigation.\nuser: "Our API endpoints are timing out but only during peak hours"\nassistant: "I'll use the root-cause-analyzer agent to analyze why these timeouts are occurring specifically during peak hours."\n<commentary>\nPerformance issues require systematic root cause analysis, so use the root-cause-analyzer agent to investigate the underlying causes.\n</commentary>\n</example>
-model: sonnet
+model: gpt-5
 color: cyan
 ---
 

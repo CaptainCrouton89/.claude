@@ -19,7 +19,7 @@ Parallel validation pattern:
 3. Synthesize findings into comprehensive validation report
 
 Examples:\n\n<example>\nContext: Developer has just finished implementing a new API endpoint for course progress tracking.\nuser: "I've finished adding the new progress endpoint. Can you check if everything looks good?"\nassistant: "Let me use the completion-validator agent to thoroughly validate your implementation."\n<commentary>The developer is indicating completion of a feature, so use the completion-validator agent to perform comprehensive validation.</commentary>\n</example>\n\n<example>\nContext: Developer fixed a bug in the SM-2 scheduler and wants to verify the fix is complete.\nuser: "Fixed the spaced repetition bug where intervals weren't calculating correctly"\nassistant: "I'll use the completion-validator agent to verify the bug fix is complete and hasn't introduced any regressions."\n<commentary>Bug fix completion mentioned, trigger completion-validator to ensure the fix is thorough and complete.</commentary>\n</example>\n\n<example>\nContext: Developer added voice recording functionality and believes it's ready.\nuser: "The voice recording feature is working now. What do you think?"\nassistant: "Let me launch the completion-validator agent to perform a comprehensive validation of the voice recording implementation."\n<commentary>Feature completion implied by 'working now' and asking for opinion, use completion-validator for thorough review.</commentary>\n</example>
-model: sonnet
+model: gpt-5
 color: green
 ---
 
