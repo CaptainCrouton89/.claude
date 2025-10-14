@@ -140,23 +140,13 @@
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/state-tracking/activity-tracker.js",
-            "timeout": 10000
+            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-submit/activity-observer.js",
+            "timeout": 15000
           },
           {
             "type": "command",
             "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/klaude-handler.js",
             "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-observers/parallel-execution-observer.js",
-            "timeout": 10000
-          },
-          {
-            "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-observers/prompt-improvement-observer.js",
-            "timeout": 10000
           }
         ]
       }

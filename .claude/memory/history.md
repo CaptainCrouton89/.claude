@@ -1,8 +1,14 @@
 ---
 created: 2025-10-09T18:35:23.539Z
-last_updated: 2025-10-14T02:57:56.714Z
+last_updated: 2025-10-14T07:50:41.974Z
 archive: .claude/memory/archive.jsonl
 ---
+## 2025-10-14: refactored user-prompt-submit hooks architecture
+
+- removed standalone observer scripts (parallel-execution-observer.js and prompt-improvement-observer.js)
+- consolidated activity tracking into hooks/user-prompt-submit/activity-observer.js with increased timeout (15s)
+- updated settings.json to reflect new hook architecture, reducing user-prompt-submit hooks from 4 to 2
+
 ## 2025-10-14: attempted parallel agent investigation
 
 - spawned 4 general-purpose agents to investigate codebase
@@ -240,9 +246,3 @@ archive: .claude/memory/archive.jsonl
   - spawns detached cursor-agent process with stream-json output
   - parses streaming JSON events to extract assistant content
   - collectTextChunks() recursively extracts text from nested event structures
-  - updates agent status (done/failed) based on event types
-
-## 2025-10-14: tested agent interceptor with Cursor CLI integration
-
-- verified agent interceptor correctly detects non-Anthropic models (grok-code-fast-1)
-  - interceptor routed grok-test agent to cursor-agent CLI
