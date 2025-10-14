@@ -1,0 +1,60 @@
+#!/usr/bin/env node
+
+import { query } from '../claude-cli/sdk.mjs';
+
+// Parse JSON input from stdin or command-line args
+async function main() {
+  let options = {};
+
+  // Read from stdin if available
+  if (!process.stdin.isTTY) {
+    const chunks = [];
+    for await (const chunk of process.stdin) {
+      chunks.push(chunk);
+    }
+    const input = Buffer.concat(chunks).toString('utf-8').trim();
+    if (input) {
+      try {
+        options = JSON.parse(input);
+      } catch (err) {
+        console.error('Invalid JSON input:', err.message);
+        process.exit(1);
+      }
+    }
+  }
+
+  // Override with command-line args if provided
+  const args = process.argv.slice(2);
+  if (args.length > 0) {
+    try {
+      options = JSON.parse(args[0]);
+    } catch (err) {
+      console.error('Invalid JSON argument:', err.message);
+      process.exit(1);
+    }
+  }
+
+  if (!options.prompt) {
+    console.error('Error: "prompt" field is required');
+    console.error('Usage: claude-query \'{"prompt": "your query", "options": {...}}\'');
+    console.error('   or: echo \'{"prompt": "your query"}\' | claude-query');
+    process.exit(1);
+  }
+
+  try {
+    const result = query(options);
+
+    // Stream responses
+    for await (const event of result) {
+      console.log(JSON.stringify(event));
+    }
+  } catch (err) {
+    console.error('Query error:', err.message);
+    process.exit(1);
+  }
+}
+
+main().catch(err => {
+  console.error('Fatal error:', err);
+  process.exit(1);
+});
