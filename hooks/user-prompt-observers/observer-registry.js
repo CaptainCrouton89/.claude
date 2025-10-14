@@ -20,7 +20,7 @@ const ACTIVITY_OBSERVERS = [
   {
     name: 'code-review',
     protocolDir: 'code-review',
-    thresholds: { basic: 3, comprehensive: 5 },
+    thresholds: { basic: 4, comprehensive: 6 },
     emoji: '👀'
   },
   {
@@ -50,13 +50,13 @@ const ACTIVITY_OBSERVERS = [
   {
     name: 'requirements-gathering',
     protocolDir: 'requirements-gathering',
-    thresholds: { basic: 3, comprehensive: 5 },
+    thresholds: { basic: 5, comprehensive: 7 },
     emoji: '❓'
   },
   {
     name: 'security-auditing',
     protocolDir: 'security-audit',
-    thresholds: { basic: 3, comprehensive: 5 },
+    thresholds: { basic: 5, comprehensive: 7 },
     emoji: '🔒'
   },
   {
