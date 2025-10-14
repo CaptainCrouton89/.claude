@@ -169,8 +169,14 @@ function loadSettings(cwd) {
 
   // Load from global ignore file
   if (homeDir) {
-    const globalIgnorePath = join(homeDir, '.claude', '.claude-md-manager-ignore');
-    excludedDirectories.push(...loadIgnoreFile(globalIgnorePath));
+    const candidatePaths = [
+      join(homeDir, '.claude', '.claude-md-manager-ignore'),
+      join(homeDir, '.claude-md-manager-ignore')
+    ];
+
+    for (const path of candidatePaths) {
+      excludedDirectories.push(...loadIgnoreFile(path));
+    }
   }
 
   // Load from local ignore file
@@ -195,6 +201,15 @@ function isDirectoryExcluded(relativePath, excludedPatterns) {
 
     // Check if path starts with pattern (handles "foo/" matching "foo/bar")
     if (relativePath.startsWith(normalizedPattern + '/')) return true;
+
+    // Handle simple wildcard directory patterns like "foo/*"
+    const wildcardDirMatch = normalizedPattern.match(/^(.*)\/(\*)$/);
+    if (wildcardDirMatch) {
+      const baseDir = wildcardDirMatch[1];
+      if (relativePath === baseDir || relativePath.startsWith(baseDir + '/')) {
+        return true;
+      }
+    }
 
     // Check if any path segment matches
     for (const part of pathParts) {
