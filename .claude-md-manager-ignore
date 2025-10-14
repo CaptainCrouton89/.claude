@@ -6,3 +6,4 @@ commands/*
 agents/*
 .claude/
 output-styles/
+file-templates/
