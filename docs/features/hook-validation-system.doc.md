@@ -268,7 +268,7 @@ Environment variables:
 
 ## Related Documentation
 
-- Architecture: `@~/.claude/.docs/guides/hooks.md`
+- Architecture: `@~/.claude/docs/guides/hooks.md`
 - SDK reference: `@~/.claude/claude-cli/sdk.mjs`
 - Hook configuration: `@.claude/settings.json`
 - CLAUDE.md format: `@.claude/CLAUDE.md`

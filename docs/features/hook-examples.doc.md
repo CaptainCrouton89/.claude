@@ -16,8 +16,8 @@ Developers reference this guide when building custom hooks to understand the exa
 ## Implementation
 
 ### Key Files
-- `.docs/guides/hook-examples.md` - Comprehensive examples of all hook event types and tool inputs/outputs
-- `.docs/guides/hooks.md` - Main hooks reference documentation with configuration and API details
+- `docs/guides/hook-examples.md` - Comprehensive examples of all hook event types and tool inputs/outputs
+- `docs/guides/hooks.md` - Main hooks reference documentation with configuration and API details
 
 ### Event Categories Documented
 
@@ -90,6 +90,6 @@ sys.exit(0)
 - Validation: Use examples to build hooks, verify they parse data correctly
 
 ## Related Documentation
-- Architecture: `.docs/guides/hooks.md` - Complete hooks system reference
+- Architecture: `docs/guides/hooks.md` - Complete hooks system reference
 - Guide: Hook system configuration and event types
 - Connection: Examples support the main hooks architecture by providing concrete data structures for implementation

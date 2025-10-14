@@ -19,7 +19,7 @@ Users can switch between different Claude Code personalities that maintain all c
 - `output-styles/brainstorming.md` - Creative ideation and collaborative discovery mode
 - `output-styles/business-panel.md` - Multi-expert business analysis with 9 thought leaders
 - `output-styles/deep-research.md` - Systematic investigation with evidence-based reasoning
-- `.docs/guides/output-styles.md` - User guide explaining the feature and usage
+- `docs/guides/output-styles.md` - User guide explaining the feature and usage
 - `hooks/output-style-switcher.py` - Automatic style detection from prompt keywords
 
 ### Database
@@ -55,6 +55,6 @@ Users can switch between different Claude Code personalities that maintain all c
   - All styles retain access to Read, Write, Edit, Bash, and other tools
 
 ## Related Documentation
-- Architecture: `.docs/guides/output-styles.md`
+- Architecture: `docs/guides/output-styles.md`
 - Hook configuration: `hooks/output-style-switcher.py`
 - Settings management: `.claude/settings.local.json`

@@ -21,7 +21,7 @@ Users can naturally trigger different output styles by using relevant keywords i
 ### Key Files
 - `hooks/output-style-switcher.py` - Main hook script that detects keywords and switches styles
 - `.claude/settings.local.json` - Project settings file where outputStyle is stored
-- `.docs/guides/output-styles.md` - Documentation on output styles system
+- `docs/guides/output-styles.md` - Documentation on output styles system
 - `output-styles/*.md` - Individual output style definitions
 
 ### Database
@@ -54,5 +54,5 @@ User: "Now implement the login feature we discussed"
   - No style change occurs when keywords don't match or current style is already correct
 
 ## Related Documentation
-- Output Styles: `.docs/guides/output-styles.md`
-- Hooks: `.docs/guides/hooks.md`
+- Output Styles: `docs/guides/output-styles.md`
+- Hooks: `docs/guides/hooks.md`

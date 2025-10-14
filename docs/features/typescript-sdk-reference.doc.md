@@ -18,7 +18,7 @@ Developers import `@anthropic-ai/claude-agent-sdk` to programmatically control C
 ## Implementation
 
 ### Key Files
-- `.docs/guides/typescript-sdk.md` - Complete API reference with all types and functions
+- `docs/guides/typescript-sdk.md` - Complete API reference with all types and functions
 - The reference is organized into sections: Functions, Types, Message Types, Hook Types, Tool Input/Output Types, Permission Types
 
 ### Core Functions

@@ -400,13 +400,13 @@ tail -f ~/.claude/logs/activity-tracker.log
 ## Related Documentation
 
 ### Architecture
-- `.docs/guides/hooks.md` - Claude Code hooks reference documentation
+- `docs/guides/hooks.md` - Claude Code hooks reference documentation
   - Hook events (UserPromptSubmit, PreToolUse, PostToolUse, etc.)
   - Hook input/output schemas
   - JSON vs exit code output patterns
   - Security considerations and best practices
 
-- `.docs/guides/hook-examples.md` - Real hook event examples
+- `docs/guides/hook-examples.md` - Real hook event examples
   - Complete event schemas with actual data
   - Tool input/output examples (Bash, Read, Write, TodoWrite, Task)
   - PreToolUse and PostToolUse event pairs
