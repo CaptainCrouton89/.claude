@@ -1,17 +1,37 @@
 {
+  "state/claude-md-manager-cache.json": {
+    "deleted": false,
+    "mtimeMs": 1760410062839.5872,
+    "size": 838
+  },
+  "hooks/pre-tool-use/agent-interceptor.js": {
+    "deleted": false,
+    "mtimeMs": 1760409980769.303,
+    "size": 20876
+  },
   "agents/completion-validator.md": {
     "deleted": false,
-    "mtimeMs": 1760404661413.8953,
-    "size": 14030
+    "mtimeMs": 1760408793760.2388,
+    "size": 5454
+  },
+  "agents-library/research-specialist.md": {
+    "deleted": false,
+    "mtimeMs": 1760408422208.7012,
+    "size": 3460
+  },
+  "agents/code-finder.md": {
+    "deleted": false,
+    "mtimeMs": 1760408222116.9004,
+    "size": 6060
   },
   "agents/root-cause-analyzer.md": {
     "deleted": false,
-    "mtimeMs": 1760404289817.9019,
-    "size": 7333
+    "mtimeMs": 1760408719787.2717,
+    "size": 7368
   },
-  "state/claude-md-manager-cache.json": {
+  "hooks/lifecycle/claude-md-manager.mjs": {
     "deleted": false,
-    "mtimeMs": 1760404191285.3816,
-    "size": 2071
+    "mtimeMs": 1760409578516.2043,
+    "size": 20502
   }
 }
