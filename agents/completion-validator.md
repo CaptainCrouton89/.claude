@@ -85,7 +85,7 @@ You are an elite Software Quality Assurance Architect with 15+ years of experien
 
 ### Agent Delegation Strategy
 
-**For each critical code path, delegate to code-finder-advanced agents:**
+**For each critical code path, delegate to code-finder agents:**
 
 <agent_usage_pattern>
 
@@ -306,7 +306,7 @@ Prove the data flow with concrete evidence from the codebase.
 - Show the connection between components with actual imports/calls
 
 **Parallel investigation:**
-- Launch multiple code-finder-advanced agents for independent code paths
+- Launch multiple code-finder agents for independent code paths
 - Investigate data/service/API/UI layers concurrently
 - Batch file reads when gathering initial context
 - Use `./agent-responses/await {agent_id}` to retrieve findings
