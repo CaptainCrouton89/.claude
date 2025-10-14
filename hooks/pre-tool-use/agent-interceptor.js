@@ -1,19 +1,66 @@
 #!/usr/bin/env node
 
-const { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, unlinkSync } = require('fs');
 const { join } = require('path');
-const { homedir } = require('os');
-const { spawn } = require('child_process');
+const { loadAgentDefinition } = require('./agent-system/agent-loader');
+const { loadMcpServerLibrary, selectMcpServers } = require('./agent-system/mcp-manager');
+const { readRegistry, writeRegistry, createAgentRegistryEntry, updateAgentPid } = require('./agent-system/registry-manager');
+const {
+  isAnthropicModel,
+  setupAgentEnvironment,
+  writeInitialLog,
+  createDelegationMessage,
+  spawnClaudeAgent,
+  spawnCursorAgent
+} = require('./agent-system/spawn-helpers');
 
 const MAX_RECURSION_DEPTH = 3;
 
-function isAnthropicModel(modelString) {
-  if (!modelString) return true; // Default to Anthropic
-  const model = modelString.toLowerCase();
-  return model.startsWith('sonnet') ||
-         model.startsWith('opus') ||
-         model.startsWith('haiku') ||
-         model.includes('claude');
+/**
+ * Denies the spawn request and exits
+ * @param {string} reason - Reason for denial
+ */
+function denySpawn(reason) {
+  const output = {
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'deny',
+      permissionDecisionReason: reason
+    }
+  };
+  console.log(JSON.stringify(output));
+  process.exit(0);
+}
+
+/**
+ * Checks if the current agent has permission to spawn the subagent
+ * @param {string|null} parentAgentId - Parent agent ID
+ * @param {string} subagentType - Type of subagent to spawn
+ * @param {Object} registry - Agent registry
+ */
+function checkAgentPermissions(parentAgentId, subagentType, registry) {
+  const parentAgent = parentAgentId ? registry[parentAgentId] : null;
+
+  if (parentAgent && Array.isArray(parentAgent.allowedAgents) && !parentAgent.allowedAgents.includes(subagentType)) {
+    const allowedList = parentAgent.allowedAgents.length > 0 ? parentAgent.allowedAgents.join(', ') : 'none';
+    const parentType = parentAgent.agentType || parentAgentId;
+    denySpawn(`Agent '${parentType}' can only spawn: ${allowedList}. '${subagentType}' is not permitted.`);
+  }
+
+  if (!parentAgentId) {
+    const rootDefinition = loadAgentDefinition('root');
+    if (Array.isArray(rootDefinition.allowedAgents) && !rootDefinition.allowedAgents.includes(subagentType)) {
+      const allowedList = rootDefinition.allowedAgents.length > 0 ? rootDefinition.allowedAgents.join(', ') : 'none';
+      denySpawn(`Root session can only spawn: ${allowedList}. '${subagentType}' is not permitted.`);
+    }
+  }
+}
+
+/**
+ * Generates a unique agent ID
+ * @returns {string} Agent ID
+ */
+function generateAgentId() {
+  return `agent_${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
 }
 
 async function main() {
@@ -40,341 +87,101 @@ async function main() {
 
   // Block if max depth reached
   if (currentDepth >= MAX_RECURSION_DEPTH) {
-    const output = {
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: `Maximum agent recursion depth (${MAX_RECURSION_DEPTH}) reached. Current depth: ${currentDepth}. Cannot spawn more nested agents.`
-      }
-    };
-    console.log(JSON.stringify(output));
-    process.exit(0);
+    denySpawn(`Maximum agent recursion depth (${MAX_RECURSION_DEPTH}) reached. Current depth: ${currentDepth}. Cannot spawn more nested agents.`);
   }
 
-  const agentId = `agent_${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
+  const agentId = generateAgentId();
+  const { agentLogPath, registryPath } = setupAgentEnvironment(hookData, agentId);
 
-  // Create agents directory structure in the current working directory
-  const agentsDir = join(hookData.cwd, 'agent-responses');
-  mkdirSync(agentsDir, { recursive: true });
-
-  // Copy await script to agent-responses directory
-  const { copyFileSync } = require('fs');
-  const awaitSource = join(homedir(), '.claude', 'await');
-  const awaitDest = join(agentsDir, 'await');
-  try {
-    copyFileSync(awaitSource, awaitDest);
-    const { chmodSync } = require('fs');
-    chmodSync(awaitDest, 0o755);
-  } catch (error) {
-    // Continue if copy fails
-  }
-
-  const agentLogPath = join(agentsDir, `${agentId}.md`);
-  const registryPath = join(agentsDir, '.active-pids.json');
-
-  // Create initial log file
+  // Parse tool input
   const toolInput = hookData.tool_input || {};
   const description = toolInput.description || 'Unnamed task';
   const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task (1-2 sentences, max. Incomplete sentences are fine). Only give these updates if you have important information to share. Prepend updates with: [UPDATE]";
   const subagentType = toolInput.subagent_type || 'general-purpose';
 
-  // Extract agent content for outputStyle, model, and forbidden agents
-  let outputStyleContent = null;
-  let forbiddenAgents = [];
-  let modelName = null;
-  try {
-    const agentFilePath = join(homedir(), '.claude', 'agents', `${subagentType}.md`);
-    if (existsSync(agentFilePath)) {
-      const agentFileContent = readFileSync(agentFilePath, 'utf-8');
-      const frontmatterMatch = agentFileContent.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-      if (frontmatterMatch) {
-        outputStyleContent = frontmatterMatch[2].trim();
+  // Load agent definition
+  const agentDefinition = loadAgentDefinition(subagentType);
+  const outputStyleContent = agentDefinition.systemPrompt;
+  const modelName = agentDefinition.modelName;
+  const agentAllowedAgents = agentDefinition.allowedAgents;
+  const agentAllowedMcpServers = agentDefinition.allowedMcpServers;
 
-        // Parse frontmatter YAML
-        const frontmatter = frontmatterMatch[1];
+  // Load and select MCP servers
+  const { servers: availableMcpServers } = loadMcpServerLibrary({
+    cwd: hookData.cwd,
+    projectDir: hookData.project_dir || null
+  });
 
-        // Extract model
-        const modelMatch = frontmatter.match(/model:\s*(\S+)/);
-        if (modelMatch) {
-          modelName = modelMatch[1];
-        }
-
-        // Extract forbiddenAgents
-        const forbiddenAgentsMatch = frontmatter.match(/forbiddenAgents:\s*\[(.*?)\]/);
-        if (forbiddenAgentsMatch) {
-          forbiddenAgents = forbiddenAgentsMatch[1]
-            .split(',')
-            .map(a => a.trim().replace(/['"]/g, ''))
-            .filter(Boolean);
-        }
-      } else {
-        outputStyleContent = agentFileContent.trim();
-      }
-    }
-  } catch (error) {
-    // Fall back to defaults if agent file reading fails
+  let resolvedMcpServers = null;
+  let missingMcpServers = [];
+  if (Array.isArray(agentAllowedMcpServers)) {
+    const selection = selectMcpServers(agentAllowedMcpServers, availableMcpServers);
+    resolvedMcpServers = selection.servers;
+    missingMcpServers = selection.missing;
   }
 
-  // Only forbid self-spawning for non-general agents
-  if (subagentType !== 'general-purpose') {
-    forbiddenAgents.push(subagentType);
-  }
+  const normalizedAllowedAgents = Array.isArray(agentAllowedAgents) ? [...agentAllowedAgents] : null;
+  const normalizedAllowedMcpServers = Array.isArray(agentAllowedMcpServers) ? [...agentAllowedMcpServers] : null;
 
-  // Check if parent agent type is trying to spawn a forbidden agent (including itself)
-  if (parentAgentId && existsSync(registryPath)) {
-    try {
-      const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
-      const parentAgent = registry[parentAgentId];
-      if (parentAgent?.agentType && parentAgent.agentType === subagentType) {
-        const output = {
-          hookSpecificOutput: {
-            hookEventName: 'PreToolUse',
-            permissionDecision: 'deny',
-            permissionDecisionReason: `Agent '${parentAgent.agentType}' cannot spawn itself. Self-spawning is forbidden.`
-          }
-        };
-        console.log(JSON.stringify(output));
-        process.exit(0);
-      }
-    } catch (error) {
-      // Continue if registry read fails
-    }
-  }
+  // Check permissions and initialize
+  let registry = readRegistry(registryPath);
+  checkAgentPermissions(parentAgentId, subagentType, registry);
+  writeInitialLog(agentLogPath, description, prompt, currentDepth, parentAgentId);
 
-  const initialLog = `---
-Task: ${description}
-Instructions: ${prompt}
-Started: ${new Date().toISOString()}
-Status: in-progress
-Depth: ${currentDepth}
-ParentAgent: ${parentAgentId || 'root'}
----
-
-`;
-
-  writeFileSync(agentLogPath, initialLog, 'utf-8');
+  // Track this agent in registry BEFORE spawning so children can find it
+  registry[agentId] = createAgentRegistryEntry(
+    agentId,
+    currentDepth,
+    parentAgentId,
+    subagentType,
+    normalizedAllowedAgents,
+    normalizedAllowedMcpServers,
+    missingMcpServers
+  );
+  writeRegistry(registryPath, registry);
 
   // Check if model is Anthropic or non-Anthropic for routing
   if (!isAnthropicModel(modelName)) {
     // Non-Anthropic model: delegate to Cursor CLI via background runner script
-
-    // Track this agent in registry BEFORE spawning (matching SDK pattern)
-    let registry = {};
-    if (existsSync(registryPath)) {
-      try {
-        registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
-      } catch {
-        registry = {};
-      }
-    }
-    registry[agentId] = {
-      pid: null, // Will update after spawn
-      depth: currentDepth,
-      parentId: parentAgentId,
-      agentType: subagentType
-    };
-    writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
-
-    const cursorArgs = [
-      '--print',
-      '--output-format', 'stream-json',
-      '--stream-partial-output',
-      '--force',
-      '--model', modelName || 'auto',
-      prompt
-    ];
-
-    const cursorRunnerPath = join(__dirname, 'cursor-runner.js');
-    const runnerEnv = {
-      ...process.env,
-      CLAUDE_AGENT_ID: agentId,
-      CLAUDE_AGENT_DEPTH: String(currentDepth + 1),
-      CURSOR_RUNNER_AGENT_ID: agentId,
-      CURSOR_RUNNER_LOG_PATH: agentLogPath,
-      CURSOR_RUNNER_REGISTRY_PATH: registryPath,
-      CURSOR_RUNNER_WORKING_DIRECTORY: hookData.cwd,
-      CURSOR_RUNNER_CURSOR_ARGS: JSON.stringify(cursorArgs),
-      CURSOR_RUNNER_CHILD_DEPTH: String(currentDepth + 1)
-    };
-
-    const rawStreamPath = agentLogPath.replace(/\.md$/, '.cursor.ndjson');
-    try {
-      unlinkSync(rawStreamPath);
-    } catch {
-      // File may not exist
-    }
-
-    const runnerProcess = spawn(process.execPath, [cursorRunnerPath], {
-      env: runnerEnv,
-      cwd: hookData.cwd,
-      detached: true,
-      stdio: 'ignore'
+    const runnerProcess = spawnCursorAgent({
+      agentId,
+      currentDepth,
+      hookData,
+      agentLogPath,
+      registryPath,
+      modelName,
+      prompt,
+      outputStyleContent
     });
 
-    registry[agentId].pid = runnerProcess.pid;
-    writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
-
+    updateAgentPid(registryPath, agentId, runnerProcess.pid);
     runnerProcess.unref();
 
-    // Calculate relative path from cwd
-    const { relative } = require('path');
-    const relativePath = relative(hookData.cwd, agentLogPath);
-
-    // Block the Task tool and return message to Claude
-    const output = {
-      hookSpecificOutput: {
-        hookEventName: "PreToolUse",
-        permissionDecision: "deny",
-        permissionDecisionReason: `Delegated to an agent. Response logged to @${relativePath} in real time.
-
-A hook will alert on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\`. *The user cannot monitor progress themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
-      },
-    };
-
+    const output = createDelegationMessage(hookData, agentLogPath, agentId);
     console.log(JSON.stringify(output));
     process.exit(0);
   }
 
   // Anthropic model: use existing SDK flow
-  // Execute agent using SDK in background - create temp script file
-  const agentScriptPath = join(agentsDir, `${agentId}_runner.mjs`);
-  const agentScript = `#!/usr/bin/env node
-import { appendFileSync } from 'fs';
-import { query } from '/Users/silasrhyneer/.claude/claude-cli/sdk.mjs';
-
-const agentLogPath = ${JSON.stringify(agentLogPath)};
-const prompt = ${JSON.stringify(prompt)};
-const cwd = ${JSON.stringify(hookData.cwd)};
-const outputStyleContent = ${JSON.stringify(outputStyleContent)};
-const forbiddenAgents = ${JSON.stringify(forbiddenAgents)};
-const agentId = ${JSON.stringify(agentId)};
-const childDepth = ${currentDepth + 1};
-
-(async () => {
-  try {
-    const queryOptions = {
-      cwd,
-      permissionMode: 'bypassPermissions',
-      metadata: {
-        agentId,
-        agentDepth: childDepth
-      },
-      hooks: {
-        PreToolUse: [
-          async (input) => {
-            // Block forbidden agents
-            if (input.tool_name === 'Task') {
-              const subagentType = input.tool_input?.subagent_type;
-              if (subagentType && forbiddenAgents.includes(subagentType)) {
-                return {
-                  hookSpecificOutput: {
-                    hookEventName: 'PreToolUse',
-                    permissionDecision: 'deny',
-                    permissionDecisionReason: \`This agent cannot spawn a '\${subagentType}' agent. Forbidden agents: \${forbiddenAgents.join(', ')}\`
-                  }
-                };
-              }
-            }
-            return {};
-          }
-        ]
-      }
-    };
-
-    if (outputStyleContent) {
-      queryOptions.customSystemPrompt = outputStyleContent;
-    }
-
-    const result = query({
-      prompt,
-      options: queryOptions
-    });
-
-    for await (const message of result) {
-      if (message.type === 'assistant') {
-        for (const block of message.message.content) {
-          if (block.type === 'text') {
-            appendFileSync(agentLogPath, block.text + '\\n', 'utf-8');
-          }
-        }
-      } else if (message.type === 'result') {
-        const status = message.subtype === 'success' ? 'done' : 'failed';
-        const endTime = new Date().toISOString();
-
-        // Read the file and update the front matter
-        const { readFileSync } = await import('fs');
-        const content = readFileSync(agentLogPath, 'utf-8');
-        const updatedContent = content.replace(/Status: in-progress/, \`Status: \${status}\\nEnded: \${endTime}\`);
-
-        const { writeFileSync } = await import('fs');
-        writeFileSync(agentLogPath, updatedContent, 'utf-8');
-      }
-    }
-  } catch (error) {
-    appendFileSync(agentLogPath, \`\\n\\n## Status: Failed\\n\\nError: \${error.message}\\n\`, 'utf-8');
-  }
-})();
-`;
-
-  writeFileSync(agentScriptPath, agentScript, 'utf-8');
-
-  // Track this agent in registry BEFORE spawning so children can find it
-  let registry = {};
-  if (existsSync(registryPath)) {
-    try {
-      registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
-    } catch {
-      registry = {};
-    }
-  }
-  registry[agentId] = {
-    pid: null, // Will update after spawn
-    depth: currentDepth,
-    parentId: parentAgentId,
-    agentType: subagentType
-  };
-  writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
-
-  const claudeRunnerPath = join(__dirname, 'claude-runner.js');
-  const runnerEnv = {
-    ...process.env,
-    CLAUDE_AGENT_ID: agentId,
-    CLAUDE_AGENT_DEPTH: String(currentDepth + 1),
-    CLAUDE_RUNNER_AGENT_ID: agentId,
-    CLAUDE_RUNNER_LOG_PATH: agentLogPath,
-    CLAUDE_RUNNER_REGISTRY_PATH: registryPath,
-    CLAUDE_RUNNER_WORKING_DIRECTORY: hookData.cwd,
-    CLAUDE_RUNNER_SCRIPT_PATH: agentScriptPath,
-    CLAUDE_RUNNER_CHILD_DEPTH: String(currentDepth + 1)
-  };
-
-  const runnerProcess = spawn(process.execPath, [claudeRunnerPath], {
-    env: runnerEnv,
-    cwd: hookData.cwd,
-    detached: true,
-    stdio: 'ignore'
+  const agentScriptPath = join(__dirname, 'agent-system', 'agent-script.mjs');
+  
+  const runnerProcess = spawnClaudeAgent({
+    agentId,
+    currentDepth,
+    hookData,
+    agentLogPath,
+    registryPath,
+    agentScriptPath,
+    prompt,
+    outputStyleContent,
+    normalizedAllowedAgents,
+    resolvedMcpServers
   });
 
-  registry[agentId].pid = runnerProcess.pid;
-  writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
-
+  updateAgentPid(registryPath, agentId, runnerProcess.pid);
   runnerProcess.unref();
 
-  // Calculate relative path from cwd
-  const { relative } = require('path');
-  const relativePath = relative(hookData.cwd, agentLogPath);
-
-  // Block the Task tool and return message to Claude
-  const output = {
-    hookSpecificOutput: {
-      hookEventName: "PreToolUse",
-      permissionDecision: "deny",
-      permissionDecisionReason: `Delegated to an agent. Response logged to @${relativePath} in real time.
-
-A hook will alert on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\`. *The user cannot monitor progress themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
-    },
-  };
-
+  const output = createDelegationMessage(hookData, agentLogPath, agentId);
   console.log(JSON.stringify(output));
   process.exit(0);
 }
