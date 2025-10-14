@@ -14,22 +14,22 @@ Each activity requires:
 1. **Prompt file** - `prompts/[activity-name].md` defining detection patterns
 2. **Registry entry** - Config in `ACTIVITY_OBSERVERS` array with:
    - `name` - Activity identifier (matches prompt filename)
-   - `protocolDir` - Directory in `hooks/state-tracking/protocols/`
-   - `thresholds` - `{ moderate: N, strong: M }` for protocol injection
+   - `protocolDir` - Directory in `protocols/`
+   - `thresholds` - `{ basic: N, comprehensive: M }` for protocol injection
    - `emoji` - Display icon for context messages
-3. **Protocol files** - `moderate.md` and `strong.md` in protocol directory
+3. **Protocol files** - `basic.md` and `comprehensive.md` in protocol directory
 
 ## Protocol Injection Logic
 
 Protocols inject based on effort (1-10 scale) relative to thresholds:
-- **Moderate**: effort ∈ [moderate, moderate+3]
-- **Strong**: effort ∈ [strong, strong+3]
+- **Basic**: effort ∈ [basic-1, basic+1]
+- **Comprehensive**: effort ∈ [comprehensive-1, comprehensive+1]
 - **Both**: When ranges overlap
 
-Example with thresholds `{ moderate: 5, strong: 7 }`:
-- effort=5-6 → moderate only
-- effort=7-8 → both moderate and strong
-- effort=9-10 → strong only
+Example with thresholds `{ basic: 5, comprehensive: 7 }`:
+- effort=4-6 → basic only
+- effort=6-8 → comprehensive only (or both at effort=6)
+- effort=7-8 → comprehensive only
 
 ## Confidence & Matching
 
