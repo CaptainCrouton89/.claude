@@ -1,8 +1,42 @@
 ---
 created: 2025-10-09T18:35:23.539Z
-last_updated: 2025-10-14T00:47:01.116Z
+last_updated: 2025-10-14T01:09:11.016Z
 archive: .claude/memory/archive.jsonl
 ---
+## 2025-10-14: updated documentation to reference deprecated code-finder-advanced agent
+
+- updated feature documentation files to reflect code-finder-advanced deprecation
+  - modified .docs/features/code-finder-advanced.doc.md with updated references
+  - adjusted activity-tracker.doc.md, contextual-workflow-reminders.doc.md, feature-planner-agent.doc.md with path corrections
+- cleaned up protocol and agent documentation
+  - simplified investigation/moderate.md protocol guidance
+  - updated completion-validator.md, commands/plan/*.md with minor refinements
+  - adjusted output-styles/deep-research.md formatting
+- updated state tracking benchmarks
+  - refreshed hooks/state-tracking/benchmark/*.json files
+  - updated annotations, results, and samples with current data
+
+## 2025-10-14: consolidated code-finder agents from dual to single agent system
+
+- removed code-finder-advanced agent in favor of unified code-finder using Grok model
+  - updated agents/completion-validator.md to reference code-finder only
+  - updated .docs/features/code-finder-advanced.doc.md to reflect Grok model usage
+  - updated .docs/features/activity-tracker.doc.md to remove advanced variant references
+- updated state tracking protocols to use single code-finder agent
+  - hooks/state-tracking/protocols/investigation/moderate.md
+  - hooks/state-tracking/protocols/feature-development/moderate.md
+  - hooks/state-tracking/protocols/planning/moderate.md
+  - hooks/state-tracking/protocols/requirements-gathering/strong.md
+- updated planning commands and QA review to reference unified code-finder
+  - commands/plan/requirements.md
+  - commands/plan/shared.md
+  - commands/qa/review.md
+- updated benchmark data to reflect agent name changes
+  - hooks/state-tracking/benchmark/annotations.json
+  - hooks/state-tracking/benchmark/results.json
+  - hooks/state-tracking/benchmark/samples.json
+- updated output-styles/deep-research.md with consolidated agent references
+
 ## 2025-10-14: extracted claude-runner from agent interceptor
 
 - created hooks/pre-tool-use/claude-runner.js as standalone runner
@@ -212,37 +246,3 @@ archive: .claude/memory/archive.jsonl
 ## 2025-10-13: streamlined configuration by removing redundant protocols and commands
 
 - removed redundant execute commands
-  - deleted commands/execute/implement-plan.md
-  - deleted commands/execute/quick-with-subtasks.md
-- deleted planning output style (output-styles/planning.md) - 288 lines removed
-- streamlined state tracking protocols
-  - reduced hooks/state-tracking/protocols/investigation/strong.md by ~430 lines
-  - reduced hooks/state-tracking/protocols/planning/strong.md by ~260 lines
-  - simplified hooks/state-tracking/protocols/feature-development/strong.md
-  - removed protocol sections from bug-fixing, code-review, and documentation
-- enhanced claude-md-manager.mjs with 281 additional lines of functionality
-  - improved CLAUDE.md file management logic
-  - added more sophisticated processing capabilities
-- updated history.md with consolidated session entries
-- removed state-tracking entry from settings.json
-
-## 2025-10-13: removed agent parallelization examples from protocol files
-
-- cleaned up state-tracking protocol files by removing agent-parallelization examples
-  - removed examples from hooks/state-tracking/protocols/bug-fixing/strong.md (20 lines)
-  - removed examples from hooks/state-tracking/protocols/code-review/strong.md (23 lines)
-  - removed examples from hooks/state-tracking/protocols/documentation/strong.md (32 lines)
-  - removed examples from hooks/state-tracking/protocols/feature-development/strong.md
-  - removed examples from hooks/state-tracking/protocols/investigation/strong.md (460 lines)
-  - removed examples from hooks/state-tracking/protocols/planning/strong.md (291 lines)
-- deleted obsolete files
-  - removed commands/execute/implement-plan.md (25 lines)
-  - removed commands/execute/quick-with-subtasks.md (5 lines)
-  - removed output-styles/planning.md (288 lines)
-- updated hooks/lifecycle/claude-md-manager.mjs (51 line changes)
-- updated .claude/memory/history.md (48 line changes)
-
-## 2025-10-13: fixed claude-md-manager duplicate processing bug
-
-- investigated claude-md-manager.mjs processing behavior for multiple files in same directory
-- identified bug: each file in a directory triggered separate processing, causing excessive duplicate work
