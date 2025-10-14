@@ -87,7 +87,7 @@ Use code-finder agents to systematically discover patterns and affected code. Ag
 ```xml
 <invoke name="Task">
   <parameter name="description">Investigate [specific area]</parameter>
-  <parameter name="subagent_type">code-finder-advanced</parameter>
+  <parameter name="subagent_type">code-finder</parameter>
   <parameter name="prompt">
 Investigate [feature/refactor] focusing on:
 

@@ -37,7 +37,7 @@ Investigate before asking questions:
 <function_calls>
   <invoke name="Task">
     <parameter name="description">Investigate existing notification system</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
+    <parameter name="subagent_type">code-finder</parameter>
     <parameter name="prompt">
       Find existing notification/messaging functionality:
       - Notification components/services

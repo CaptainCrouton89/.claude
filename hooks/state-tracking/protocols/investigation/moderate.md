@@ -6,13 +6,10 @@
 
 ## Agent Selection
 
-**code-finder-advanced** (default):
+**code-finder**:
 - Multi-file flows and architecture
 - Tracing dependencies
 - Pattern discovery
-
-**code-finder** (simple cases):
-- Known location, simple searches
 - Single file/directory focus
 
 **root-cause-analyzer** (debugging):
@@ -36,7 +33,7 @@
 ```xml
 <invoke name="Task">
   <parameter name="description">Investigate [feature]</parameter>
-  <parameter name="subagent_type">code-finder-advanced</parameter>
+  <parameter name="subagent_type">code-finder</parameter>
   <parameter name="prompt">
 Investigate [feature]:
 
@@ -64,7 +61,7 @@ Investigate [feature]:
 <function_calls>
   <invoke name="Task">
     <parameter name="description">Investigate backend</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
+    <parameter name="subagent_type">code-finder</parameter>
     <parameter name="prompt">
       Investigate backend implementation of [feature]:
 
@@ -74,7 +71,7 @@ Investigate [feature]:
   </invoke>
   <invoke name="Task">
     <parameter name="description">Investigate frontend</parameter>
-    <parameter name="subagent_type">code-finder-advanced</parameter>
+    <parameter name="subagent_type">code-finder</parameter>
     <parameter name="prompt">
       Investigate frontend implementation of [feature]:
 

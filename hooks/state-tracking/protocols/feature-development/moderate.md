@@ -43,7 +43,7 @@ Ready to proceed?"
 ```xml
 <invoke name="Task">
   <parameter name="description">Investigate [area]</parameter>
-  <parameter name="subagent_type">code-finder-advanced</parameter>
+  <parameter name="subagent_type">code-finder</parameter>
   <parameter name="prompt">
 Investigate [feature area]:
 
