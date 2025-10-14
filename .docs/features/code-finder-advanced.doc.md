@@ -1,7 +1,7 @@
-# Code Finder Advanced Agent
+# Code Finder Agent
 
 ## Overview
-Advanced code discovery agent that uses Claude 3.5 Sonnet for sophisticated semantic understanding and thorough code investigations across complex codebases. Designed for finding code through conceptual relationships rather than simple text matching.
+Code discovery agent that uses Grok for sophisticated semantic understanding and thorough code investigations across complex codebases. Designed for finding code through conceptual relationships rather than simple text matching.
 
 ## User Perspective
 Users interact with this agent when they need deep code investigation that goes beyond basic search. The agent automatically recognizes when queries require semantic analysis, cross-file dependencies, or pattern recognition. Users simply ask natural language questions about code relationships, and the agent performs comprehensive discovery across the entire codebase.
@@ -16,8 +16,8 @@ Users interact with this agent when they need deep code investigation that goes 
 ## Implementation
 
 ### Key Files
-- `agents/code-finder-advanced.md` - Agent definition with search workflows and strategies
-- Uses Claude 3.5 Sonnet model for superior code comprehension
+- `agents/code-finder.md` - Agent definition with search workflows and strategies
+- Uses Grok model for superior code comprehension
 - Configured with orange color indicator for visual identification
 
 ### Search Workflow
@@ -33,7 +33,7 @@ Users interact with this agent when they need deep code investigation that goes 
 - **Dependencies**: Follow call chains, analyze type propagation
 
 ## Configuration
-- Model: `sonnet` (Claude 3.5 Sonnet)
+- Model: `grok`
 - Color: `orange`
 - Tools: Bash, Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, mcp__ide__getDiagnostics, mcp__ide__executeCode
 
@@ -41,7 +41,7 @@ Users interact with this agent when they need deep code investigation that goes 
 ```bash
 # Agent automatically triggered for complex investigations
 User: "How does the authentication flow work?"
-Agent: "I'll use the advanced code finder to trace the complete authentication flow across the codebase."
+Agent: "I'll use the code finder to trace the complete authentication flow across the codebase."
 
 # Comprehensive results with semantic understanding
 Agent finds: auth middleware, guards, services, DTOs, database functions, API routes
@@ -53,4 +53,3 @@ Agent finds: auth middleware, guards, services, DTOs, database functions, API ro
 
 ## Related Documentation
 - Architecture: `agents/` directory contains all available agents
-- Standard code finder: Use for simple text-based searches

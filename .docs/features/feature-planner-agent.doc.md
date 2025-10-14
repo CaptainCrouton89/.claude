@@ -54,5 +54,5 @@ assistant: "I've found all the authentication files. Now I'll use the feature-pl
 - Expected behavior: Should produce comprehensive, phase-based implementation plan that covers all technical aspects and edge cases
 
 ## Related Documentation
-- Other agents: `agents/code-finder-advanced.md` for discovery phase
+- Other agents: `agents/code-finder.md` for discovery phase
 - Agent system: Root `CLAUDE.md` for overall agent framework

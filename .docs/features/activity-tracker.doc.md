@@ -441,7 +441,7 @@ Each protocol provides comprehensive workflow guidance:
 
 - **INVESTIGATION.md** - Code exploration workflows
   - Investigation type classification (flow explanation, performance, logic, location)
-  - code-finder vs code-finder-advanced decision matrix
+  - code-finder usage patterns and capabilities
   - Parallel multi-domain investigation patterns
   - Performance analysis with bottleneck identification
 
