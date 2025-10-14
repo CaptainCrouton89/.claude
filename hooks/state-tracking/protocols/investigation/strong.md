@@ -9,7 +9,7 @@
 - Known feature, unclear location
 - Single-domain searches
 
-**code-finder-advanced** (Sonnet - deep):
+**code-finder** (Grok - deep):
 - Multi-file flows and architecture
 - Tracing dependencies and relationships
 - Pattern discovery
@@ -112,7 +112,7 @@ Detailed guidance for choosing the right agent based on investigation requiremen
 - "Where is the API_KEY constant defined?"
 - "Find all test files for authentication"
 
-### code-finder-advanced Agent
+### code-finder Agent (Deep Investigation)
 
 **Optimal Use Cases:**
 - Tracing execution flows through multiple files
@@ -127,11 +127,6 @@ Detailed guidance for choosing the right agent based on investigation requiremen
 - Dependency mapping
 - Design pattern recognition
 - Architectural insights
-
-**Limitations:**
-- Slower than code-finder
-- Higher cost per query
-- Overkill for simple searches
 
 **Example Tasks:**
 - "How does authentication work end-to-end?"
@@ -178,7 +173,7 @@ Practical examples showing complete investigation patterns with agent usage.
 
 **Strategy:** Parallel multi-domain investigation
 
-**Investigation focus areas:**
+**Investigation focus areas (3 parallel code-finder agents):**
 - Frontend: Checkout UI components, payment form submission, API calls, state management, error handling
 - Backend: Payment API endpoints, gateway integration (Stripe/PayPal), database transactions, webhooks, security measures
 - Post-payment: Confirmation emails/notifications, order status updates, webhook handlers, fulfillment integration
@@ -205,7 +200,7 @@ Practical examples showing complete investigation patterns with agent usage.
 
 **Phase 1: Locate the Slow Operation**
 
-Use code-finder-advanced to identify where slowness occurs by finding the entry point, tracing execution path, identifying all operations (DB queries, API calls, computations), and looking for obvious inefficiencies (N+1 queries, nested loops, large payloads).
+Use code-finder to identify where slowness occurs by finding the entry point, tracing execution path, identifying all operations (DB queries, API calls, computations), and looking for obvious inefficiencies (N+1 queries, nested loops, large payloads).
 
 **Phase 2: Root Cause Analysis (if needed)**
 
@@ -263,7 +258,7 @@ Systematic approach to diagnosing and resolving performance issues.
 
 **Goal:** Find where the slow operation occurs in code
 
-**Agent:** code-finder-advanced
+**Agent:** code-finder
 
 **Actions:**
 1. Locate entry point (API endpoint, UI component, background job)

@@ -122,7 +122,7 @@ This is critical for both features and refactors. Many plans fail because they m
 
 **Standard Impact Analysis (Use for 90% of tasks):**
 
-Use code-finder-advanced to perform comprehensive impact analysis: find ALL affected files, identify every usage/call site/dependency, map integration points, discover patterns, identify breaking changes and ripple effects. For refactors, MUST include all call sites, imports, tests, and configuration references.
+Use code-finder to perform comprehensive impact analysis: find ALL affected files, identify every usage/call site/dependency, map integration points, discover patterns, identify breaking changes and ripple effects. For refactors, MUST include all call sites, imports, tests, and configuration references.
 
 **Why this matters:** Plans are incomplete when they miss affected areas. Code-finder agents excel at comprehensive codebase analysis.
 
@@ -401,7 +401,7 @@ NotificationCenter re-renders → Toast appears
 
 **Step 2: Impact Analysis Investigation**
 
-Use code-finder-advanced to perform comprehensive impact analysis identifying ALL affected files, integration points (WebSocket, database, frontend state), patterns to follow, and potential conflicts across backend, frontend, and database layers.
+Use code-finder to perform comprehensive impact analysis identifying ALL affected files, integration points (WebSocket, database, frontend state), patterns to follow, and potential conflicts across backend, frontend, and database layers.
 
 **Step 3: Create Plan** → [Use template with findings, including complete impact analysis]
 
@@ -415,7 +415,7 @@ Use code-finder-advanced to perform comprehensive impact analysis identifying AL
 
 **Step 2: Critical Impact Analysis**
 
-Use code-finder-advanced to perform complete refactor impact analysis. CRITICAL: Find EVERY file that imports/uses the auth service, ALL call sites, complete dependency chain, all tests, integration points (middleware, guards, hooks, components), and configuration files that reference auth across backend, frontend, tests, and config.
+Use code-finder to perform complete refactor impact analysis. CRITICAL: Find EVERY file that imports/uses the auth service, ALL call sites, complete dependency chain, all tests, integration points (middleware, guards, hooks, components), and configuration files that reference auth across backend, frontend, tests, and config.
 
 **Agent returns:** 47 files affected across backend (12), frontend (23), tests (10), config (2)
 

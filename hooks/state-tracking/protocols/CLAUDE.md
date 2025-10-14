@@ -48,8 +48,7 @@ All protocols emphasize parallelization when appropriate:
 - Create shared dependencies first, then spawn parallel work
 
 ### Strategic Tool Usage
-- **code-finder** - Quick location of specific code elements
-- **code-finder-advanced** - Deep semantic analysis across codebase
+- **code-finder** - Deep semantic analysis across codebase for complex investigations
 - **root-cause-analyzer** - Systematic bug diagnosis
 - **frontend-ui-developer** - UI component creation following design patterns
 - **backend-developer** - API/service implementation with architectural consistency
