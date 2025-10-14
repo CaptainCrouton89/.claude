@@ -1,29 +1,88 @@
-# [Feature Name] Requirements
+# Requirements: [Feature Name]
 
 ## Overview
-[1-2 sentence description of what this feature does, its primary goal, and the problem it solves.]
+**Purpose:** [Brief description and why this is needed]
+**User Benefit:** [Value proposition]
+**Problem:** [What problem this solves]
+
+**Related Documentation:**
+- `docs/product-requirements.md` - [Product context and goals]
+- `docs/user-flows/[feature-slug].md` - [User journey]
+- `docs/feature-spec/[feature-slug].md` - [Technical spec]
+- `docs/api-contracts.yaml` - [API contracts]
+- `docs/system-design.md` - [Architecture]
+- `docs/data-plan.md` - [Data model]
 
 ## User Flow
-[Describe the step-by-step user experience. What the user sees, does, and expects at each stage.]
-1. [User action/trigger]
-2. [System response/UI change]
-3. [Subsequent user action]
-4. [Expected outcome]
+
+### Happy Path
+1. User [action/trigger]
+2. System [validation/processing]
+3. User sees [outcome/feedback]
+4. [Next step or completion]
+
+### Edge Cases
+- **Empty state:** [Behavior when no data]
+- **Error state:** [Behavior on failure]
+- **Loading state:** [What user sees during processing]
+- **Large dataset/performance:** [Considerations]
 
 ## Functional Requirements
-[List the specific capabilities the system must provide to support the user flow.]
-- The system MUST [requirement 1].
-- The system SHOULD [requirement 2].
 
-### User Interface
-- **Key Screens/Elements**: [Describe the main user-facing parts of the feature, e.g., "A new dashboard page", "A form for creating X", "A list of Y items"]
-- **User Interactions**: [How the user interacts with these elements, e.g., "Users can click buttons to trigger actions", "Input fields allow users to enter data", "Data is displayed in a sortable table"]
+### User Interactions
+- [Specific interaction 1]
+- [Specific interaction 2]
 
-### System Processing
-- **Core Operations**: [Describe the main functions the system performs, e.g., "Processes user requests to create/update/delete X", "Applies business rules to validate Y", "Generates Z reports"]
-- **Business Logic**: [High-level description of the rules and calculations the system applies, e.g., "Validates user input against predefined criteria", "Calculates prices based on quantity and discounts"]
+### Data Requirements
+- **Fields:** [List with types, required/optional]
+- **Validation:** [Rules per field]
+- **Relationships:** [Data dependencies]
+
+### API Requirements (if applicable)
+- **Endpoint:** [Method + path]
+- **Request:** [Payload structure]
+- **Response:** [Data structure]
+- **Errors:** [Error codes and handling]
+
+### UI Requirements (if applicable)
+- **Layout:** [Structure and components]
+- **States:** [Default, loading, error, success]
+- **Accessibility:** [WCAG requirements]
+- **Responsive:** [Mobile/tablet behavior]
+
+## Technical Requirements
+
+### Performance
+- Operation X: < [time target]
+- Page load: < [time target]
+- API response: < [time target]
+
+### Security
+- Authentication: [Method]
+- Authorization: [Access control]
+- Data protection: [Encryption, sanitization]
+- Rate limiting: [Throttle policy]
+
+### Integration Points
+1. [System/service 1]: [How they interact]
+2. [System/service 2]: [How they interact]
+
+## Implementation Notes
+**Existing patterns:** [File:line references to follow]
+**Technology choices:** [Decisions with reasoning]
+**Error handling:** [Approach for each scenario]
+
+## Out of Scope
+- [Future feature 1]
+- [Future feature 2]
+- [Deferred edge case]
+
+## Success Criteria
+- [ ] [Measurable outcome 1]
+- [ ] [Measurable outcome 2]
+- [ ] [User acceptance criterion]
 
 ## Relevant Files // every single relevant file path
 - src/file/path
 - src/other/path
-- etc... 
+- etc...
