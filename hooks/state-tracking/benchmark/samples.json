@@ -438,7 +438,7 @@
     "uuid": "b077c46e-d8aa-4ab4-b32a-ad6d0ba9ad0d"
   },
   {
-    "prompt": "@agents/code-finder-advanced.md ",
+    "prompt": "@agents/code-finder.md ",
     "sessionId": "3b6f2566-9833-4dc7-8850-c1b30f1095f9",
     "timestamp": "2025-09-17T20:22:47.431Z",
     "uuid": "c995e789-3b7f-4b81-96f8-b11cf7866bd0"

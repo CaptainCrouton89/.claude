@@ -950,7 +950,7 @@
   },
   {
     "uuid": "c995e789-3b7f-4b81-96f8-b11cf7866bd0",
-    "prompt": "@agents/code-finder-advanced.md ",
+    "prompt": "@agents/code-finder.md ",
     "annotation": {
       "activity": "other",
       "effort": 1
