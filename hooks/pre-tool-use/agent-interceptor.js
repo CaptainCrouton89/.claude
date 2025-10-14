@@ -1,10 +1,20 @@
 #!/usr/bin/env node
 
-const { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync } = require('fs');
+const { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, unlinkSync } = require('fs');
 const { join } = require('path');
 const { homedir } = require('os');
+const { spawn } = require('child_process');
 
 const MAX_RECURSION_DEPTH = 3;
+
+function isAnthropicModel(modelString) {
+  if (!modelString) return true; // Default to Anthropic
+  const model = modelString.toLowerCase();
+  return model.startsWith('sonnet') ||
+         model.startsWith('opus') ||
+         model.startsWith('haiku') ||
+         model.includes('claude');
+}
 
 async function main() {
   const chunks = [];
@@ -68,9 +78,10 @@ async function main() {
   const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task (1-2 sentences, max. Incomplete sentences are fine). Only give these updates if you have important information to share. Prepend updates with: [UPDATE]";
   const subagentType = toolInput.subagent_type || 'general-purpose';
 
-  // Extract agent content for outputStyle and check forbidden agents
+  // Extract agent content for outputStyle, model, and forbidden agents
   let outputStyleContent = null;
   let forbiddenAgents = [];
+  let modelName = null;
   try {
     const agentFilePath = join(homedir(), '.claude', 'agents', `${subagentType}.md`);
     if (existsSync(agentFilePath)) {
@@ -79,8 +90,16 @@ async function main() {
       if (frontmatterMatch) {
         outputStyleContent = frontmatterMatch[2].trim();
 
-        // Parse frontmatter YAML to get forbiddenAgents
+        // Parse frontmatter YAML
         const frontmatter = frontmatterMatch[1];
+
+        // Extract model
+        const modelMatch = frontmatter.match(/model:\s*(\S+)/);
+        if (modelMatch) {
+          modelName = modelMatch[1];
+        }
+
+        // Extract forbiddenAgents
         const forbiddenAgentsMatch = frontmatter.match(/forbiddenAgents:\s*\[(.*?)\]/);
         if (forbiddenAgentsMatch) {
           forbiddenAgents = forbiddenAgentsMatch[1]
@@ -93,7 +112,7 @@ async function main() {
       }
     }
   } catch (error) {
-    // Fall back to no outputStyle if agent file reading fails
+    // Fall back to defaults if agent file reading fails
   }
 
   // Only forbid self-spawning for non-general agents
@@ -135,6 +154,88 @@ ParentAgent: ${parentAgentId || 'root'}
 
   writeFileSync(agentLogPath, initialLog, 'utf-8');
 
+  // Check if model is Anthropic or non-Anthropic for routing
+  if (!isAnthropicModel(modelName)) {
+    // Non-Anthropic model: delegate to Cursor CLI via background runner script
+
+    // Track this agent in registry BEFORE spawning (matching SDK pattern)
+    let registry = {};
+    if (existsSync(registryPath)) {
+      try {
+        registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
+      } catch {
+        registry = {};
+      }
+    }
+    registry[agentId] = {
+      pid: null, // Will update after spawn
+      depth: currentDepth,
+      parentId: parentAgentId,
+      agentType: subagentType
+    };
+    writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
+
+    const cursorArgs = [
+      '--print',
+      '--output-format', 'stream-json',
+      '--stream-partial-output',
+      '--force',
+      '--model', modelName || 'auto',
+      prompt
+    ];
+
+    const cursorRunnerPath = join(__dirname, 'cursor-runner.js');
+    const runnerEnv = {
+      ...process.env,
+      CLAUDE_AGENT_ID: agentId,
+      CLAUDE_AGENT_DEPTH: String(currentDepth + 1),
+      CURSOR_RUNNER_AGENT_ID: agentId,
+      CURSOR_RUNNER_LOG_PATH: agentLogPath,
+      CURSOR_RUNNER_REGISTRY_PATH: registryPath,
+      CURSOR_RUNNER_WORKING_DIRECTORY: hookData.cwd,
+      CURSOR_RUNNER_CURSOR_ARGS: JSON.stringify(cursorArgs),
+      CURSOR_RUNNER_CHILD_DEPTH: String(currentDepth + 1)
+    };
+
+    const rawStreamPath = agentLogPath.replace(/\.md$/, '.cursor.ndjson');
+    try {
+      unlinkSync(rawStreamPath);
+    } catch {
+      // File may not exist
+    }
+
+    const runnerProcess = spawn(process.execPath, [cursorRunnerPath], {
+      env: runnerEnv,
+      cwd: hookData.cwd,
+      detached: true,
+      stdio: 'ignore'
+    });
+
+    registry[agentId].pid = runnerProcess.pid;
+    writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
+
+    runnerProcess.unref();
+
+    // Calculate relative path from cwd
+    const { relative } = require('path');
+    const relativePath = relative(hookData.cwd, agentLogPath);
+
+    // Block the Task tool and return message to Claude
+    const output = {
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+        permissionDecisionReason: `Delegated to an agent. Response logged to @${relativePath} in real time.
+
+A hook will alert on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\`. *The user cannot monitor progress themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
+      },
+    };
+
+    console.log(JSON.stringify(output));
+    process.exit(0);
+  }
+
+  // Anthropic model: use existing SDK flow
   // Execute agent using SDK in background - create temp script file
   const agentScriptPath = join(agentsDir, `${agentId}_runner.mjs`);
   const agentScript = `#!/usr/bin/env node
@@ -211,9 +312,6 @@ const childDepth = ${currentDepth + 1};
     }
   } catch (error) {
     appendFileSync(agentLogPath, \`\\n\\n## Status: Failed\\n\\nError: \${error.message}\\n\`, 'utf-8');
-  } finally {
-    // Cleanup runner script
-    import('fs').then(fs => fs.unlinkSync('${agentScriptPath}'));
   }
 })();
 `;
@@ -237,22 +335,30 @@ const childDepth = ${currentDepth + 1};
   };
   writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
 
-  const { spawn } = require('child_process');
-  const childProcess = spawn('node', [agentScriptPath], {
-    env: {
-      ...process.env,
-      CLAUDE_AGENT_ID: agentId,
-      CLAUDE_AGENT_DEPTH: String(currentDepth + 1)
-    },
+  const claudeRunnerPath = join(__dirname, 'claude-runner.js');
+  const runnerEnv = {
+    ...process.env,
+    CLAUDE_AGENT_ID: agentId,
+    CLAUDE_AGENT_DEPTH: String(currentDepth + 1),
+    CLAUDE_RUNNER_AGENT_ID: agentId,
+    CLAUDE_RUNNER_LOG_PATH: agentLogPath,
+    CLAUDE_RUNNER_REGISTRY_PATH: registryPath,
+    CLAUDE_RUNNER_WORKING_DIRECTORY: hookData.cwd,
+    CLAUDE_RUNNER_SCRIPT_PATH: agentScriptPath,
+    CLAUDE_RUNNER_CHILD_DEPTH: String(currentDepth + 1)
+  };
+
+  const runnerProcess = spawn(process.execPath, [claudeRunnerPath], {
+    env: runnerEnv,
+    cwd: hookData.cwd,
     detached: true,
     stdio: 'ignore'
   });
 
-  // Update registry with actual PID
-  registry[agentId].pid = childProcess.pid;
+  registry[agentId].pid = runnerProcess.pid;
   writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
 
-  childProcess.unref();
+  runnerProcess.unref();
 
   // Calculate relative path from cwd
   const { relative } = require('path');
