@@ -224,12 +224,7 @@ Creativity triggered: <notification>A background creativity process has begun. A
 Research triggered: "<notification>A background research process has begun. Alert the user that you're going to "keep looking into it" in your response.</notification>
 
 
-
-
 - Memory md
-
-
-What if claude sdk tool for creating subagents? We intercept agent creation, create them ourselves using sdk, edit the prompting, and then immediately respond...
 
 mcp for 0->1
 learning applicationc
@@ -257,3 +252,9 @@ Vertical slice or "steel thread" - Build one simple end-to-end feature that touc
 Technical spikes for unknowns - If you're unsure about a technology, API, or approach, do a quick proof-of-concept now rather than discovering problems deep into development.
 
 The key is resisting the urge to build features immediately. The foundation you lay now determines whether your massive project stays maintainable or becomes unmaintainable legacy code. What kind of project are you working on?
+
+--- 
+
+MCP for implementing/requirements/etc—trigger workflow, and it knows what to do?
+
+As it goes, when things happen, guidance is injected in.

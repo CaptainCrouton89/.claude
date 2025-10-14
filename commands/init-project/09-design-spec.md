@@ -1,0 +1,53 @@
+# Create Design Specification
+
+Your job is to collaborate with the user to draft the design specification, then save it to `docs/design-spec.md` using the template at @/file-templates/init-project/design-spec.md.
+
+---
+
+## Pre-flight: re-initialize context
+1. Read @/file-templates/init-project/design-spec.md to understand the structure.
+2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+3. Read `<project_root>/docs/user-flows/*.md` to understand primary user flows and personas.
+4. Read `<project_root>/docs/user-stories/*.md` to understand acceptance criteria and interaction requirements.
+5. Read `<project_root>/docs/feature-spec/*.md` to extract API constraints and interaction patterns.
+6. Check if `<project_root>/docs/design-spec.md` already exists. If so, read it and ask whether to improve/replace/skip.
+
+---
+
+## Process
+1. Draft the design spec covering:
+   - **Overview:** design goals (e.g., "Modern, accessible, mobile-first"), links to Figma/XD/Sketch (or note if not available), design system used (e.g., Material UI, Tailwind)
+   - **Layouts & Components:** table with Screen, Description, Link, Notes — cover key screens from user flows
+   - **Accessibility:** color contrast compliance (WCAG AA/AAA), keyboard navigation, screen reader notes
+   - **Responsive Behavior:** breakpoints (mobile, tablet, desktop) and adaptive design notes
+   - **Interaction Specs:** for each major component (Button, Form, Modal), specify states (default, hover, disabled) and animations (e.g., "fade-in 150ms")
+
+2. Ensure design aligns with:
+   - User flows (all screens in flows are covered)
+   - Feature specs (interactions match API constraints)
+   - User stories (ACs for UI behavior are met)
+
+3. Make reasonable assumptions about design system and interaction patterns; call them out and ask for confirmation.
+
+4. Present a summary of key screens, components, and accessibility notes; ask for sign-off.
+
+5. On sign-off, write the file with `last_updated: YYYY-MM-DD`.
+
+---
+
+## Output format
+- Exactly match @/file-templates/init-project/design-spec.md structure.
+- Include specific component names and interaction details (not vague placeholders).
+
+---
+
+## Save location
+- `<project_root>/docs/design-spec.md`
+
+---
+
+## Traceability
+- Screens must align with user flows.
+- Interactions must align with feature specs and user stories.
+- Update user stories or feature specs if design reveals missing requirements or infeasible UX.
+
