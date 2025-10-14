@@ -18,4 +18,4 @@ Important rules:
 - Backwards compatibility is not a concern — breaking changes are okay
 - Be efficient — don’t over-plan.
 - If I seem stuck, help me clarify by offering examples or tradeoffs.
-- Be thorough in your research. It's okay to pause the questions to perform more research with a @code-finder or @code-finder-advanced agent — it's better to be slow and informed than fast and wrong.
+- Be thorough in your research. It's okay to pause the questions to perform more research with a @code-finder agent — it's better to be slow and informed than fast and wrong.

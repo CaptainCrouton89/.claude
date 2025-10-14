@@ -11,5 +11,5 @@ It is time to perform a review of a recent implementation, related to $ARGUMENTS
 Remember:
 - Examine implementations with a critical eye. Read files completely to understand edgecases.
 - Look at surrounding context—a complete understanding is more important than a quick answer
-- Use @code-finder and @code-finder-advanced agents (in parallel if necessary) to investigate related files and data flows.
+- Use @code-finder agents (in parallel if necessary) to investigate related files and data flows.
 - Do not make assumptions—the results of this code review determine what gets pushed to production, and failures result in real harm.
