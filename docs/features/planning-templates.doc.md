@@ -42,13 +42,13 @@ When users run planning commands (`/shared`, `/requirements`, `/parallel`, quick
 - Plans should include an “Investigation Artifacts” section linking these outputs.
 
 ## Investigation Documents
-- Canonical template: `/Users/silasrhyneer/.claude/file-templates/investigation.template.md`
+- Canonical template: `~/.claude/file-templates/investigation.template.md`
 - Storage location: `docs/plans/[feature-name]/investigations/[topic].md`
 - Referenced by: plans (all scopes) under “Investigation Artifacts” and “Relevant Context”
 
 ## Configuration
 - Templates located in: `/file-templates/[template-type].template.md`
-- Commands reference templates using absolute paths: `/Users/silasrhyneer/.claude/file-templates/`
+- Commands reference templates using absolute paths: `~/.claude/file-templates/`
 
 ## Usage Example
 ```bash
@@ -57,7 +57,7 @@ When users run planning commands (`/shared`, `/requirements`, `/parallel`, quick
 
 # Command reads template and instructs:
 # "make a docs/plans/[plan-dir]/shared.md document...
-# using the template /Users/silasrhyneer/.claude/file-templates/shared.template.md"
+# using the template ~/.claude/file-templates/shared.template.md"
 ```
 
 ## Testing

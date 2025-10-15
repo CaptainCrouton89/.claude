@@ -7,7 +7,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, ren
 import { join } from 'path';
 import { tmpdir } from 'os';
 
-const LOG_PATH = '/Users/silasrhyneer/.claude/mcp-server-debug.log';
+const LOG_PATH = '~/.claude/mcp-server-debug.log';
 function log(message) {
   const logLine = `[${new Date().toISOString()}] [history-mcp] ${message}\n`;
   appendFileSync(LOG_PATH, logLine, 'utf-8');

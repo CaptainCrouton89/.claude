@@ -1,5 +1,5 @@
 ---
-template: /Users/silasrhyneer/.claude/file-templates/init-project/design-spec.md
+template: ~/.claude/file-templates/init-project/design-spec.md
 ---
 
 ## 1. Overview

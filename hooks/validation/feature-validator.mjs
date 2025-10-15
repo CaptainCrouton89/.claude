@@ -11,7 +11,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
-import { query } from '/Users/silasrhyneer/.claude/claude-cli/sdk.mjs';
+import { query } from '~/.claude/claude-cli/sdk.mjs';
 
 const HOOK_NAME = 'feature-validator';
 const TODO_CACHE_MAX_AGE_MS = 2 * 60 * 1000;

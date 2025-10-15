@@ -11,11 +11,11 @@ Triggered when a new session begins.
 
 ```json
 {
-  "cwd": "/Users/silasrhyneer/Code/Klaude",
+  "cwd": "~/Code/Klaude",
   "hook_event_name": "SessionStart",
   "session_id": "10ad1de4-613a-470f-9463-bf4fcac617eb",
   "source": "startup",
-  "transcript_path": "/Users/silasrhyneer/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
+  "transcript_path": "~/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
 }
 ```
 
@@ -24,11 +24,11 @@ Triggered when a session ends.
 
 ```json
 {
-  "cwd": "/Users/silasrhyneer/Code/Klaude",
+  "cwd": "~/Code/Klaude",
   "hook_event_name": "SessionEnd",
   "reason": "clear",
   "session_id": "ab8470a8-943f-43f9-98dd-fdf9c17a799e",
-  "transcript_path": "/Users/silasrhyneer/.claude/projects/-Users-silasrhyneer-Code-Klaude/ab8470a8-943f-43f9-98dd-fdf9c17a799e.jsonl"
+  "transcript_path": "~/.claude/projects/-Users-silasrhyneer-Code-Klaude/ab8470a8-943f-43f9-98dd-fdf9c17a799e.jsonl"
 }
 ```
 
@@ -37,12 +37,12 @@ Triggered when the main conversation stops.
 
 ```json
 {
-  "cwd": "/Users/silasrhyneer/Code/Klaude",
+  "cwd": "~/Code/Klaude",
   "hook_event_name": "Stop",
   "permission_mode": "acceptEdits",
   "session_id": "10ad1de4-613a-470f-9463-bf4fcac617eb",
   "stop_hook_active": false,
-  "transcript_path": "/Users/silasrhyneer/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
+  "transcript_path": "~/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
 }
 ```
 
@@ -51,12 +51,12 @@ Triggered when a subagent (Task tool) completes.
 
 ```json
 {
-  "cwd": "/Users/silasrhyneer/Code/Klaude",
+  "cwd": "~/Code/Klaude",
   "hook_event_name": "SubagentStop",
   "permission_mode": "default",
   "session_id": "daf05ac5-1785-4c0e-bd79-ba187720d7bd",
   "stop_hook_active": false,
-  "transcript_path": "/Users/silasrhyneer/.claude/projects/-Users-silasrhyneer-Code-Klaude/daf05ac5-1785-4c0e-bd79-ba187720d7bd.jsonl"
+  "transcript_path": "~/.claude/projects/-Users-silasrhyneer-Code-Klaude/daf05ac5-1785-4c0e-bd79-ba187720d7bd.jsonl"
 }
 ```
 
@@ -67,12 +67,12 @@ Triggered when the user submits a prompt.
 
 ```json
 {
-  "cwd": "/Users/silasrhyneer/Code/Klaude",
+  "cwd": "~/Code/Klaude",
   "hook_event_name": "UserPromptSubmit",
   "permission_mode": "default",
   "prompt": "Make a todo list, write a very short file, mark a todo list item complete, run some bash echo hi, then close the todo list. This is for a test.",
   "session_id": "10ad1de4-613a-470f-9463-bf4fcac617eb",
-  "transcript_path": "/Users/silasrhyneer/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
+  "transcript_path": "~/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
 }
 ```
 
@@ -168,7 +168,7 @@ Output:
 #### Input
 ```json
 {
-  "file_path": "/Users/silasrhyneer/Code/Klaude/test.txt"
+  "file_path": "~/Code/Klaude/test.txt"
 }
 ```
 
@@ -177,7 +177,7 @@ Output:
 {
   "file": {
     "content": "Test",
-    "filePath": "/Users/silasrhyneer/Code/Klaude/test.txt",
+    "filePath": "~/Code/Klaude/test.txt",
     "numLines": 1,
     "startLine": 1,
     "totalLines": 1
@@ -192,7 +192,7 @@ Output:
 ```json
 {
   "content": "test",
-  "file_path": "/Users/silasrhyneer/Code/Klaude/test.txt"
+  "file_path": "~/Code/Klaude/test.txt"
 }
 ```
 
@@ -200,7 +200,7 @@ Output:
 ```json
 {
   "content": "test",
-  "filePath": "/Users/silasrhyneer/Code/Klaude/test.txt",
+  "filePath": "~/Code/Klaude/test.txt",
   "structuredPatch": [
     {
       "lines": [
@@ -281,7 +281,7 @@ Output:
 ### PreToolUse Event
 ```json
 {
-  "cwd": "/Users/silasrhyneer/Code/Klaude",
+  "cwd": "~/Code/Klaude",
   "hook_event_name": "PreToolUse",
   "permission_mode": "default",
   "session_id": "10ad1de4-613a-470f-9463-bf4fcac617eb",
@@ -295,14 +295,14 @@ Output:
     ]
   },
   "tool_name": "TodoWrite",
-  "transcript_path": "/Users/silasrhyneer/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
+  "transcript_path": "~/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
 }
 ```
 
 ### PostToolUse Event
 ```json
 {
-  "cwd": "/Users/silasrhyneer/Code/Klaude",
+  "cwd": "~/Code/Klaude",
   "hook_event_name": "PostToolUse",
   "permission_mode": "default",
   "session_id": "10ad1de4-613a-470f-9463-bf4fcac617eb",
@@ -326,7 +326,7 @@ Output:
     ],
     "oldTodos": []
   },
-  "transcript_path": "/Users/silasrhyneer/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
+  "transcript_path": "~/.claude/projects/-Users-silasrhyneer-Code-Klaude/10ad1de4-613a-470f-9463-bf4fcac617eb.jsonl"
 }
 ```
 

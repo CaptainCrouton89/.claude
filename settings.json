@@ -126,7 +126,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/pre-tool-use/npm-to-pnpm-warning.py"
+            "command": "~/.claude/hooks/pre-tool-use/npm-to-pnpm-warning.py"
           }
         ]
       }
@@ -136,16 +136,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-submit/git-hook.py"
+            "command": "~/.claude/hooks/user-prompt-submit/git-hook.py"
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-submit/activity-observer.js",
+            "command": "~/.claude/hooks/user-prompt-submit/activity-observer.js",
             "timeout": 15000
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/klaude-handler.js",
+            "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
             "timeout": 5000
           }
         ]
@@ -157,7 +157,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/state-tracking/todo-stats.py"
+            "command": "~/.claude/hooks/state-tracking/todo-stats.py"
           }
         ]
       },
@@ -166,11 +166,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/post-tool-use/code-quality-checker.py"
+            "command": "~/.claude/hooks/post-tool-use/code-quality-checker.py"
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/post-tool-use/parallel.py"
+            "command": "~/.claude/hooks/post-tool-use/parallel.py"
           }
         ]
       },
@@ -179,7 +179,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/klaude-handler.js",
+            "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
             "timeout": 5000
           }
         ]
@@ -190,19 +190,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/notifications/play-sound.sh"
+            "command": "~/.claude/hooks/notifications/play-sound.sh"
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/post-tool-use/typescript-error-fixer.py"
+            "command": "~/.claude/hooks/post-tool-use/typescript-error-fixer.py"
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/notifications/pushover-notification.py"
+            "command": "~/.claude/hooks/notifications/pushover-notification.py"
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/klaude-handler.js",
+            "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
             "timeout": 5000
           }
         ]
@@ -213,7 +213,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/notifications/notification-sound.sh"
+            "command": "~/.claude/hooks/notifications/notification-sound.sh"
           }
         ]
       }
@@ -223,11 +223,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/session-history-logger.mjs"
+            "command": "~/.claude/hooks/lifecycle/session-history-logger.mjs"
           },
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/claude-md-manager.mjs"
+            "command": "~/.claude/hooks/lifecycle/claude-md-manager.mjs"
           }
         ]
       }
@@ -235,7 +235,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "/Users/silasrhyneer/.claude/hooks/statusline/statusline-wrapper.sh"
+    "command": "~/.claude/hooks/statusline/statusline-wrapper.sh"
   },
   "alwaysThinkingEnabled": false
 }

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/pre-tool-use/agent-interceptor.js"
+            "command": "~/.claude/hooks/pre-tool-use/agent-interceptor.js"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/agent-monitor.mjs",
+            "command": "~/.claude/hooks/lifecycle/agent-monitor.mjs",
             "timeout": 5000
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/agent-monitor.mjs",
+            "command": "~/.claude/hooks/lifecycle/agent-monitor.mjs",
             "timeout": 5000
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/silasrhyneer/.claude/hooks/lifecycle/agent-cleanup.mjs"
+            "command": "~/.claude/hooks/lifecycle/agent-cleanup.mjs"
           }
         ]
       }

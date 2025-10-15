@@ -143,7 +143,7 @@ This file tracks violations of coding standards...
 All hooks use `@~/.claude/claude-cli/sdk.mjs` query function:
 
 ```javascript
-import { query } from "/Users/silasrhyneer/.claude/claude-cli/sdk.mjs";
+import { query } from "~/.claude/claude-cli/sdk.mjs";
 
 const response = query({
   prompt: validationPrompt,

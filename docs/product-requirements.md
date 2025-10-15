@@ -1,5 +1,5 @@
 ---
-template: /Users/silasrhyneer/.claude/file-templates/init-project/product-requirements.md
+template: ~/.claude/file-templates/init-project/product-requirements.md
 ---
 
 ## 1. Overview

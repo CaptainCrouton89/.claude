@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { query } from '/Users/silasrhyneer/.claude/claude-cli/sdk.mjs';
+import { query } from '~/.claude/claude-cli/sdk.mjs';
 
 console.log('[TEST] Starting SDK query test...');
 

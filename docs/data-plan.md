@@ -1,5 +1,5 @@
 ---
-template: /Users/silasrhyneer/.claude/file-templates/init-project/data-plan.md
+template: ~/.claude/file-templates/init-project/data-plan.md
 ---
 
 ## 1. Data Sources

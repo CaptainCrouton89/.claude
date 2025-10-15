@@ -1,4 +1,4 @@
-template: /Users/silasrhyneer/.claude/file-templates/init-project/api-contracts.yaml
+template: ~/.claude/file-templates/init-project/api-contracts.yaml
 openapi: 3.0.0
 info:
   title: Project API

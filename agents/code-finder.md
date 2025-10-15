@@ -103,7 +103,7 @@ For complex investigations, provide [UPDATE] messages at major milestones:
 - "[UPDATE] Found 12 related implementations across service layer"
 
 **Output Format (Canonical):**
-Populate the canonical investigation template at `/Users/silasrhyneer/.claude/file-templates/investigation.template.md`.
+Populate the canonical investigation template at `~/.claude/file-templates/investigation.template.md`.
 
 Save results to `docs/investigations/[topic].md` or `docs/plans/[feature-name]/investigation/[topic].md` and include:
 - File:line references and brief code snippets

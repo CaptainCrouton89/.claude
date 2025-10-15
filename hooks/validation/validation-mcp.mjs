@@ -6,7 +6,7 @@ import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprot
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'fs';
 import { dirname, join } from 'path';
 
-const LOG_PATH = '/Users/silasrhyneer/.claude/mcp-server-debug.log';
+const LOG_PATH = '~/.claude/mcp-server-debug.log';
 function log(message) {
   const logLine = `[${new Date().toISOString()}] ${message}\n`;
   appendFileSync(LOG_PATH, logLine, 'utf-8');

@@ -1,1 +1,1 @@
-If you are working with hook logic, *strongly consider reading* /Users/silasrhyneer/.claude/docs/guides/hooks.md
+If you are working with hook logic, *strongly consider reading* ~/.claude/docs/guides/hooks.md

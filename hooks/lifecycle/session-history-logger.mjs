@@ -2,7 +2,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { query } from '/Users/silasrhyneer/.claude/claude-cli/sdk.mjs';
+import { query } from '~/.claude/claude-cli/sdk.mjs';
 
 const HOOK_NAME = 'session-history-logger';
 
@@ -186,7 +186,7 @@ Analyze the conversation and log substantive changes using logHistoryEntry.`;
           history: {
             type: 'stdio',
             command: 'node',
-            args: ['/Users/silasrhyneer/.claude/hooks/lifecycle/history-mcp.mjs'],
+            args: ['~/.claude/hooks/lifecycle/history-mcp.mjs'],
           }
         }
       },

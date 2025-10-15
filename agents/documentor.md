@@ -24,7 +24,7 @@ You are the Documentation Orchestrator.
 ## Documentation Types & Templates
 
 ### Project Documentation (Init-Project Workflow)
-Reference templates in `/Users/silasrhyneer/.claude/file-templates/init-project/`:
+Reference templates in `~/.claude/file-templates/init-project/`:
 
 **PRD** (`product-requirements.md`) - Project overview, scope, goals, features (F-##), user stories, success metrics
 **User Flows** (`user-flows/*.md`) - Primary user journeys
@@ -36,7 +36,7 @@ Reference templates in `/Users/silasrhyneer/.claude/file-templates/init-project/
 **Design Spec** (`design-spec.md`) - UI/UX specifications
 
 ### Implementation Documentation
-Reference templates in `/Users/silasrhyneer/.claude/file-templates/`:
+Reference templates in `~/.claude/file-templates/`:
 
 **Feature Docs** (`feature-doc.template.md`) - Implementation guides for specific features
 **API Docs** (`api.template.md`) - Endpoint documentation with examples

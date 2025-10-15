@@ -176,7 +176,7 @@ OAuth test successful!
 ## Implementation Notes
 
 ### File Modifications
-- **File**: `/Users/silasrhyneer/.claude/claude-cli/cli.js`
+- **File**: `~/.claude/claude-cli/cli.js`
 - **Lines Modified**: 371947-371976 (SF function), 372279-372290 (n2 function)
 - **Backup Created**: `cli.js.backup-oauth-mod`
 

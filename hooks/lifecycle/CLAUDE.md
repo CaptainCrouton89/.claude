@@ -10,7 +10,7 @@ SessionEnd hooks that run background workers after conversations complete.
 
 **Structured logging**: Use `appendLog()` with format `[EVENT] context | outcome` to `~/.claude/logs/hooks.log`.
 
-**SDK integration**: Import from `/Users/silasrhyneer/.claude/claude-cli/sdk.mjs` for autonomous agent execution.
+**SDK integration**: Import from `~/.claude/claude-cli/sdk.mjs` for autonomous agent execution.
 
 ## Hook Responsibilities
 

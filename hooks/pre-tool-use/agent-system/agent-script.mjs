@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { appendFileSync, readFileSync, writeFileSync } from 'fs';
-import { query } from '/Users/silasrhyneer/.claude/claude-cli/sdk.mjs';
+import { query } from '~/.claude/claude-cli/sdk.mjs';
 
 // Get configuration from environment variables
 const agentLogPath = process.env.AGENT_LOG_PATH;

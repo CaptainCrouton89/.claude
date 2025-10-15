@@ -13,7 +13,7 @@ The CLI had inconsistent authentication:
 
 ## Solution Overview
 
-Modified the header generation function in `/Users/silasrhyneer/.claude/claude-cli/cli.js` to detect print mode and SDK usage, then prioritize OAuth tokens over API keys.
+Modified the header generation function in `~/.claude/claude-cli/cli.js` to detect print mode and SDK usage, then prioritize OAuth tokens over API keys.
 
 ## How to Find and Modify the Function After CLI Updates
 
@@ -86,7 +86,7 @@ When print mode or SDK mode is detected:
 
 ## Files Modified
 
-- **Primary File**: `/Users/silasrhyneer/.claude/claude-cli/cli.js`
+- **Primary File**: `~/.claude/claude-cli/cli.js`
 - **Lines Added**: 4 lines of print/SDK mode detection logic
 - **Approach**: Single function modification for unified authentication
 
@@ -94,7 +94,7 @@ When print mode or SDK mode is detected:
 
 ### Before Changes
 ```bash
-$ node /Users/silasrhyneer/.claude/claude-cli/cli.js -p "what's 2+2?"
+$ node ~/.claude/claude-cli/cli.js -p "what's 2+2?"
 Error: Invalid API key · Fix external API key
 
 $ node test-sdk-oauth.js
@@ -103,7 +103,7 @@ Error: Invalid API key
 
 ### After Changes
 ```bash
-$ node /Users/silasrhyneer/.claude/claude-cli/cli.js -p "what's 2+2?"
+$ node ~/.claude/claude-cli/cli.js -p "what's 2+2?"
 4
 
 $ node test-sdk-oauth.js

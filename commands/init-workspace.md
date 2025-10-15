@@ -30,8 +30,8 @@ After you understand the project:
 
 Review the MCP definitions in:
 
-- `/Users/silasrhyneer/.claude/mcp-library/.mcp.json`  
-- `/Users/silasrhyneer/.claude/mcp-library/CLAUDE.md`
+- `~/.claude/mcp-library/.mcp.json`  
+- `~/.claude/mcp-library/CLAUDE.md`
 
 MCPs are specialized plugins designed to help solve distinct classes of problems. Your task is to identify which MCPs are relevant to this project based on the needs you inferred in Step 1.
 
@@ -48,7 +48,7 @@ Select and list:
 
 Review the contents of:
 
-- `/Users/silasrhyneer/.claude/agents-library/`
+- `~/.claude/agents-library/`
 
 Each agent in this directory performs specialized tasks (e.g., code formatting, rewriting markdown, managing notes, analyzing graphs, generating insights, etc.). Determine which of these agents should be added to the project.
 
@@ -76,7 +76,7 @@ Exit with a concise summary containing:
 
 1. Generate the new `.mcp.json` file by calling:
 
-`/Users/silasrhyneer/.claude/mcp-library/generate-mcp-config.sh <selected MCP names>`
+`~/.claude/mcp-library/generate-mcp-config.sh <selected MCP names>`
 
 2. Copy the selected agent files into:
 

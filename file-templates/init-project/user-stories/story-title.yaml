@@ -1,7 +1,7 @@
 title: <Story Title>
 story_id: US-###
 feature_id: F-##
-template: /Users/silasrhyneer/.claude/file-templates/init-project/user-stories/story-title.md
+template: ~/.claude/file-templates/init-project/user-stories/story-title.md
 status: incomplete
 user_story:
   as_a: "[type of user]"

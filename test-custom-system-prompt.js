@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 // Test script to verify custom system prompt works with the Claude Code SDK
-import { query } from "/Users/silasrhyneer/.claude/claude-cli/sdk.mjs";
+import { query } from "~/.claude/claude-cli/sdk.mjs";
 
 try {
   // Create a query using the SDK with custom system prompt
   const response = query({
     prompt: "What tools do you have access to?",
     options: {
-      pathToClaudeCodeExecutable: "/Users/silasrhyneer/.claude/claude-cli/cli.js",
+      pathToClaudeCodeExecutable: "~/.claude/claude-cli/cli.js",
       customSystemPrompt: "Respond with as few words as possible."
     }
   });

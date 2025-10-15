@@ -2,7 +2,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join, resolve } from "path";
-import { query } from "/Users/silasrhyneer/.claude/claude-cli/sdk.mjs";
+import { query } from "~/.claude/claude-cli/sdk.mjs";
 
 /**
  * Collects CLAUDE.md files from file directory up to cwd, then includes HOME

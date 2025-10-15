@@ -1,5 +1,5 @@
 title: Technical Specification - <Feature Name>
-template: /Users/silasrhyneer/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
 feature_id: F-##
 status: incomplete
 

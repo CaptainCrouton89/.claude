@@ -1,5 +1,5 @@
 ---
-template: /Users/silasrhyneer/.claude/file-templates/init-project/system-design.md
+template: ~/.claude/file-templates/init-project/system-design.md
 ---
 
 ## 1. Overview

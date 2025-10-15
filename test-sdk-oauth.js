@@ -13,7 +13,7 @@ try {
   const response = query({
     prompt: "Hello! This is a test of the Claude Code SDK with OAuth authentication. Please respond with 'SDK OAuth test successful!' if you can see this message.",
     options: {
-      pathToClaudeCodeExecutable: "/Users/silasrhyneer/.claude/claude-cli/cli.js"
+      pathToClaudeCodeExecutable: "~/.claude/claude-cli/cli.js"
     }
   });
 

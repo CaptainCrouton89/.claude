@@ -3,7 +3,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { basename, dirname, join, relative } from "path";
 import { execSync } from "child_process";
-import { query } from "/Users/silasrhyneer/.claude/claude-cli/sdk.mjs";
+import { query } from "~/.claude/claude-cli/sdk.mjs";
 
 const HOOK_NAME = 'claude-md-manager';
 const STATE_FILE_NAME = 'claude-md-manager-cache.json';

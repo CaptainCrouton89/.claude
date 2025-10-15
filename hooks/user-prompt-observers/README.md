@@ -53,7 +53,7 @@ The observer is registered in `settings.json` as:
 ```json
 {
   "type": "command",
-  "command": "/Users/silasrhyneer/.claude/hooks/user-prompt-submit/activity-observer.js",
+  "command": "~/.claude/hooks/user-prompt-submit/activity-observer.js",
   "timeout": 15000
 }
 ```
