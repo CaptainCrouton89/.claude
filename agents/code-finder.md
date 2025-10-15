@@ -105,7 +105,7 @@ For complex investigations, provide [UPDATE] messages at major milestones:
 **Output Format (Canonical):**
 Populate the canonical investigation template at `/Users/silasrhyneer/.claude/file-templates/investigation.template.md`.
 
-Save results to `docs/plans/[feature-name]/investigations/[topic].md` and include:
+Save results to `docs/investigations/[topic].md` or `docs/plans/[feature-name]/investigation/[topic].md` and include:
 - File:line references and brief code snippets
 - Links to relevant docs under `docs/` (charter, product-requirements, feature-spec, system-design, api-contracts, data-plan)
 - Clear next steps (implementation, deeper dive, documentation, or planning)

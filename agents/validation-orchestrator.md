@@ -20,7 +20,7 @@ Parallel orchestration pattern:
 
 allowedAgents:
   - completion-validator
-model: gpt-5
+model: haiku
 color: green
 ---
 

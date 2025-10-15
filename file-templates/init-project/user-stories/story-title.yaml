@@ -1,0 +1,20 @@
+title: <Story Title>
+story_id: US-###
+feature_id: F-##
+template: /Users/silasrhyneer/.claude/file-templates/init-project/user-stories/story-title.md
+status: incomplete
+user_story:
+  as_a: "[type of user]"
+  i_want: "[goal]"
+  so_that: "[benefit]"
+acceptance_criteria:
+  - "[ ] Given [context], when [action], then [outcome]"
+  - "[ ] "
+  - "[ ] "
+context:
+  why: ""
+  related: ""
+technical_notes:
+  apis: ""
+  data: ""
+  dependencies: ""

@@ -8,7 +8,7 @@ allowedAgents:
   - general-purpose
   - backend-developer
   - frontend-ui-developer
-model: sonnet
+model: haiku
 color: teal
 ---
 
@@ -26,8 +26,7 @@ You are the Documentation Orchestrator.
 ### Project Documentation (Init-Project Workflow)
 Reference templates in `/Users/silasrhyneer/.claude/file-templates/init-project/`:
 
-**Charter** (`charter.md`) - Project overview, scope, success metrics
-**PRD** (`product-requirements.md`) - Features (F-##), user stories, success metrics
+**PRD** (`product-requirements.md`) - Project overview, scope, goals, features (F-##), user stories, success metrics
 **User Flows** (`user-flows/*.md`) - Primary user journeys
 **User Stories** (`user-stories/US-###-*.md`) - Individual stories with acceptance criteria
 **Feature Specs** (`feature-spec/F-##-*.md`) - Technical implementation details

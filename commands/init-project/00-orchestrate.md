@@ -14,16 +14,15 @@ If any item is unknown, make reasonable assumptions, state them explicitly, and 
 ---
 
 ## Sequence (and gates)
-1. Charter → @/file-templates/init-project/charter.md
-2. PRD → @/file-templates/init-project/product-requirements.md
-3. User Flows → @/file-templates/init-project/user-flows/user-flow-title.md
-4. User Stories → @/file-templates/init-project/user-stories/story-title.md
-5. Feature Specs → @/file-templates/init-project/feature-spec/feature-title.md
-6. System Design → @/file-templates/init-project/system-design.md
-7. API Contracts → @/file-templates/init-project/api-contracts.yaml
-8. Data Plan → @/file-templates/init-project/data-plan.md
-9. Design Spec → @/file-templates/init-project/design-spec.md
-10. Traceability/Consistency pass (no template link; update all above as needed)
+1. PRD → @/file-templates/init-project/product-requirements.md
+2. User Flows → @/file-templates/init-project/user-flows/user-flow-title.md
+3. User Stories → @/file-templates/init-project/user-stories/story-title.md
+4. Feature Specs → @/file-templates/init-project/feature-spec/feature-title.md
+5. System Design → @/file-templates/init-project/system-design.md
+6. API Contracts → @/file-templates/init-project/api-contracts.yaml
+7. Data Plan → @/file-templates/init-project/data-plan.md
+8. Design Spec → @/file-templates/init-project/design-spec.md
+9. Traceability/Consistency pass (no template link; update all above as needed)
 
 At each gate, present a concise diff or bullet list of decisions and ask for explicit sign-off before persisting.
 
@@ -39,7 +38,6 @@ At each gate, present a concise diff or bullet list of decisions and ask for exp
 ## Saving rules
 - Mirror templates' structure in `<project_root>/docs`.
 - Use these default names:
-  - `docs/charter.md`
   - `docs/product-requirements.md`
   - `docs/system-design.md`
   - `docs/design-spec.md`

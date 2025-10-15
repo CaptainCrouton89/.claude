@@ -1,8 +1,26 @@
 ---
 created: 2025-10-09T18:35:23.539Z
-last_updated: 2025-10-14T07:50:41.974Z
+last_updated: 2025-10-15T19:00:41.584Z
 archive: .claude/memory/archive.jsonl
 ---
+## 2025-10-15: enhanced agent monitoring and lifecycle tracking system
+
+- expanded agent-monitor.mjs with detailed progress tracking and threshold-based reporting
+  - added configurable thresholds for activity observers
+  - implemented structured progress updates for long-running agents
+- enhanced agent-interceptor.js with validation and error handling
+  - added agent creation validation logic
+- significantly expanded agent-script.mjs with comprehensive agent execution framework
+  - added 148 lines of agent orchestration logic
+  - implemented protocol-based workflow guidance
+- updated code-finder.md agent documentation
+
+## 2025-10-14: reported bug in agent-monitor.mjs hook
+
+- user reported bug in hooks/lifecycle/agent-monitor.mjs causing reversed/backwards display
+  - no investigation or fix implemented before session ended
+  - user requested delegation but exited immediately
+
 ## 2025-10-14: refactored user-prompt-submit hooks architecture
 
 - removed standalone observer scripts (parallel-execution-observer.js and prompt-improvement-observer.js)
@@ -228,21 +246,3 @@ archive: .claude/memory/archive.jsonl
 - modified .claude/memory/history.md with 134 line changes
   - reorganized history entries
   - updated session documentation
-- updated state/claude-md-manager-cache.json with cache changes
-- added 5 entries to .claude/memory/archive.jsonl
-
-## 2025-10-14: added claude-query CLI tool and enhanced agent interceptor with cursor integration
-
-- created bin/claude-query - lightweight CLI wrapper around SDK query function
-  - accepts JSON via stdin or command args
-  - streams SDK events directly as JSON
-  - validates required 'prompt' field
-- enhanced hooks/pre-tool-use/agent-interceptor.js with non-Anthropic model routing
-  - added isAnthropicModel() to detect model provider
-  - routes non-Anthropic models to cursor-agent via dynamic runner script
-  - generates cursor_runner.mjs for each agent with text extraction logic
-  - maintains registry tracking for both Anthropic and Cursor agents
-- implemented cursor-agent integration pattern
-  - spawns detached cursor-agent process with stream-json output
-  - parses streaming JSON events to extract assistant content
-  - collectTextChunks() recursively extracts text from nested event structures

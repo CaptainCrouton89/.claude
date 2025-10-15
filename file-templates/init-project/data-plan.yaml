@@ -1,0 +1,20 @@
+# Data Plan
+# Defines data sources, tracking, storage, and metrics alignment.
+
+data_sources:
+  - source: ""        # Data source name
+    description: ""   # What data it provides
+    owner: ""         # Responsible team/person
+
+event_tracking:
+  - event_name: ""    # Event identifier
+    trigger: ""       # When event fires
+    properties: []    # Data properties captured
+    destinations: []  # GA/Mixpanel/Segment destinations
+
+data_storage:
+  initial_schema: ""    # Database table/collection structure
+  retention_policy: ""  # Data retention rules
+  privacy_notes: ""     # Compliance and privacy considerations
+
+success_metrics: []     # KPIs and success measurements

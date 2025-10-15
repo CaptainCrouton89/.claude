@@ -1,5 +1,5 @@
 ### Ground rules (from `docs/CLAUDE.md`)
-- Always re-read upstream docs before work: `docs/charter.md` → `docs/product-requirements.md` → flows → stories → feature specs → system design/API/data/design.
+- Always re-read upstream docs before work: `docs/product-requirements.md` → flows → stories → feature specs → system design/API/data/design.
 - Maintain ID/link hygiene: PRD features `F-##`, stories `US-###` with `feature_id`, feature specs as `docs/feature-spec/F-##-<slug>.md`.
 - Idempotency: list and read existing files first; propose edits; wait for approval; never overwrite silently.
 - End with a traceability check: features ↔ specs ↔ stories, metrics ↔ data plan, APIs ↔ contracts, flows/screens ↔ design spec.
@@ -30,12 +30,12 @@
 ## New feature
 
 ### 1) Requirements gathering
-- Read first: `docs/charter.md`, `docs/product-requirements.md`
+- Read first: `docs/product-requirements.md`
 - Workflow
   1. Capture assumptions and open questions; map to goals/success metrics.
   2. Propose PRD updates: add `F-##` with clear scope, OOS, metrics; request approval.
   3. Assign `F-##` and slug; create PRD feature entry.
-- Docs to update: `docs/product-requirements.md` (new `F-##`), optionally `docs/charter.md` if goals/scope change.
+- Docs to update: `docs/product-requirements.md` (new `F-##`), optionally update goals/scope if needed.
 
 ### 2) Codebase understanding
 - Workflow

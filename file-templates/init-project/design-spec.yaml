@@ -1,0 +1,26 @@
+# Design Specification
+# UI/UX design details, components, and interaction patterns.
+
+overview:
+  design_goals: ""       # Visual and UX objectives
+  design_links: []       # Figma/XD/Sketch URLs
+  design_system: ""      # Design system/framework used
+
+layouts_components:
+  - screen: ""           # Screen/page name
+    description: ""      # What it shows/does
+    link: ""             # Design file link
+    notes: ""            # Implementation notes
+
+accessibility:
+  color_contrast: ""     # Contrast compliance details
+  keyboard_navigation: "" # Keyboard interaction support
+  screen_reader: ""      # Screen reader compatibility
+
+responsive_behavior: ""  # Breakpoints and adaptive design
+
+interaction_specs:
+  - component: "Button"  # Component name
+    states: ["default", "hover", "disabled"]  # Available states
+    animation: "fade-in 150ms"  # Animation details
+    notes: ""           # Additional specifications

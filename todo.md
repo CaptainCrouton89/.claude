@@ -1,0 +1,2 @@
+- Claude agents stream back continuously
+- Interruption of agent doesn't interrupt children

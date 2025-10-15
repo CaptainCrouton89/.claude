@@ -1,0 +1,27 @@
+# System Design
+# Architecture, components, data flow, and technical decisions.
+
+overview:
+  goal: ""              # System purpose and requirements
+  architecture_diagram: "" # Mermaid diagram or architecture description
+
+core_components:
+  - component: "API Gateway"  # Component name
+    description: ""     # What it does
+    dependencies: []    # External dependencies
+  - component: "Frontend"
+    description: ""
+    dependencies: []
+
+data_flow: ""           # Data movement between components (include diagrams)
+
+tech_stack:
+  frontend: ""          # Framework/library choices
+  backend: ""           # Language/framework choices
+  database: ""          # Database type and reasoning
+  infrastructure: ""    # Hosting/deployment choices
+
+scalability_reliability:
+  load_expectations: "" # Initial traffic/capacity needs
+  redundancy: ""        # Backup and failover plans
+  observability: ""     # Monitoring and logging strategy

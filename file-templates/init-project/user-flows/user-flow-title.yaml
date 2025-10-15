@@ -1,0 +1,13 @@
+title: User Flows
+template: /Users/silasrhyneer/.claude/file-templates/init-project/user-flows/user-flow-title.yaml
+
+key_personas: []
+
+primary_flows:
+  - name: ""
+    trigger: ""
+    steps: []
+    outcome: ""
+    edge_cases: ""
+
+secondary_flows: []

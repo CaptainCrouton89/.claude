@@ -17,16 +17,15 @@ This directory contains a structured workflow for initializing project documenta
 | Step | Command | Output | Dependencies |
 |------|---------|--------|--------------|
 | 00 | `00-orchestrate.md` | (meta) runs all steps | — |
-| 01 | `01-charter.md` | `docs/charter.md` | — |
-| 02 | `02-prd.md` | `docs/product-requirements.md` | charter |
-| 03 | `03-user-flows.md` | `docs/user-flows/*.md` | charter, PRD |
-| 04 | `04-user-stories.md` | `docs/user-stories/US-*.md` | PRD, flows |
-| 05 | `05-feature-specs.md` | `docs/feature-spec/F-*.md` | PRD, stories |
-| 06 | `06-system-design.md` | `docs/system-design.md` | charter, PRD, specs |
-| 07 | `07-api-contracts.md` | `docs/api-contracts.yaml` | specs, system design |
-| 08 | `08-data-plan.md` | `docs/data-plan.md` | charter, PRD, specs, API |
-| 09 | `09-design-spec.md` | `docs/design-spec.md` | flows, stories, specs |
-| 10 | `10-traceability-pass.md` | (updates all) | all docs |
+| 01 | `01-prd.md` | `docs/product-requirements.md` | — |
+| 02 | `02-user-flows.md` | `docs/user-flows/*.md` | PRD |
+| 03 | `03-user-stories.md` | `docs/user-stories/US-*.md` | PRD, flows |
+| 04 | `04-feature-specs.md` | `docs/feature-spec/F-*.md` | PRD, stories |
+| 05 | `05-system-design.md` | `docs/system-design.md` | PRD, specs |
+| 06 | `06-api-contracts.md` | `docs/api-contracts.yaml` | specs, system design |
+| 07 | `07-data-plan.md` | `docs/data-plan.md` | PRD, specs, API |
+| 08 | `08-design-spec.md` | `docs/design-spec.md` | flows, stories, specs |
+| 09 | `09-traceability-pass.md` | (updates all) | all docs |
 
 ## Templates
 
@@ -35,7 +34,7 @@ All commands reference templates in:
 
 Agents must read:
 - `@/file-templates/init-project/CLAUDE.md` (cross-doc conventions)
-- Specific template for the step (e.g., `charter.md`, `user-stories/story-title.md`)
+- Specific template for the step (e.g., `product-requirements.md`, `user-stories/story-title.md`)
 
 ## Key Conventions
 
@@ -44,7 +43,7 @@ Agents must read:
 - Stories: `US-101`, `US-102`, ... (link to features via `feature_id`)
 
 **Filenames:**
-- `docs/charter.md`, `docs/product-requirements.md`, etc.
+- `docs/product-requirements.md`, etc.
 - `docs/user-flows/<slug>.md`
 - `docs/user-stories/US-<###>-<slug>.md`
 - `docs/feature-spec/F-<##>-<slug>.md`
@@ -68,31 +67,20 @@ Agents must read:
 ## Example
 
 ```bash
-# User runs:
-@/commands/init-project/01-charter.md
-
-# Agent will:
-# 1. Read @/file-templates/init-project/charter.md
-# 2. Read @/file-templates/init-project/CLAUDE.md
-# 3. Check if docs/charter.md exists
-# 4. Ask for project details (name, goals, scope, etc.)
-# 5. Present draft and ask for sign-off
-# 6. Write docs/charter.md with status: draft
-```
 
 After chat reset:
 
 ```bash
 # User runs:
-@/commands/init-project/02-prd.md
+@/commands/init-project/01-prd.md
 
 # Agent will:
-# 1. Read template and CLAUDE.md
-# 2. Read docs/charter.md (re-initialize context)
+# 1. Read @/file-templates/init-project/product-requirements.md
+# 2. Read @/file-templates/init-project/CLAUDE.md
 # 3. Check if docs/product-requirements.md exists
-# 4. Draft PRD based on charter
-# 5. Ask for sign-off
-# 6. Write docs/product-requirements.md
+# 4. Ask for project details (name, goals, scope, users, features, etc.)
+# 5. Present draft and ask for sign-off
+# 6. Write docs/product-requirements.md with status: draft
 ```
 
 ## Troubleshooting

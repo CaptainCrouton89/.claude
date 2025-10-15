@@ -1,0 +1,32 @@
+title: Technical Specification - <Feature Name>
+template: /Users/silasrhyneer/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-##
+status: incomplete
+
+summary: ""
+
+functional_overview:
+  core_logic: ""
+  data_schema: ""
+  api_endpoints: []
+  integration_points: []
+
+detailed_design:
+  data_structures:
+    - name: ""
+      columns: []
+  apis:
+    - method: ""
+      endpoint: ""
+      request: ""
+      response: ""
+      errors: []
+  diagrams: ""
+
+dependencies:
+  libraries: ""
+  services: ""
+  data_sources: ""
+
+implementation_status:
+  notes: []

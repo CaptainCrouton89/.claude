@@ -40,6 +40,17 @@ function denySpawn(reason) {
 function checkAgentPermissions(parentAgentId, subagentType, registry) {
   const parentAgent = parentAgentId ? registry[parentAgentId] : null;
 
+  if (parentAgent && parentAgent.agentType === subagentType) {
+    const allowedForParent = Array.isArray(parentAgent.allowedAgents)
+      ? parentAgent.allowedAgents
+      : [];
+    if (!allowedForParent.includes(subagentType)) {
+      const parentType = parentAgent.agentType || parentAgentId;
+      const allowedList = allowedForParent.length > 0 ? allowedForParent.join(', ') : 'none';
+      denySpawn(`Agent '${parentType}' cannot spawn another '${subagentType}' instance. Same-type delegation requires listing the agent in allowedAgents (currently: ${allowedList}).`);
+    }
+  }
+
   if (parentAgent && Array.isArray(parentAgent.allowedAgents) && !parentAgent.allowedAgents.includes(subagentType)) {
     const allowedList = parentAgent.allowedAgents.length > 0 ? parentAgent.allowedAgents.join(', ') : 'none';
     const parentType = parentAgent.agentType || parentAgentId;

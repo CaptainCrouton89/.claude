@@ -73,6 +73,22 @@ function getFileInfo(filePath) {
   };
 }
 
+function isPidActive(pid) {
+  if (!pid || typeof pid !== 'number') {
+    return false;
+  }
+
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error && error.code === 'EPERM') {
+      return true;
+    }
+    return false;
+  }
+}
+
 function extractUpdateContent(content, previousContent) {
   // Get new lines added since last check
   const currentLines = content.split('\n');
@@ -100,6 +116,29 @@ function getRelativePath(cwd, filePath) {
     return `@${filePath.slice(cwd.length).replace(/^\//, '')}`;
   }
   return `@${basename(filePath)}`;
+}
+
+function markAgentAsInterrupted(filePath, currentContent) {
+  if (!currentContent.includes('Status: in-progress')) {
+    return null;
+  }
+
+  const endTime = new Date().toISOString();
+  const updatedContent = currentContent.replace(
+    /Status: in-progress/,
+    `Status: interrupted\nEnded: ${endTime}`
+  );
+
+  if (updatedContent === currentContent) {
+    return null;
+  }
+
+  try {
+    writeFileSync(filePath, updatedContent, 'utf-8');
+    return updatedContent;
+  } catch {
+    return null;
+  }
 }
 
 async function main() {
@@ -131,15 +170,58 @@ async function main() {
 
   const currentAgentId = getCurrentAgentId();
   const registry = loadRegistry(registryPath);
+  const interruptionReasons = new Set([
+    'user_interrupt',
+    'prompt_input_exit',
+    'cancelled',
+    'user_cancel'
+  ]);
+  const reason = hookData.reason || null;
+  const shouldCheckForInterruption =
+    interruptionReasons.has(reason) ||
+    hookData.hook_event_name === 'SubagentStop';
 
   for (const filePath of agentFiles) {
-    const fileInfo = getFileInfo(filePath);
+    let fileInfo = getFileInfo(filePath);
     const fileId = filePath;
+    const previousState = state[fileId];
+    const relativePath = getRelativePath(cwd, filePath);
+    const agentId = basename(filePath, '.md');
+    const registryEntry = registry[agentId];
+
+    if (
+      shouldCheckForInterruption &&
+      fileInfo.status === 'in-progress' &&
+      (!registryEntry || !isPidActive(registryEntry.pid))
+    ) {
+      const updatedContent = markAgentAsInterrupted(filePath, fileInfo.content);
+      if (updatedContent) {
+        fileInfo = getFileInfo(filePath);
+        fileInfo.notified = true;
+
+        if (!(previousState?.status === 'interrupted' && previousState?.notified)) {
+          updates.push(`Agent interrupted: ${relativePath}`);
+        }
+
+        removePidFromRegistry(registryPath, agentId);
+
+        state[fileId] = {
+          mtime: fileInfo.mtime,
+          status: fileInfo.status,
+          size: fileInfo.size,
+          content: fileInfo.content,
+          notified: true
+        };
+        continue;
+      }
+    }
 
     // Check if this is a new file or has been modified
-    if (!state[fileId] || state[fileId].mtime !== fileInfo.mtime) {
-      const previousState = state[fileId];
-      const relativePath = getRelativePath(cwd, filePath);
+    if (
+      !previousState ||
+      previousState.mtime !== fileInfo.mtime ||
+      previousState.status !== fileInfo.status
+    ) {
 
       // Only notify if file has content (not just created)
       if (fileInfo.size > 100) {
@@ -148,10 +230,6 @@ async function main() {
                               previousState?.status !== fileInfo.status;
 
         if (justCompleted && !previousState?.notified) {
-          // Extract agent ID and check if it's our direct child
-          const agentId = basename(filePath, '.md');
-          const registryEntry = registry[agentId];
-
           // Skip if not our direct child
           if (registryEntry && registryEntry.parentId !== currentAgentId) {
             continue;
@@ -166,9 +244,6 @@ async function main() {
           // Agent was interrupted - notify once and track in state
           if (previousState?.status !== 'interrupted' && !previousState?.notified) {
             // Extract agent ID and check if it's our direct child
-            const agentId = basename(filePath, '.md');
-            const registryEntry = registry[agentId];
-
             // Skip if not our direct child
             if (registryEntry && registryEntry.parentId !== currentAgentId) {
               continue;
@@ -181,9 +256,6 @@ async function main() {
           // Keep in state to prevent re-notification
         } else if (previousState) {
           // Extract agent ID and check if it's our direct child
-          const agentId = basename(filePath, '.md');
-          const registryEntry = registry[agentId];
-
           // Skip if not our direct child
           if (registryEntry && registryEntry.parentId !== currentAgentId) {
             continue;
