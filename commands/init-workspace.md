@@ -86,4 +86,18 @@ Exit with a concise summary containing:
 
 `.claude/agents/`
 
-Once the CLI restarts, the selected MCPs and agents will be active, augmenting the environment.
+3. **Optional: Copy Relevant Skills** — Based on project type:
+
+Personal skills (in `~/.claude/skills/`) are automatically available everywhere—no copying needed.
+
+Optionally copy relevant skills from the available inventory (archived + other projects):
+
+```bash
+fetch-skills copy ./.claude/skills
+```
+
+Then review `./.claude/skills/` and delete any skills that don't fit this specific project's type and workflows.
+
+Only keep skills that genuinely enhance this project's capabilities.
+
+Once the CLI restarts, the selected MCPs, agents, and curated skills will be active.

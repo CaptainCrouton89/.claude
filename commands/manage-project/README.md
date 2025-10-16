@@ -271,27 +271,6 @@ The implementation workflow is broken into four distinct phases, each with its o
 
 ---
 
-## Protocol Integration
-
-The implementation commands integrate best practices from comprehensive protocols:
-
-**Investigation Phase** uses patterns from:
-- `@protocols/comprehensive/investigation.md` - Parallel agent investigation patterns
-- `@protocols/comprehensive/requirements-gathering.md` - Clarifying questions and inferences
-
-**Planning Phase** uses patterns from:
-- `@protocols/comprehensive/planning.md` - Task breakdown and impact analysis
-- `@protocols/comprehensive/feature-development.md` - Parallelization strategies
-
-**Execution Phase** uses patterns from:
-- `@protocols/comprehensive/feature-development.md` - Agent delegation and quality checks
-- `@protocols/comprehensive/testing.md` - Validation approaches
-
-**Validation Phase** uses patterns from:
-- `@protocols/comprehensive/testing.md` - Comprehensive validation checklists
-- `@protocols/comprehensive/bug-fixing.md` - Issue diagnosis and fixing
-
----
 
 ## Agent Usage
 

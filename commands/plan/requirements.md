@@ -10,7 +10,6 @@ At a high level, the feature is:
 $ARGUMENTS
 
 Instructions:
-- Use the requirements-gathering workflow for discovery: `~/.claude/protocols/comprehensive/requirements-gathering.md`.
 - Ask targeted questions focusing on: user flow, technical implementation, and constraints.
 - Investigate the codebase in parallel (1-3 agents) if needed to understand current state.
 - If investigations are performed, document each using the canonical template at `~/.claude/file-templates/investigation.template.md` and save under `docs/plans/[feature-name]/investigations/`.
