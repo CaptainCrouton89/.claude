@@ -37,9 +37,7 @@ Each activity has an effort threshold triggering protocol injection:
 Session state in `~/.claude/conversation-state/{session_id}.json` tracks: protocol name, effort level, timestamp
 
 ## Protocol Structure
-Protocols in `protocols/{activity-name}/` with:
-- `moderate.md`: Lighter guidance for mid-complexity tasks
-- `strong.md`: Comprehensive workflows for complex work
+(Protocols directory removed - this system is being refactored)
 
 ## Important Patterns
 

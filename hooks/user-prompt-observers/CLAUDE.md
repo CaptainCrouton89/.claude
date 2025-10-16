@@ -14,10 +14,8 @@ Each activity requires:
 1. **Prompt file** - `prompts/[activity-name].md` defining detection patterns
 2. **Registry entry** - Config in `ACTIVITY_OBSERVERS` array with:
    - `name` - Activity identifier (matches prompt filename)
-   - `protocolDir` - Directory in `protocols/`
    - `thresholds` - `{ basic: N, comprehensive: M }` for protocol injection
    - `emoji` - Display icon for context messages
-3. **Protocol files** - `basic.md` and `comprehensive.md` in protocol directory
 
 ## Protocol Injection Logic
 

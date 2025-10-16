@@ -31,8 +31,8 @@ Each activity has a prompt file in `prompts/` that defines:
 
 ### Specialized Observers
 
-- **Prompt Improvement** - Detects requests to improve prompts (`protocols/prompting-guide.md`)
-- **Parallel Execution** - Detects parallelization intent (`protocols/parallel.md`)
+- **Prompt Improvement** - Detects requests to improve prompts
+- **Parallel Execution** - Detects parallelization intent
 
 ## Protocol Injection
 
@@ -70,7 +70,6 @@ node test-observers.js
 ### Activity-based Observer
 1. Create prompt file in `prompts/[activity-name].md`
 2. Add observer config to `ACTIVITY_OBSERVERS` in `observer-registry.js`
-3. Ensure protocol files exist in `protocols/[protocol-dir]/`
 
 ### Specialized Observer
 1. Add observer function to `observer-registry.js`
