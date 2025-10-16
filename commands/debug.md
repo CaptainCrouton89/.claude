@@ -5,15 +5,27 @@ argument-hint: [issue description]
 
 # Debug Issue
 
-You are debugging an issue in the codebase. Follow this systematic approach:
+You are debugging an issue in the codebase:
+
+$ARGUMENTS
+
+Follow this systematic approach:
+
+## Step 0: Understand the Bug
+
+If you already know _exactly_ what's causing the bug, fix it immediately and ignore the rest of the steps.
 
 ## Step 1: Document the Problem
-Based on "$ARGUMENTS", clarify:
+
+1. If you do not yet understand the code relating to the bug, quickly launch an @agent-code-finder and tell it to understand the code related to the bug request. Prompt it with something brief, and tell it to give you a concise understanding of related documents and data-flow. It should _not_ attempt to find a solution.
+2. While this runs in the background, verify your understanding of the bug. Perform some brief investigation of your own and respond with your own understanding of the issue. Do not hypothesize a solution, just clarify the issue with the user.
+
+Based on the issue, clarify:
 - **Expected behavior** — What should happen (cite spec or story AC if known)
 - **Actual behavior** — What's broken
 - **Reproduction steps** — How to trigger the issue
 - **Context** — Feature ID (F-##), story ID (US-###), error messages, or conditions
-
+- 
 ## Step 2: Initial Investigation
 **Default approach: Investigate yourself first unless you specify "use-agents" or this follows a major feature implementation, in which case delegate to a root-cause-analyzer agent.**
 

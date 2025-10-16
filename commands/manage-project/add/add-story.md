@@ -50,8 +50,30 @@ Create `user-stories/US-###-<slug>.yaml` with template.
 ```
 
 ### 7. Next Steps
-- Add another story: run this command again
-- Check coverage: run /manage-project/validate/check-coverage
+
+Present options to user:
+
+```markdown
+✓ Story US-### added and linked to feature F-##
+✓ Acceptance criteria documented
+
+**Next Steps:**
+
+**Option 1: Add More Documentation**
+- Add another story: `/manage-project/add/add-story`
+- Check feature coverage: `/manage-project/validate/check-coverage`
+
+**Option 2: Implement This Story**
+- Start implementation: `/manage-project/implement/00-orchestrate US-###`
+  - Runs investigation → planning → execution → validation
+  - Focused implementation scoped to this specific story
+
+**Option 3: Implement Entire Feature**
+- Implement all stories for F-##: `/manage-project/implement/00-orchestrate F-##`
+  - Comprehensive implementation of the full feature
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

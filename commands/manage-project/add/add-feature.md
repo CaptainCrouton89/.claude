@@ -52,9 +52,32 @@ Create `feature-specs/F-##-<slug>.yaml` with template structure.
 ```
 
 ### 7. Next Steps
-- Add stories: run /manage-project/add/add-story
-- Add APIs: run /manage-project/add/add-api
-- Add flows: run /manage-project/add/add-flow
+
+Present options to user:
+
+```markdown
+✓ Feature F-## added to product requirements
+✓ Feature specification created: @docs/feature-specs/F-##-[slug].yaml
+
+**Next Steps:**
+
+**Option 1: Add Supporting Documentation (Recommended)**
+- Add user stories: `/manage-project/add/add-story`
+- Add API endpoints: `/manage-project/add/add-api`
+- Add user flows: `/manage-project/add/add-flow`
+
+**Option 2: Implement Immediately**
+- Start implementation: `/manage-project/implement/00-orchestrate F-##`
+  - This will run investigation → planning → execution → validation phases
+  - You'll have opportunities to review and approve at each phase
+
+**Option 3: Gather Detailed Requirements First**
+- Create comprehensive requirements: `/plan/requirements [feature name]`
+  - Best for complex features needing upfront clarity
+  - Produces detailed requirements doc before implementation
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

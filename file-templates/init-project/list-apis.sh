@@ -2,10 +2,32 @@
 
 # list-apis.sh - List and query API endpoints from OpenAPI specs
 # Usage: ./list-apis.sh [options]
-# Run from project root. Scans docs/api-contracts.yaml by default.
+# Run from project root or docs directory. Scans docs/api-contracts.yaml by default.
+
+# Detect if running from docs directory or project root
+resolve_api_file() {
+    local current_dir="$(pwd)"
+    local api_file=""
+
+    # Check if current directory is "docs"
+    if [[ "$(basename "$current_dir")" == "docs" && -f "$current_dir/api-contracts.yaml" ]]; then
+        echo "$current_dir/api-contracts.yaml"
+        return 0
+    fi
+
+    # Check if docs directory exists in current location
+    if [[ -d "$current_dir/docs" && -f "$current_dir/docs/api-contracts.yaml" ]]; then
+        echo "$current_dir/docs/api-contracts.yaml"
+        return 0
+    fi
+
+    # Default (will fail gracefully if not found)
+    echo "docs/api-contracts.yaml"
+    return 1
+}
 
 # Default values
-API_FILE="docs/api-contracts.yaml"
+API_FILE="$(resolve_api_file)"
 FORMAT="summary"
 FILTER_METHOD=""
 FILTER_PATH=""

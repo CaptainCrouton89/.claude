@@ -54,8 +54,28 @@ Update data-plan.yaml, feature specs if metrics/features changed.
 ```
 
 ### 9. Next Steps
-- Update affected features: run /manage-project/update/update-feature
-- Full consistency check: run /manage-project/validate/check-consistency
+
+Present options to user:
+
+```markdown
+✓ Product requirements updated (version incremented)
+✓ Related documentation synchronized
+
+**Next Steps:**
+
+**Option 1: Update Downstream Documentation**
+- Update affected features: `/manage-project/update/update-feature`
+- Check consistency: `/manage-project/validate/check-consistency`
+
+**Option 2: Re-implement Based on Changes**
+- If requirements changed significantly: Review affected features with `./list-features.sh`
+- Then implement updated features: `/manage-project/implement/00-orchestrate F-##`
+  - Investigation phase will identify what changed
+  - Plan will be updated to reflect new requirements
+  - Implementation will be scoped to changes only
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

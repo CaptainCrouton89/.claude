@@ -161,9 +161,15 @@ function spawnCursorAgent({
     '--output-format', 'stream-json',
     '--stream-partial-output',
     '--force',
-    '--model', modelName || 'auto',
-    cursorPrompt
+    '--model', modelName || 'auto'
   ];
+
+  const cursorApiKey = process.env.CURSOR_API_KEY?.trim();
+  if (cursorApiKey) {
+    cursorArgs.push('--api-key', cursorApiKey);
+  }
+
+  cursorArgs.push(cursorPrompt);
 
   const runnerEnv = {
     ...process.env,

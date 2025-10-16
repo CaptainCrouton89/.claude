@@ -60,9 +60,28 @@ Show proposed updates to both PRD and spec files.
 ```
 
 ### 9. Next Steps
-- Update affected stories: run /manage-project/update/update-story
-- Update APIs: run /manage-project/update/update-api
-- Full consistency check: run /manage-project/validate/check-consistency
+
+Present options to user:
+
+```markdown
+✓ Feature F-## updated in product requirements and specification
+✓ Documentation synchronized
+
+**Next Steps:**
+
+**Option 1: Update Related Documentation**
+- Update affected stories: `/manage-project/update/update-story`
+- Update APIs: `/manage-project/update/update-api`
+- Check consistency: `/manage-project/validate/check-consistency`
+
+**Option 2: Re-implement Based on Changes**
+- If changes require code updates: `/manage-project/implement/00-orchestrate F-##`
+  - Existing plan will be updated based on new requirements
+  - Investigation phase will identify what changed
+  - Only affected components will be re-implemented
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

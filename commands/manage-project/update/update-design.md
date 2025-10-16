@@ -55,8 +55,30 @@ Update user flows if screen changes affect them.
 ```
 
 ### 9. Next Steps
+
+Present options to user:
+
+```markdown
+✓ Design specification updated (version incremented)
+✓ User flows synchronized (if affected)
+
+**Next Steps:**
+
+**Option 1: Update Related Documentation**
 - Generate design docs: `./generate-docs.sh`
-- Update user flows: check related flows
+- Update user flows: Check affected flows
+- Update feature specs with new design details
+
+**Option 2: Implement Design Changes**
+- If components/screens changed: Identify affected features with `./list-features.sh`
+- Then implement updates: `/manage-project/implement/00-orchestrate F-##`
+  - Frontend components updated to match new designs
+  - Styling/theme changes applied
+  - Interaction patterns implemented
+  - Accessibility requirements met
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

@@ -2,10 +2,31 @@
 
 # list-stories.sh - List user stories with metadata and filtering options
 # Usage: ./list-stories.sh [options]
-# Run from project root. Scans docs/user-stories by default.
+# Run from project root or docs directory. Scans docs/user-stories by default.
+
+# Detect if running from docs directory or project root
+resolve_stories_dir() {
+    local current_dir="$(pwd)"
+
+    # Check if current directory is "docs"
+    if [[ "$(basename "$current_dir")" == "docs" && -d "$current_dir/user-stories" ]]; then
+        echo "$current_dir/user-stories"
+        return 0
+    fi
+
+    # Check if docs directory exists in current location
+    if [[ -d "$current_dir/docs/user-stories" ]]; then
+        echo "$current_dir/docs/user-stories"
+        return 0
+    fi
+
+    # Default (will fail gracefully if not found)
+    echo "docs/user-stories"
+    return 1
+}
 
 # Default values
-STORIES_DIR="docs/user-stories"
+STORIES_DIR="$(resolve_stories_dir)"
 SHOW_ALL=false
 FORMAT="summary"
 FILTER_STATUS=""

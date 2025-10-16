@@ -2,10 +2,31 @@
 
 # check-project.sh - Comprehensive project documentation checker
 # Usage: ./check-project.sh [options]
-# Run from project root. Checks all documentation files for completeness and traceability.
+# Run from project root or docs directory. Checks all documentation files for completeness and traceability.
+
+# Detect if running from docs directory or project root
+resolve_docs_dir() {
+    local current_dir="$(pwd)"
+
+    # Check if current directory is "docs"
+    if [[ "$(basename "$current_dir")" == "docs" && -f "$current_dir/product-requirements.yaml" ]]; then
+        echo "$current_dir"
+        return 0
+    fi
+
+    # Check if docs directory exists in current location
+    if [[ -d "$current_dir/docs" && -f "$current_dir/docs/product-requirements.yaml" ]]; then
+        echo "$current_dir/docs"
+        return 0
+    fi
+
+    # Default to docs (will fail gracefully if not found)
+    echo "docs"
+    return 1
+}
 
 # Default values
-DOCS_DIR="docs"
+DOCS_DIR="$(resolve_docs_dir)"
 CHECK_LINKS=true
 VERBOSE=false
 FORMAT="summary"
@@ -469,6 +490,9 @@ echo ""
 # Check if docs directory exists
 if [[ ! -d "$DOCS_DIR" ]]; then
     log_error "Documentation directory not found: $DOCS_DIR"
+    log_error "Ensure you run this script from either:"
+    log_error "  • Project root: cd /path/to/project && ./docs/check-project.sh"
+    log_error "  • Docs directory: cd /path/to/project/docs && ./check-project.sh"
     exit 1
 fi
 

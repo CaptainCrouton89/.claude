@@ -29,4 +29,25 @@ Integration with docs/ (init-project):
 
 Output:
 - Save the completed requirements to `docs/plans/[feature-name]/requirements.md`.
-- Ensure the “Relevant Files” section is comprehensive to enable downstream planning.
+- Ensure the "Relevant Files" section is comprehensive to enable downstream planning.
+
+## Next Steps
+
+After requirements are complete and saved:
+
+```markdown
+✓ Requirements documented: @docs/plans/[feature-name]/requirements.md
+✓ Technical inferences resolved
+✓ Codebase investigations complete (if performed)
+
+**Next Step:** Add this feature to project documentation
+
+Run `/manage-project/start [feature description]` to:
+- Add feature to product requirements (`docs/product-requirements.md`)
+- Create feature specification (`docs/feature-spec/F-##-[slug].yaml`)
+- Optionally add user stories, APIs, and flows
+- Then proceed to implementation with `/manage-project/implement/00-orchestrate F-##`
+
+**Alternative:** If you want to implement immediately without updating project docs:
+- Run `/manage-project/implement/00-orchestrate` and provide the requirements.md file directly
+```

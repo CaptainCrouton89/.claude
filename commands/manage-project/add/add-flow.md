@@ -57,8 +57,30 @@ Update related stories or design spec if affected.
 ```
 
 ### 8. Next Steps
-- Add another flow: run this command again
-- Check coverage: run /manage-project/validate/check-coverage
+
+Present options to user:
+
+```markdown
+✓ User flow added: @docs/user-flows/[slug].yaml
+✓ Linked to relevant features
+
+**Next Steps:**
+
+**Option 1: Add More Documentation**
+- Add another flow: `/manage-project/add/add-flow`
+- Check coverage: `/manage-project/validate/check-coverage`
+
+**Option 2: Implement This Flow**
+- Start implementation: `/manage-project/implement/00-orchestrate FLOW-[slug]`
+  - Runs investigation → planning → execution → validation
+  - Implements complete end-to-end user flow
+
+**Option 3: Add Supporting Details**
+- Add user stories for flow steps: `/manage-project/add/add-story`
+- Add API endpoints needed: `/manage-project/add/add-api`
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

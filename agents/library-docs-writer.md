@@ -32,7 +32,7 @@ user: "Create reference doc for React Server Components with latest patterns"
 assistant: "Launching library-docs-writer agent to fetch and compress React Server Components documentation"
 <commentary>Single focused library documentation task</commentary>
 </example>
-model: haiku
+model: claude-haiku-4-5-20251001
 color: pink
 ---
 

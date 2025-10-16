@@ -2,10 +2,31 @@
 
 # list-features.sh - List feature specifications with metadata and filtering options
 # Usage: ./list-features.sh [options]
-# Run from project root. Scans docs/feature-specs by default.
+# Run from project root or docs directory. Scans docs/feature-specs by default.
+
+# Detect if running from docs directory or project root
+resolve_features_dir() {
+    local current_dir="$(pwd)"
+
+    # Check if current directory is "docs"
+    if [[ "$(basename "$current_dir")" == "docs" && -d "$current_dir/feature-specs" ]]; then
+        echo "$current_dir/feature-specs"
+        return 0
+    fi
+
+    # Check if docs directory exists in current location
+    if [[ -d "$current_dir/docs/feature-specs" ]]; then
+        echo "$current_dir/docs/feature-specs"
+        return 0
+    fi
+
+    # Default (will fail gracefully if not found)
+    echo "docs/feature-specs"
+    return 1
+}
 
 # Default values
-FEATURES_DIR="docs/feature-specs"
+FEATURES_DIR="$(resolve_features_dir)"
 SHOW_ALL=false
 FORMAT="summary"
 FILTER_STATUS=""

@@ -2,11 +2,32 @@
 
 # generate-docs.sh - Generate documentation from YAML files
 # Usage: ./generate-docs.sh [options]
-# Run from project root. Generates human-readable docs from YAML files.
+# Run from project root or docs directory. Generates human-readable docs from YAML files.
+
+# Detect if running from docs directory or project root
+resolve_docs_dir() {
+    local current_dir="$(pwd)"
+
+    # Check if current directory is "docs"
+    if [[ "$(basename "$current_dir")" == "docs" && -f "$current_dir/product-requirements.yaml" ]]; then
+        echo "$current_dir"
+        return 0
+    fi
+
+    # Check if docs directory exists in current location
+    if [[ -d "$current_dir/docs" && -f "$current_dir/docs/product-requirements.yaml" ]]; then
+        echo "$current_dir/docs"
+        return 0
+    fi
+
+    # Default to docs (will fail gracefully if not found)
+    echo "docs"
+    return 1
+}
 
 # Default values
-DOCS_DIR="docs"
-OUTPUT_DIR="docs/generated"
+DOCS_DIR="$(resolve_docs_dir)"
+OUTPUT_DIR="${DOCS_DIR}/generated"
 FORMAT="markdown"
 INCLUDE_TOC=true
 

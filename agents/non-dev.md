@@ -6,7 +6,7 @@ allowedAgents:
   - marketing-script-writer
   - research-specialist
   - general-purpose
-model: sonnet
+model: claude-haiku-4-5-20251001
 color: amber
 ---
 

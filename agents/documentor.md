@@ -8,7 +8,7 @@ allowedAgents:
   - general-purpose
   - backend-developer
   - frontend-ui-developer
-model: haiku
+model: claude-haiku-4-5-20251001
 color: teal
 ---
 

@@ -53,8 +53,27 @@ Update `user-stories/US-###-*.yaml` with `last_updated` timestamp.
 ```
 
 ### 9. Next Steps
-- Update another story: run this command again
+
+Present options to user:
+
+```markdown
+✓ Story US-### updated
+✓ Changes validated
+
+**Next Steps:**
+
+**Option 1: Update More Stories**
+- Update another story: `/manage-project/update/update-story`
 - Check progress: `./list-stories.sh -s in-progress`
+
+**Option 2: Re-implement Based on Changes**
+- If acceptance criteria changed significantly: `/manage-project/implement/00-orchestrate US-###`
+  - Will update implementation to match new criteria
+  - Investigation phase identifies what needs to change
+  - Only affected code is updated
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

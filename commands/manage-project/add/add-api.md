@@ -57,8 +57,30 @@ If feature spec mentions this API, update with details.
 ```
 
 ### 8. Next Steps
-- Add another API: run this command again
-- Check alignment: run /manage-project/validate/check-api-alignment
+
+Present options to user:
+
+```markdown
+✓ API endpoint added to contracts: [METHOD] [path]
+✓ Feature specification updated (if applicable)
+
+**Next Steps:**
+
+**Option 1: Add More APIs**
+- Add another API: `/manage-project/add/add-api`
+- Check API alignment: `/manage-project/validate/check-api-alignment`
+
+**Option 2: Implement This API**
+- Start implementation: `/manage-project/implement/00-orchestrate API-[METHOD]-[path]`
+  - Runs investigation → planning → execution → validation
+  - Implements backend + frontend integration for this endpoint
+
+**Option 3: Implement Related Feature**
+- If this API belongs to feature F-##: `/manage-project/implement/00-orchestrate F-##`
+  - Implements entire feature including all APIs
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 

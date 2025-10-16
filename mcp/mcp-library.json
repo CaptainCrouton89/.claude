@@ -1,0 +1,43 @@
+{
+  "perplexity": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "perplexity-mcp"],
+    "env": {
+      "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY",
+      "PERPLEXITY_TIMEOUT_MS": "600000"
+    }
+  },
+  "search": {
+    "command": "node",
+    "args": ["/Users/silasrhyneer/Code/MCP/search/dist/index.js"],
+    "env": {
+      "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY",
+      "SERP_API_KEY": "YOUR_SERP_API_KEY",
+      "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN"
+    }
+  },
+  "google-mcp": {
+    "command": "node",
+    "args": ["/Users/silasrhyneer/Code/MCP/google-mcp/dist/index.js"],
+    "env": {
+      "GOOGLE_MAPS_API_KEY": "YOUR_GOOGLE_MAPS_API_KEY",
+      "SERP_API_KEY": "YOUR_SERP_API_KEY"
+    }
+  },
+  "mcp-reddit": {
+    "command": "node",
+    "args": ["/Users/silasrhyneer/Code/MCP/mcp-reddit/dist/index.js"]
+  },
+  "sql": {
+    "command": "node",
+    "args": ["/Users/silasrhyneer/Code/MCP/sql/dist/index.js"],
+    "env": {
+      "SUPABASE_CONNECTION_STRING": "YOUR_SUPABASE_CONNECTION_STRING",
+      "SUPABASE_URL": "YOUR_SUPABASE_URL",
+      "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY",
+      "SUPABASE_SERVICE_KEY": "YOUR_SUPABASE_SERVICE_KEY",
+      "ENABLED_TOOLS": "execute-sql,describe-table,describe-functions,list-tables,get-function-definition,upload-file,delete-file,list-files,download-file,create-bucket,delete-bucket,move-file,copy-file,generate-signed-url,get-file-info,list-buckets,empty-bucket"
+    }
+  }
+}

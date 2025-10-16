@@ -2,10 +2,31 @@
 
 # list-flows.sh - List user flows with metadata and filtering options
 # Usage: ./list-flows.sh [options]
-# Run from project root. Scans docs/user-flows by default.
+# Run from project root or docs directory. Scans docs/user-flows by default.
+
+# Detect if running from docs directory or project root
+resolve_flows_dir() {
+    local current_dir="$(pwd)"
+
+    # Check if current directory is "docs"
+    if [[ "$(basename "$current_dir")" == "docs" && -d "$current_dir/user-flows" ]]; then
+        echo "$current_dir/user-flows"
+        return 0
+    fi
+
+    # Check if docs directory exists in current location
+    if [[ -d "$current_dir/docs/user-flows" ]]; then
+        echo "$current_dir/docs/user-flows"
+        return 0
+    fi
+
+    # Default (will fail gracefully if not found)
+    echo "docs/user-flows"
+    return 1
+}
 
 # Default values
-FLOWS_DIR="docs/user-flows"
+FLOWS_DIR="$(resolve_flows_dir)"
 SHOW_ALL=true
 FORMAT="summary"
 FILTER_PERSONA=""

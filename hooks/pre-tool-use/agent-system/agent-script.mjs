@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
 import { appendFileSync, readFileSync, writeFileSync } from 'fs';
-import { query } from '~/.claude/claude-cli/sdk.mjs';
+import { homedir } from 'os';
+import { join } from 'path';
+
+const { query } = await import(join(homedir(), '.claude', 'claude-cli', 'sdk.mjs'));
 
 // Get configuration from environment variables
 const agentLogPath = process.env.AGENT_LOG_PATH;
@@ -125,7 +128,13 @@ const appendDeltaText = (message, deltaText) => {
   const previous = blockStates.get(key) || '';
   const next = previous + deltaText;
 
-  appendToLog(deltaText);
+  // Add newline before [UPDATE] if not already at line start
+  let textToAppend = deltaText;
+  if (deltaText.startsWith('[UPDATE]') && previous && !previous.endsWith('\n')) {
+    textToAppend = '\n' + deltaText;
+  }
+
+  appendToLog(textToAppend);
   blockStates.set(key, next);
 };
 

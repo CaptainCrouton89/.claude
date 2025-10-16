@@ -10,7 +10,7 @@ allowedAgents:
   - non-dev
   - root-cause-analyzer
   - validation-orchestrator
-model: sonnet
+model: claude-haiku-4-5-20251001
 color: white
 ---
 

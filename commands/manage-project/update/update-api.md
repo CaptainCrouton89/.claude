@@ -61,7 +61,28 @@ Update related feature specs if API contract changed.
 ```
 
 ### 10. Next Steps
-- Check alignment: run /manage-project/validate/check-api-alignment
+
+Present options to user:
+
+```markdown
+✓ API endpoint updated: [METHOD] [path]
+✓ Feature specifications synchronized
+
+**Next Steps:**
+
+**Option 1: Validate Changes**
+- Check API alignment: `/manage-project/validate/check-api-alignment`
+- Update another API: `/manage-project/update/update-api`
+
+**Option 2: Re-implement Based on Changes**
+- If contract changed: `/manage-project/implement/00-orchestrate API-[METHOD]-[path]`
+  - Updates backend endpoint implementation
+  - Updates frontend integration code
+  - Ensures contract compliance
+  - Tests new request/response schemas
+
+Which path would you like to take?
+```
 
 ## Edge Cases
 
