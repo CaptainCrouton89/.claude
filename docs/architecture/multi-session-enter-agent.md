@@ -65,7 +65,7 @@
 
 ```javascript
 #!/usr/bin/env node
-import { writeFileSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 const stdin = readFileSync(0, 'utf-8');
@@ -75,15 +75,17 @@ if (inputData.hook_event_name !== 'SessionStart') {
   process.exit(0);
 }
 
+const parentPid = process.ppid;
 const sessionId = inputData.session_id;
-const pid = process.pid;
 const cwd = inputData.cwd || process.cwd();
 
 // Write to per-PID marker so enter-agent can find parent session
-const markerPath = join(cwd, '.claude', '.session-markers', `${pid}.json`);
+const markersDir = join(cwd, '.claude', '.session-markers');
+mkdirSync(markersDir, { recursive: true });
+const markerPath = join(markersDir, `${parentPid}.json`);
 writeFileSync(markerPath, JSON.stringify({
   sessionId,
-  pid,
+  pid: parentPid,
   cwd,
   startedAt: new Date().toISOString()
 }, null, 2));
@@ -243,6 +245,10 @@ exec claude --resume "$SESSION_ID"
 - **`exec` replacement:** No subprocess — swaps the current shell process
 - **Status check:** Warns if agent already completed (read-only resume)
 
+**Dependencies & paths:**
+- The script expects `jq` to be installed for JSON parsing.
+- `REGISTRY="./agent-responses/.active-pids.json"` assumes you run `enter-agent` from the same project root as the agent registry. If you prefer location agnostic execution, resolve the path via `$CLAUDE_PROJECT_DIR` or by reading the `cwd` stored alongside the agent entry.
+
 ---
 
 ### 4. Return Journey
@@ -260,15 +266,19 @@ User copies the parent session ID shown by `enter-agent`.
 exit-agent  # or /exit-agent slash command
 ```
 
-Reads the agent registry entry for current session, extracts `parentSessionId`, runs `exec claude --resume`.
+Reads the agent registry entry for the current session, extracts `parentSessionId`, then runs `exec claude --resume`.
 
-**Implementation:**
+**Implementation (requires current session ID):**
 ```bash
 #!/bin/bash
-# Detect current session ID from shell environment or ps
-CURRENT_PID=$(pgrep -P $$ claude | head -1)  # Claude process in current terminal
+set -euo pipefail
 
-# Find which agent this session belongs to
+CURRENT_SESSION_ID="${1:-${CLAUDE_SESSION_ID:-}}"
+if [ -z "$CURRENT_SESSION_ID" ]; then
+  echo "Usage: exit-agent <current_session_id>" >&2
+  exit 1
+fi
+
 REGISTRY="./agent-responses/.active-pids.json"
 AGENT_ID=$(jq -r "to_entries[] | select(.value.sessionId == \"$CURRENT_SESSION_ID\") | .key" "$REGISTRY")
 
@@ -281,10 +291,7 @@ PARENT_SESSION=$(jq -r ".[\"$AGENT_ID\"].parentSessionId" "$REGISTRY")
 exec claude --resume "$PARENT_SESSION"
 ```
 
-**Challenge:** Detecting "which session am I in?" without CLI support. May require:
-- Parsing latest line of transcript to extract session ID
-- Using environment variable set by the Claude CLI (if available)
-- Prompting user to pass session ID explicitly
+**Challenge:** Detecting "which session am I in?" without CLI support. Until the CLI exposes the current session ID (for example via `CLAUDE_SESSION_ID`), the helper must accept it as an argument or derive it via another custom hook (e.g., persisting it in a shell-local file during SessionStart).
 
 ---
 
@@ -314,7 +321,12 @@ exec claude --resume "$PARENT_SESSION"
 **Solution:** SessionEnd hook deletes marker:
 ```javascript
 // In session-tracker.mjs SessionEnd handler
-const markerPath = join(cwd, '.claude', '.session-markers', `${process.pid}.json`);
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
+
+const parentPid = process.ppid;
+const markersDir = join(cwd, '.claude', '.session-markers');
+const markerPath = join(markersDir, `${parentPid}.json`);
 if (existsSync(markerPath)) {
   unlinkSync(markerPath);
 }

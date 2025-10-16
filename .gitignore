@@ -24,3 +24,4 @@ conversation-state/
 agent-responses
 state/
 state/claude-md-manager-cache.json
+.claude/.session-markers/

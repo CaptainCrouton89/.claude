@@ -146,6 +146,11 @@
           },
           {
             "type": "command",
+            "command": "~/.claude/hooks/user-prompt-submit/auto-copy-skills.mjs",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
             "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
             "timeout": 5000
           }
