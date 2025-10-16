@@ -1,3 +1,7 @@
+---
+description: Orchestrate full project documentation workflow from assessment through completion
+---
+
 # Initialize Project Docs — Orchestrated Workflow
 
 Your job is to create or complete a minimal-but-complete project documentation set, automatically handling both greenfield (new) and brownfield (existing) scenarios.

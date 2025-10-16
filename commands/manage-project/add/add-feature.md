@@ -1,3 +1,8 @@
+---
+description: Add new feature to product requirements and create specification
+argument-hint: [feature name or description]
+---
+
 # Add New Feature
 
 Add feature to PRD and create feature specification.

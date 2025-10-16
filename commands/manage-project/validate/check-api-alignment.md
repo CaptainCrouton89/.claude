@@ -1,3 +1,7 @@
+---
+description: Verify API contract alignment between feature specs and OpenAPI definitions
+---
+
 # Check API Alignment
 
 Verify feature specs and API contracts match for all endpoints.

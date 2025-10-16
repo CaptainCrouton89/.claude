@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft technical feature specifications and designs
+---
+
 # Create Feature Technical Specifications
 
 Your job is to collaborate with the user to draft technical specs for high-priority features, then save them to `docs/feature-spec/F-<##>-<slug>.yaml` using the template at @/file-templates/init-project/feature-spec/feature-title.yaml.

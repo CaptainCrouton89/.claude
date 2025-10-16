@@ -1,3 +1,7 @@
+---
+description: Add user flow describing how users accomplish tasks and goals
+---
+
 # Add User Flow
 
 Add user flow describing how users accomplish tasks.

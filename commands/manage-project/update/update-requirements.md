@@ -1,3 +1,7 @@
+---
+description: Update product requirements and identify affected downstream documents
+---
+
 # Update Product Requirements
 
 Modify PRD: scope, metrics, risks, features. Maintain consistency.

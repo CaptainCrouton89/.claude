@@ -1,3 +1,8 @@
+---
+description: Query and explore project documentation state using available utilities
+argument-hint: [query description]
+---
+
 # Query Current State
 
 Use bash utilities to explore and understand project documentation state.

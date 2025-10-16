@@ -1,3 +1,8 @@
+---
+description: Execute complete feature development lifecycle with agent delegation
+argument-hint: [feature description or ID]
+---
+
 $ARGUMENTS
 
 ## Feature Development Lifecycle

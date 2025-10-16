@@ -1,3 +1,8 @@
+---
+description: Comprehensive investigation with parallel agents to understand codebase and patterns
+argument-hint: [F-## | S-## | API-METHOD-path]
+---
+
 # Implementation Phase 1: Investigation
 
 Comprehensive investigation phase with parallel agent delegation to understand codebase, patterns, and constraints.

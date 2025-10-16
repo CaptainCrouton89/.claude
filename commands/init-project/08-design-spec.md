@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft UI design specification and interaction patterns
+---
+
 # Create Design Specification
 
 Your job is to collaborate with the user to draft the design specification, then save it to `docs/design-spec.yaml` using the template at @/file-templates/init-project/design-spec.yaml.

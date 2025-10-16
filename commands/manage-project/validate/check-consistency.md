@@ -1,3 +1,7 @@
+---
+description: Validate cross-document consistency and identify broken references
+---
+
 # Check Documentation Consistency
 
 Run traceability checks across all docs. Identify inconsistencies, broken links.

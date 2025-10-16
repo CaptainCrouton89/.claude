@@ -1,3 +1,7 @@
+---
+description: Generate comprehensive CLAUDE.md documentation for a new codebase
+---
+
 You are a senior software architect analyzing a new codebase to create onboarding documentation for future AI assistants.
 
 <task>

@@ -1,3 +1,8 @@
+---
+description: Intelligent entry point for work on any feature, requirement, story, or update
+argument-hint: [feature description or ID]
+---
+
 # Start Work on Feature/Requirement
 
 Intelligent entry point for beginning work on any feature, requirement, flow, story, or update.

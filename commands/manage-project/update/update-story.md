@@ -1,3 +1,7 @@
+---
+description: Update user story and validate impact on feature specifications
+---
+
 # Update User Story
 
 Modify existing user story: status, criteria, feature link.

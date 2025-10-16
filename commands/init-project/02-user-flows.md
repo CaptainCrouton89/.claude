@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft primary user flows and scenarios
+---
+
 # Create User Flows
 
 Your job is to collaborate with the user to draft 2–5 primary user flows, then save them to `docs/user-flows/<slug>.yaml` using the template at @/file-templates/init-project/user-flows/user-flow-title.yaml.

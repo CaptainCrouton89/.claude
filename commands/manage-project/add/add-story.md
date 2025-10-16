@@ -1,3 +1,7 @@
+---
+description: Add user story linked to existing feature with acceptance criteria
+---
+
 # Add User Story
 
 Add user story linked to existing feature.

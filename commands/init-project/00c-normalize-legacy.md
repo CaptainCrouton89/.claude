@@ -1,3 +1,7 @@
+---
+description: Migrate non-standard documentation into template-compliant format
+---
+
 # Normalize Legacy Documentation
 
 Your job is to migrate existing non-standard documentation into the template-compliant format before proceeding with init workflow.

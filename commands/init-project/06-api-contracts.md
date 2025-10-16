@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft OpenAPI specification and API contracts
+---
+
 # Create API Contracts
 
 Your job is to collaborate with the user to draft the OpenAPI specification, then save it to `docs/api-contracts.yaml` using the template at @/file-templates/init-project/api-contracts.yaml.

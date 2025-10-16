@@ -1,3 +1,7 @@
+---
+description: Fix all build and compilation errors in the codebase
+---
+
 The application is working the way I want, but there are build errors. 
 
 1. Run get_compilation_errors or a typecheck on /src. 

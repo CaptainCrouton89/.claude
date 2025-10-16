@@ -1,3 +1,8 @@
+---
+description: Commit changes and generate documentation for completed work
+argument-hint: [optional: feature description]
+---
+
 I have just finished one or more changes. It's time to push commits and to potentially update the documentation.
 
 ## Phase 1: Analysis

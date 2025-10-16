@@ -1,3 +1,8 @@
+---
+description: Final comprehensive validation of implementation against all requirements
+argument-hint: [F-## | S-## | API-METHOD-path]
+---
+
 # Implementation Phase 4: Final Validation
 
 Comprehensive validation of complete implementation against all requirements and acceptance criteria.

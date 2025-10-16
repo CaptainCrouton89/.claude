@@ -1,3 +1,8 @@
+---
+description: Execute implementation tasks with parallel validation and progress tracking
+argument-hint: [F-## | S-## | API-METHOD-path]
+---
+
 # Implementation Phase 3: Execution
 
 Execute implementation tasks according to plan with parallel validation.

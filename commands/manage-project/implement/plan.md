@@ -1,3 +1,8 @@
+---
+description: Create detailed implementation plan with task breakdown and dependencies
+argument-hint: [F-## | S-## | API-METHOD-path]
+---
+
 # Implementation Phase 2: Planning
 
 Create detailed implementation plan with task breakdown, dependencies, and validation criteria.

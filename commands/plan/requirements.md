@@ -1,3 +1,8 @@
+---
+description: Gather requirements for a new feature and document comprehensive specifications
+argument-hint: [feature name or description]
+---
+
 Define a new feature and produce `docs/plans/[feature-name]/requirements.md` using the canonical template at `~/.claude/file-templates/requirements.template.md`.
 
 At a high level, the feature is:

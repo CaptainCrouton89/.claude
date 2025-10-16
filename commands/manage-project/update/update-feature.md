@@ -1,3 +1,7 @@
+---
+description: Update feature specification and reconcile with related documents
+---
+
 # Update Existing Feature
 
 Update both PRD feature entry and feature spec. Maintain consistency with dependent stories and APIs.

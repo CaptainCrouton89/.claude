@@ -1,3 +1,7 @@
+---
+description: Initialize Claude CLI environment with appropriate agents and MCPs for project
+---
+
 # Claude CLI Initialization — Agents and MCPs
 
 Your job is to initialize this Claude CLI environment with the appropriate **agents** and **MCPs (Modular Capability Plugins)** to support the specific tasks required by this project.

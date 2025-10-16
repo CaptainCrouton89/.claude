@@ -1,3 +1,7 @@
+---
+description: Identify documentation gaps and route to targeted update workflows
+---
+
 # Selective Update — Brownfield Compliant Docs
 
 Your job is to identify which documents need updates or additions, then route to the appropriate manage-project workflows rather than regenerating everything.

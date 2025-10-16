@@ -1,3 +1,7 @@
+---
+description: Add API endpoint to contracts and update related feature specifications
+---
+
 # Add API Endpoint
 
 Add API endpoint to contracts and optionally update feature specs.

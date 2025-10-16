@@ -1,3 +1,7 @@
+---
+description: Update design specifications and reconcile with feature requirements
+---
+
 # Update Design Specification
 
 Modify design spec: goals, components, screens, interactions.

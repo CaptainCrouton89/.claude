@@ -1,3 +1,7 @@
+---
+description: Check feature coverage across documentation including user stories and specs
+---
+
 # Check Feature Coverage
 
 Verify all features have specs, stories, APIs, flows, design, testing.

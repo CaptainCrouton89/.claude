@@ -1,3 +1,7 @@
+---
+description: Assess documentation status and route to appropriate workflow path
+---
+
 # Assess Existing Documentation
 
 Your job is to determine whether this is a greenfield (no docs) or brownfield (existing docs) project, then route to the appropriate workflow path.

@@ -119,6 +119,7 @@
       "mcp__validation__removeValidationFailure"
     ]
   },
+  "model": "haiku",
   "hooks": {
     "PreToolUse": [
       {

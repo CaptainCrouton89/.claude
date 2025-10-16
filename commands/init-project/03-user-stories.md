@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft user stories with acceptance criteria
+---
+
 # Create User Stories
 
 Your job is to collaborate with the user to draft user stories with acceptance criteria, then save them to `docs/user-stories/US-<###>-<slug>.yaml` using the template at @/file-templates/init-project/user-stories/story-title.yaml.

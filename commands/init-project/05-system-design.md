@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft high-level system architecture and design
+---
+
 # Create System Design Brief
 
 Your job is to collaborate with the user to draft the high-level system design, then save it to `docs/system-design.yaml` using the template at @/file-templates/init-project/system-design.yaml.

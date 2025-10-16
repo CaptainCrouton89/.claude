@@ -1,3 +1,7 @@
+---
+description: Perform final cross-document consistency check and alignment validation
+---
+
 # Traceability & Consistency Pass
 
 Your job is to perform a final cross-document consistency check and update any files with broken links, mismatched IDs, or missing details.

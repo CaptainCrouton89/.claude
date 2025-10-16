@@ -1,3 +1,7 @@
+---
+description: Orchestrate project documentation workflows with intelligent intent routing
+---
+
 # Manage Project — Orchestrated Workflow
 
 Understand user intent, show current state, route to appropriate commands.

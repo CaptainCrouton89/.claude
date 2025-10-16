@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft product requirements document
+---
+
 # Create Product Requirements Document
 
 Your job is to collaborate with the user to draft the PRD, then save it to `docs/product-requirements.yaml` using the template at @/file-templates/init-project/product-requirements.yaml.

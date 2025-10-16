@@ -1,3 +1,7 @@
+---
+description: Collaborate with user to draft data structures, events, and analytics plan
+---
+
 # Create Data & Analytics Plan
 
 Your job is to collaborate with the user to draft the data and analytics plan, then save it to `docs/data-plan.yaml` using the template at @/file-templates/init-project/data-plan.yaml.

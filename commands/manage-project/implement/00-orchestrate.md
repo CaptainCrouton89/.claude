@@ -1,3 +1,8 @@
+---
+description: Orchestrate complete implementation lifecycle with investigation, planning, execution, validation
+argument-hint: [F-## | S-## | API-METHOD-path | FLOW-##]
+---
+
 # Implement — Orchestrated Workflow
 
 Complete implementation lifecycle orchestrator. Routes to phases or runs full workflow.

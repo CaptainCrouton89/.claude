@@ -1,3 +1,7 @@
+---
+description: Update API contracts and reconcile affected feature specifications
+---
+
 # Update API Endpoint
 
 Modify existing API endpoint in contracts and update feature specs.
