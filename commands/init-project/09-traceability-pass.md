@@ -7,18 +7,29 @@ Your job is to perform a final cross-document consistency check and update any f
 ## Pre-flight: re-initialize context
 1. Read @/file-templates/init-project/CLAUDE.md to understand the cross-document conventions.
 2. Read all files under `<project_root>/docs/`:
-   - `product-requirements.md`
-   - `system-design.md`
-   - `design-spec.md`
+   - `product-requirements.yaml`
+   - `system-design.yaml`
+   - `design-spec.yaml`
    - `api-contracts.yaml`
-   - `data-plan.md`
-   - All `user-flows/*.md`
-   - All `user-stories/*.md`
-   - All `feature-spec/*.md`
+   - `data-plan.yaml`
+   - All `user-flows/*.yaml`
+   - All `user-stories/*.yaml`
+   - All `feature-spec/*.yaml`
 
 ---
 
 ## Process
+
+## ⚡ Delegation
+
+**Default approach:** Use `@agent-documentor` (and additional specialists if needed) to execute the cross-document fixes asynchronously while you coordinate reviews. Provide:
+- Full list of discrepancies, affected file paths, and required alignment rules from this workflow
+- Reminder to update `last_updated` fields, maintain ID conventions, and surface any unresolved blockers before saving
+
+Continue reconciling outstanding questions or prepping implementation workflows while they work. Monitor via hook updates; `await` only when you must verify the fixes before proceeding.
+
+**Inline exception:** Apply manual edits yourself only for explicit, one-off corrections. Broader adjustments should remain delegated.
+
 1. Verify cross-document consistency:
    - **Feature IDs (F-01..F-n):**
      - PRD Feature List ↔ Feature Specs (one-to-one match by ID and title)
@@ -73,3 +84,27 @@ Your job is to perform a final cross-document consistency check and update any f
 ## Traceability
 - This is the final gate before implementation. Ensure all IDs, metrics, APIs, and designs are aligned and complete.
 
+---
+
+## Completion
+
+After all consistency checks pass and updates are applied, **report:**
+
+```
+✅ Init-project workflow complete.
+
+Documentation suite ready:
+- Product Requirements: ✓
+- User Flows: ✓
+- User Stories: ✓
+- Feature Specs: ✓
+- System Design: ✓
+- API Contracts: ✓
+- Data Plan: ✓
+- Design Spec: ✓
+- Cross-references validated: ✓
+
+Next: Ready for implementation via /commands/manage-project/ workflows.
+```
+
+No further commands to run. The init workflow is complete.

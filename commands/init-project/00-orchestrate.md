@@ -1,6 +1,8 @@
 # Initialize Project Docs — Orchestrated Workflow
 
-Your job is to guide the user through creating a minimal-but-complete project documentation set in the correct order, using the templates in @/file-templates/init-project/. Save outputs to the target project's `/docs` directory, mirroring the same folder structure.
+Your job is to create or complete a minimal-but-complete project documentation set, automatically handling both greenfield (new) and brownfield (existing) scenarios.
+
+**The workflow is fully automatic:** Assessment determines the path, then commands daisy-chain. Users don't need to know which scenario applies.
 
 ---
 
@@ -9,37 +11,66 @@ Your job is to guide the user through creating a minimal-but-complete project do
 **This workflow generates 8+ structured documents** — a substantial multi-phase task.
 
 **Recommended approach:**
-- **DELEGATE** to a `documentor` agent for the complete workflow (steps 1-9)
+- **DELEGATE** to a `documentor` agent for the complete workflow (assessment through completion)
 - **HANDLE DIRECTLY** only if user explicitly requests inline execution OR for quick single-document updates
 
 **When delegating, provide:**
 - Project root path and collected inputs (personas, features, timeline)
 - Reference to this orchestration file and all templates in `@/file-templates/init-project/`
 - Instruction to follow gates, idempotency rules, and traceability conventions
-- Clear expectation to seek user approval at each gate before persisting
+- Clear expectation to seek user approval at each gate before persisting (except for automatic routing)
 
 **Quick reference:** See `@CLAUDE.md` for full delegation heuristics.
 
 ---
 
-## Inputs to collect first (and confirm):
-- Project root path (e.g., `/path/to/new-project`). Create `docs/`, plus subfolders: `feature-spec/`, `user-stories/`, `user-flows/`.
-- MVP scope and timeline pressure (for scoping choices)
-- Key personas and top 3 features (if unknown, derive in steps below)
+## Entry Point: Automatic Assessment
 
-If any item is unknown, make reasonable assumptions, state them explicitly, and ask the user to confirm or correct. Keep going iteratively.
+**Immediately run:** `/commands/init-project/00a-assess-existing.md`
+
+This command:
+1. Detects greenfield vs brownfield scenarios
+2. Validates existing documentation if present
+3. Automatically routes to the appropriate workflow path
+4. Executes the next command without user intervention
+
+**Do not collect inputs manually.** The assessment and subsequent commands will gather what's needed.
+
+---
+
+## Workflow Paths (handled automatically)
+
+**Path A: Greenfield** (no existing docs)
+- Assessment → 01-prd → 02-user-flows → 03-user-stories → 04-feature-specs → 05-system-design → 06-api-contracts → 07-data-plan → 08-design-spec → 09-traceability-pass
+
+**Path B: Brownfield-Compliant** (existing docs following conventions)
+- Assessment → 00b-selective-update → targeted updates via manage-project workflows → 09-traceability-pass
+
+**Path C: Brownfield-Legacy** (existing docs, non-standard format)
+- Assessment → 00c-normalize-legacy → 00b-selective-update → 09-traceability-pass
+
+---
+
+## Manual Override (rare)
+
+If user explicitly specifies a starting point:
+- "Start from PRD" → `/commands/init-project/01-prd.md`
+- "Update API contracts" → `/commands/init-project/06-api-contracts.md`
+- "Just validate" → `/commands/init-project/09-traceability-pass.md`
+
+Otherwise, **always start with assessment**.
 
 ---
 
 ## Sequence (and gates)
-1. PRD → @/file-templates/init-project/product-requirements.md
-2. User Flows → @/file-templates/init-project/user-flows/user-flow-title.md
-3. User Stories → @/file-templates/init-project/user-stories/story-title.md
-4. Feature Specs → @/file-templates/init-project/feature-spec/feature-title.md
-5. System Design → @/file-templates/init-project/system-design.md
+1. PRD → @/file-templates/init-project/product-requirements.yaml
+2. User Flows → @/file-templates/init-project/user-flows/user-flow-title.yaml
+3. User Stories → @/file-templates/init-project/user-stories/story-title.yaml
+4. Feature Specs → @/file-templates/init-project/feature-spec/feature-title.yaml
+5. System Design → @/file-templates/init-project/system-design.yaml
 6. API Contracts → @/file-templates/init-project/api-contracts.yaml
-7. Data Plan → @/file-templates/init-project/data-plan.md
-8. Design Spec → @/file-templates/init-project/design-spec.md
+7. Data Plan → @/file-templates/init-project/data-plan.yaml
+8. Design Spec → @/file-templates/init-project/design-spec.yaml
 9. Traceability/Consistency pass (no template link; update all above as needed)
 
 At each gate, present a concise diff or bullet list of decisions and ask for explicit sign-off before persisting.
@@ -56,14 +87,14 @@ At each gate, present a concise diff or bullet list of decisions and ask for exp
 ## Saving rules
 - Mirror templates' structure in `<project_root>/docs`.
 - Use these default names:
-  - `docs/product-requirements.md`
-  - `docs/system-design.md`
-  - `docs/design-spec.md`
+  - `docs/product-requirements.yaml`
+  - `docs/system-design.yaml`
+  - `docs/design-spec.yaml`
   - `docs/api-contracts.yaml`
-  - `docs/data-plan.md`
-  - `docs/user-flows/<slug>.md`
-  - `docs/user-stories/US-<###>-<slug>.md`
-  - `docs/feature-spec/F-<##>-<slug>.md`
+  - `docs/data-plan.yaml`
+  - `docs/user-flows/<slug>.yaml`
+  - `docs/user-stories/US-<###>-<slug>.yaml`
+  - `docs/feature-spec/F-<##>-<slug>.yaml`
 - Maintain front-matter fields (`status`, `last_updated`, IDs) per templates.
 
 ---

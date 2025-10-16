@@ -1,31 +1,57 @@
 # Project Initialization Commands
 
-This directory contains a structured workflow for initializing project documentation from scratch. Each command is designed to run independently (after chat resets) and guides an AI agent through creating production-ready docs.
+This directory contains a structured workflow for initializing or completing project documentation. The workflow **automatically detects greenfield (new) vs brownfield (existing) scenarios** and routes appropriately—no user intervention needed.
 
 ## Quick Start
 
-1. **Run orchestrator:** `@/commands/init-project/00-orchestrate.md`
-   - Or run individual steps in order (01-10)
-2. **Agent will:**
-   - Re-read templates and prior docs after each reset
-   - Ask for confirmation on assumptions
-   - Check for existing files (idempotent)
-   - Save to `<project_root>/docs/` with proper structure
+**Just run:** `@/commands/init-project/00-orchestrate.md`
 
-## Workflow Steps
+The agent will:
+1. Automatically assess whether docs exist and their state
+2. Route to greenfield (full generation) or brownfield (migration/updates) path
+3. Daisy-chain through all necessary steps without asking for routing decisions
+4. Ask for content approval at gates (what to generate), but not workflow routing (which command runs next)
 
-| Step | Command | Output | Dependencies |
-|------|---------|--------|--------------|
-| 00 | `00-orchestrate.md` | (meta) runs all steps | — |
-| 01 | `01-prd.md` | `docs/product-requirements.md` | — |
-| 02 | `02-user-flows.md` | `docs/user-flows/*.md` | PRD |
-| 03 | `03-user-stories.md` | `docs/user-stories/US-*.md` | PRD, flows |
-| 04 | `04-feature-specs.md` | `docs/feature-spec/F-*.md` | PRD, stories |
-| 05 | `05-system-design.md` | `docs/system-design.md` | PRD, specs |
-| 06 | `06-api-contracts.md` | `docs/api-contracts.yaml` | specs, system design |
-| 07 | `07-data-plan.md` | `docs/data-plan.md` | PRD, specs, API |
-| 08 | `08-design-spec.md` | `docs/design-spec.md` | flows, stories, specs |
-| 09 | `09-traceability-pass.md` | (updates all) | all docs |
+**You don't need to know if your project is greenfield or brownfield.** The workflow handles it.
+
+## Workflow Paths (Automatic)
+
+**Path A: Greenfield** (no docs exist)
+```
+00-orchestrate → 00a-assess → 01-prd → 02-user-flows → 03-user-stories 
+→ 04-feature-specs → 05-system-design → 06-api-contracts → 07-data-plan 
+→ 08-design-spec → 09-traceability-pass → Complete
+```
+
+**Path B: Brownfield-Compliant** (docs exist, follow conventions)
+```
+00-orchestrate → 00a-assess → 00b-selective-update → [targeted updates 
+via manage-project workflows] → 09-traceability-pass → Complete
+```
+
+**Path C: Brownfield-Legacy** (docs exist, non-standard format)
+```
+00-orchestrate → 00a-assess → 00c-normalize-legacy → 00b-selective-update 
+→ 09-traceability-pass → Complete
+```
+
+## Command Reference
+
+| Command | Purpose | When Used |
+|---------|---------|-----------|
+| `00-orchestrate.md` | Entry point - starts assessment | Always run this first |
+| `00a-assess-existing.md` | Detects greenfield/brownfield, validates structure | Auto-run by orchestrator |
+| `00b-selective-update.md` | Identifies gaps in compliant docs, routes updates | Brownfield-compliant path |
+| `00c-normalize-legacy.md` | Migrates non-standard docs to template format | Brownfield-legacy path |
+| `01-prd.md` | Creates `docs/product-requirements.yaml` | Greenfield or missing PRD |
+| `02-user-flows.md` | Creates `docs/user-flows/*.yaml` | Greenfield or missing flows |
+| `03-user-stories.md` | Creates `docs/user-stories/US-*.yaml` | Greenfield or missing stories |
+| `04-feature-specs.md` | Creates `docs/feature-spec/F-*.yaml` | Greenfield or missing specs |
+| `05-system-design.md` | Creates `docs/system-design.yaml` | Greenfield or missing design |
+| `06-api-contracts.md` | Creates `docs/api-contracts.yaml` | Greenfield or missing APIs |
+| `07-data-plan.md` | Creates `docs/data-plan.yaml` | Greenfield or missing data plan |
+| `08-design-spec.md` | Creates `docs/design-spec.yaml` | Greenfield or missing design spec |
+| `09-traceability-pass.md` | Validates cross-references, fixes inconsistencies | Final step in all paths |
 
 ## Templates
 
@@ -34,7 +60,7 @@ All commands reference templates in:
 
 Agents must read:
 - `@/file-templates/init-project/CLAUDE.md` (cross-doc conventions)
-- Specific template for the step (e.g., `product-requirements.md`, `user-stories/story-title.md`)
+- Specific template for the step (e.g., `product-requirements.yaml`, `user-stories/story-title.yaml`)
 
 ## Key Conventions
 
@@ -43,10 +69,10 @@ Agents must read:
 - Stories: `US-101`, `US-102`, ... (link to features via `feature_id`)
 
 **Filenames:**
-- `docs/product-requirements.md`, etc.
-- `docs/user-flows/<slug>.md`
-- `docs/user-stories/US-<###>-<slug>.md`
-- `docs/feature-spec/F-<##>-<slug>.md`
+- `docs/product-requirements.yaml`, etc.
+- `docs/user-flows/<slug>.yaml`
+- `docs/user-stories/US-<###>-<slug>.yaml`
+- `docs/feature-spec/F-<##>-<slug>.yaml`
 
 **Front-matter:**
 - `status: draft` → `approved` (on sign-off)
@@ -57,42 +83,82 @@ Agents must read:
 - Agents ask: improve/replace/skip
 - Never overwrite without user approval
 
+## How It Works
+
+**Assessment (00a):**
+- Checks for `docs/` directory and existing files
+- Classifies as greenfield, brownfield-compliant, or brownfield-legacy
+- Automatically routes to appropriate workflow path
+
+**Daisy-Chaining:**
+- Each command ends with "Next Step" instruction
+- Agent runs the next command automatically after approval
+- No manual workflow navigation required
+
+**Idempotency:**
+- All commands check for existing files before writing
+- Brownfield paths preserve existing docs and migrate/update rather than overwrite
+- Legacy docs are backed up to `docs/.legacy-backup/` before normalization
+
 ## Usage Notes
 
-1. **Chat resets:** Each step re-reads templates and prior docs. No persistent context assumed.
-2. **Assumptions:** Agents make reasonable assumptions, state them explicitly, and ask for confirmation.
-3. **Sign-off gates:** Agents present summaries and wait for approval before persisting files.
-4. **Traceability:** Step 10 validates all cross-references (Feature IDs, Story IDs, APIs, metrics).
+1. **Always start with orchestrator:** Just run `00-orchestrate.md` - it handles everything
+2. **Manual step execution:** You can run individual steps (e.g., `01-prd.md`) if you need to regenerate a specific doc
+3. **Approval gates:** Agent asks for content approval (what features, what details) but not workflow routing (which command next)
+4. **Chat resets:** Each step re-reads templates and prior docs - no persistent context assumed
+5. **Delegation:** Orchestrator recommends delegating to `documentor` agent for heavy multi-doc workflows
 
-## Example
+## Example Flow
 
-```bash
+**Greenfield project:**
+```
+User: @/commands/init-project/00-orchestrate.md
 
-After chat reset:
+Agent: [runs 00a-assess-existing.md]
+       Status: GREENFIELD
+       Recommendation: /commands/init-project/01-prd.md
+       
+       [automatically runs 01-prd.md]
+       [gathers requirements, presents draft, gets approval, saves]
+       
+       Next: /commands/init-project/02-user-flows.md
+       [automatically runs 02-user-flows.md]
+       ...continues through 09...
+       
+       ✅ Init-project workflow complete.
+```
 
-```bash
-# User runs:
-@/commands/init-project/01-prd.md
+**Brownfield project with legacy markdown docs:**
+```
+User: @/commands/init-project/00-orchestrate.md
 
-# Agent will:
-# 1. Read @/file-templates/init-project/product-requirements.md
-# 2. Read @/file-templates/init-project/CLAUDE.md
-# 3. Check if docs/product-requirements.md exists
-# 4. Ask for project details (name, goals, scope, users, features, etc.)
-# 5. Present draft and ask for sign-off
-# 6. Write docs/product-requirements.md with status: draft
+Agent: [runs 00a-assess-existing.md]
+       Status: BROWNFIELD-LEGACY
+       Found: README.md, old-requirements.md, api-spec.json
+       Issues: Non-YAML format, missing IDs, no conventions
+       Recommendation: /commands/init-project/00c-normalize-legacy.md
+       
+       [automatically runs 00c-normalize-legacy.md]
+       [backs up originals, migrates to YAML, assigns IDs]
+       
+       Next: /commands/init-project/00b-selective-update.md
+       [identifies remaining gaps, runs targeted updates]
+       
+       Next: /commands/init-project/09-traceability-pass.md
+       [validates cross-references]
+       
+       ✅ Init-project workflow complete.
 ```
 
 ## Troubleshooting
 
-**Missing context after reset:**
-- Each command has "Pre-flight: re-initialize context" section
-- Agent reads all upstream docs explicitly
+**Want to skip assessment and force a specific path?**
+- Run the specific command directly (e.g., `01-prd.md` for greenfield, `00c-normalize-legacy.md` for migration)
 
-**Inconsistent IDs:**
-- Run `10-traceability-pass.md` to fix cross-references
+**Migration mapping unclear?**
+- Check `docs/migration-mapping.yaml` generated by normalization step
+- Review backups in `docs/.legacy-backup/YYYYMMDD-HHMMSS/`
 
-**Files already exist:**
-- Agent will ask: improve/replace/skip
-- Choose "improve" to iterate on existing docs
+**Inconsistent IDs after manual edits?**
+- Run `09-traceability-pass.md` standalone to fix cross-references
 

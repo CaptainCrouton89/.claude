@@ -1,20 +1,32 @@
 # Create Design Specification
 
-Your job is to collaborate with the user to draft the design specification, then save it to `docs/design-spec.md` using the template at @/file-templates/init-project/design-spec.md.
+Your job is to collaborate with the user to draft the design specification, then save it to `docs/design-spec.yaml` using the template at @/file-templates/init-project/design-spec.yaml.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/design-spec.md to understand the structure.
+1. Read @/file-templates/init-project/design-spec.yaml to understand the structure.
 2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
-3. Read `<project_root>/docs/user-flows/*.md` to understand primary user flows and personas.
-4. Read `<project_root>/docs/user-stories/*.md` to understand acceptance criteria and interaction requirements.
-5. Read `<project_root>/docs/feature-spec/*.md` to extract API constraints and interaction patterns.
-6. Check if `<project_root>/docs/design-spec.md` already exists. If so, read it and ask whether to improve/replace/skip.
+3. Read `<project_root>/docs/user-flows/*.yaml` to understand primary user flows and personas.
+4. Read `<project_root>/docs/user-stories/*.yaml` to understand acceptance criteria and interaction requirements.
+5. Read `<project_root>/docs/feature-spec/*.yaml` to extract API constraints and interaction patterns.
+6. Check if `<project_root>/docs/design-spec.yaml` already exists. If so, read it and ask whether to improve/replace/skip.
 
 ---
 
 ## Process
+
+## ⚡ Delegation
+
+**Default approach:** Delegate drafting of the design spec to `@agent-documentor` so you can keep orchestrating. Provide:
+- Output path (`<project_root>/docs/design-spec.yaml`) and template `@/file-templates/init-project/design-spec.yaml`
+- Inputs from user flows, stories, feature specs, and any design-system assumptions gathered so far
+- Instructions to cover accessibility/responsive requirements, link screens to Feature IDs
+
+Continue collecting clarifications or lining up next steps while the agent works. Monitor via hook updates; only `await` when the draft blocks further progress.
+
+**Inline exception:** Direct edits are reserved for explicit one-off tweaks; otherwise maintain asynchronous delegation as the norm.
+
 1. Draft the design spec covering:
    - **Overview:** design goals (e.g., "Modern, accessible, mobile-first"), links to Figma/XD/Sketch (or note if not available), design system used (e.g., Material UI, Tailwind)
    - **Layouts & Components:** table with Screen, Description, Link, Notes — cover key screens from user flows
@@ -36,13 +48,13 @@ Your job is to collaborate with the user to draft the design specification, then
 ---
 
 ## Output format
-- Exactly match @/file-templates/init-project/design-spec.md structure.
+- Exactly match @/file-templates/init-project/design-spec.yaml structure.
 - Include specific component names and interaction details (not vague placeholders).
 
 ---
 
 ## Save location
-- `<project_root>/docs/design-spec.md`
+- `<project_root>/docs/design-spec.yaml`
 
 ---
 
@@ -51,3 +63,13 @@ Your job is to collaborate with the user to draft the design specification, then
 - Interactions must align with feature specs and user stories.
 - Update user stories or feature specs if design reveals missing requirements or infeasible UX.
 
+---
+
+## Next Step
+
+After design spec is saved and approved, **immediately run:**
+```
+/commands/init-project/09-traceability-pass.md
+```
+
+No user confirmation needed—the workflow continues automatically.

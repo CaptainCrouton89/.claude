@@ -7,13 +7,25 @@ Your job is to collaborate with the user to draft the OpenAPI specification, the
 ## Pre-flight: re-initialize context
 1. Read @/file-templates/init-project/api-contracts.yaml to understand the structure.
 2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
-3. Read `<project_root>/docs/feature-spec/*.md` to extract all API endpoints (POST/GET/PUT/DELETE), request/response schemas, and error codes.
-4. Read `<project_root>/docs/system-design.md` to understand the tech stack and API Gateway design.
+3. Read `<project_root>/docs/feature-spec/*.yaml` to extract all API endpoints (POST/GET/PUT/DELETE), request/response schemas, and error codes.
+4. Read `<project_root>/docs/system-design.yaml` to understand the tech stack and API Gateway design.
 5. Check if `<project_root>/docs/api-contracts.yaml` already exists. If so, read it and ask whether to improve/replace/skip.
 
 ---
 
 ## Process
+
+## ⚡ Delegation
+
+**Default approach:** Delegate OpenAPI authoring to `@agent-documentor` to keep orchestration moving. Provide:
+- Output path (`<project_root>/docs/api-contracts.yaml`) and template `@/file-templates/init-project/api-contracts.yaml`
+- Consolidated endpoint details from feature specs, system design context, and any assumptions still awaiting confirmation
+- Instructions to reference Feature IDs, reuse component schemas
+
+Continue coordinating remaining steps or collecting clarifications while the agent works. Monitor via hook updates; only `await` when their output is a hard prerequisite for your next action.
+
+**Inline exception:** Apply manual edits only for explicit single-field tweaks; otherwise rely on async delegation.
+
 1. Define OpenAPI 3.0 spec covering:
    - **info:** title, version (align with PRD version)
    - **paths:** all endpoints from feature specs with:
@@ -54,3 +66,13 @@ Your job is to collaborate with the user to draft the OpenAPI specification, the
 - Schemas must align with data structures in feature specs.
 - Update feature specs if API design reveals missing details or inconsistencies.
 
+---
+
+## Next Step
+
+After API contracts are saved and approved, **immediately run:**
+```
+/commands/init-project/07-data-plan.md
+```
+
+No user confirmation needed—the workflow continues automatically.
