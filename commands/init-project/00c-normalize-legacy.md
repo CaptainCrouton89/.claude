@@ -47,11 +47,12 @@ The assessment found existing documentation that doesn't follow template convent
    - Update to use new IDs (F-##, US-###)
    - Document ambiguous cases in migration notes
 
-5. **Write normalized docs:**
+5. **Write normalized docs immediately:**
    - Use exact template structure from @/file-templates/init-project/
    - Set `status: draft` initially
    - Add `migration_notes` field documenting source and transformation
    - Set `last_updated` to current date
+   - If adjustments are needed, edit the files accordingly
 
 6. **Validation:**
    - Run `docs/check-project.sh -v` if it exists
@@ -116,7 +117,7 @@ This ensures any remaining gaps are filled using the standard workflow.
 - Backup location
 - Migration strategy (this file)
 - Template references
-- Instruction to proceed autonomously and report when complete
+- Instruction to write files immediately, make edits if adjustments are needed, and report when complete
 
 Monitor through `agent-responses/` and await completion before routing to 00b.
 

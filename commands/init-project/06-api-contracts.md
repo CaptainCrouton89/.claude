@@ -19,8 +19,8 @@ Your job is to collaborate with the user to draft the OpenAPI specification, the
 
 **Default approach:** Delegate OpenAPI authoring to `@agent-documentor` to keep orchestration moving. Provide:
 - Output path (`<project_root>/docs/api-contracts.yaml`) and template `@/file-templates/init-project/api-contracts.yaml`
-- Consolidated endpoint details from feature specs, system design context, and any assumptions still awaiting confirmation
-- Instructions to reference Feature IDs, reuse component schemas
+- Consolidated endpoint details from feature specs, system design context, and any assumptions
+- Instructions to reference Feature IDs, reuse component schemas, write the file immediately, and make edits if adjustments are requested
 
 Continue coordinating remaining steps or collecting clarifications while the agent works. Monitor via hook updates; only `await` when their output is a hard prerequisite for your next action.
 
@@ -42,11 +42,11 @@ Continue coordinating remaining steps or collecting clarifications while the age
    - Error response format (uniform structure)
    - Authentication/authorization patterns
 
-3. Make reasonable assumptions about request/response payloads; call them out and ask for confirmation.
+3. Make reasonable assumptions about request/response payloads; call them out clearly in the document.
 
-4. Present a summary of endpoints and schemas; ask for sign-off.
+4. Write the file immediately.
 
-5. On sign-off, write the file.
+5. If the user requests adjustments, edit the file accordingly.
 
 ---
 

@@ -20,8 +20,8 @@ Your job is to collaborate with the user to draft the design specification, then
 
 **Default approach:** Delegate drafting of the design spec to `@agent-documentor` so you can keep orchestrating. Provide:
 - Output path (`<project_root>/docs/design-spec.yaml`) and template `@/file-templates/init-project/design-spec.yaml`
-- Inputs from user flows, stories, feature specs, and any design-system assumptions gathered so far
-- Instructions to cover accessibility/responsive requirements, link screens to Feature IDs
+- Inputs from user flows, stories, feature specs, and any design-system assumptions gathered
+- Instructions to cover accessibility/responsive requirements, link screens to Feature IDs, write the file immediately, and make edits if adjustments are requested
 
 Continue collecting clarifications or lining up next steps while the agent works. Monitor via hook updates; only `await` when the draft blocks further progress.
 
@@ -39,11 +39,11 @@ Continue collecting clarifications or lining up next steps while the agent works
    - Feature specs (interactions match API constraints)
    - User stories (ACs for UI behavior are met)
 
-3. Make reasonable assumptions about design system and interaction patterns; call them out and ask for confirmation.
+3. Make reasonable assumptions about design system and interaction patterns; call them out clearly in the document.
 
-4. Present a summary of key screens, components, and accessibility notes; ask for sign-off.
+4. Write the file immediately with `last_updated: YYYY-MM-DD`.
 
-5. On sign-off, write the file with `last_updated: YYYY-MM-DD`.
+5. If the user requests adjustments, edit the file accordingly.
 
 ---
 

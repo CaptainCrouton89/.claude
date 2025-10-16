@@ -18,7 +18,7 @@ Your job is to create or complete a minimal-but-complete project documentation s
 - Project root path and collected inputs (personas, features, timeline)
 - Reference to this orchestration file and all templates in `@/file-templates/init-project/`
 - Instruction to follow gates, idempotency rules, and traceability conventions
-- Clear expectation to seek user approval at each gate before persisting (except for automatic routing)
+- Clear expectation to write directly and make edits if adjustments are needed (except for automatic routing)
 
 **Quick reference:** See `@CLAUDE.md` for full delegation heuristics.
 
@@ -73,14 +73,14 @@ Otherwise, **always start with assessment**.
 8. Design Spec → @/file-templates/init-project/design-spec.yaml
 9. Traceability/Consistency pass (no template link; update all above as needed)
 
-At each gate, present a concise diff or bullet list of decisions and ask for explicit sign-off before persisting.
+At each gate, write the document directly. If the user requests adjustments, edit the document accordingly.
 
 ---
 
 ## Idempotency rules
-- Before generating, check if the target file(s) already exist under `<project_root>/docs`. If they do, ask whether to revise/improve or skip.
-- For multi-file steps (flows, stories, feature specs): check per-item existence by naming conventions; offer to update, append, rename, or leave unchanged.
-- Never overwrite without confirmation. Always show what will be written.
+- Before generating, check if the target file(s) already exist under `<project_root>/docs`. If they do, read them and incorporate existing content, then write the improved version.
+- For multi-file steps (flows, stories, feature specs): check per-item existence by naming conventions; update or append as appropriate.
+- Write directly; if adjustments are needed, edit accordingly.
 
 ---
 

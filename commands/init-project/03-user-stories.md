@@ -19,8 +19,9 @@ Your job is to collaborate with the user to draft user stories with acceptance c
 
 **Default approach:** Delegate story drafting to a `@agent-documentor` so you can continue orchestration. Provide:
 - Output directory (`<project_root>/docs/user-stories/`) and template `@/file-templates/init-project/user-stories/story-title.yaml`
-- Feature priorities, related user flows, and any assumptions or open questions gathered so far
-- Instructions to assign sequential IDs, link `feature_id`, and update metadata.
+- Feature priorities, related user flows, and any assumptions or open questions gathered
+- Instructions to assign sequential IDs, link `feature_id`, write files immediately, and make edits if adjustments are requested
+- Reminder to update metadata
 
 Keep interviewing the user or preparing downstream commands while the agent works. Monitor via hook updates and only run `./agent-responses/await {agent_id}` when a draft must be reviewed before moving on.
 
@@ -38,13 +39,13 @@ Keep interviewing the user or preparing downstream commands while the agent work
 
 3. Assign unique IDs: `US-101`, `US-102`, etc. Link each story to its `feature_id` (F-##).
 
-4. Make reasonable assumptions about user needs and system behavior; call them out and ask for confirmation.
+4. Make reasonable assumptions about user needs and system behavior; call them out clearly in the documents.
 
-5. Present a summary of stories (ID, title, feature, priority); ask for sign-off.
-
-6. On sign-off, write one file per story:
+5. Write one file per story immediately:
    - Filename: `docs/user-stories/US-<###>-<kebab-case-title>.yaml`
    - Front-matter: `story_id`, `feature_id`, `status: draft`, `priority`, `title`
+
+6. If the user requests adjustments, edit the files accordingly.
 
 ---
 

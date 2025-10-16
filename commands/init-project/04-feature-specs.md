@@ -19,8 +19,9 @@ Your job is to collaborate with the user to draft technical specs for high-prior
 
 **Default approach:** Hand feature-spec drafting to `@agent-documentor` so you can keep coordinating the workflow. Provide:
 - Output directory (`<project_root>/docs/feature-spec/`) and template `@/file-templates/init-project/feature-spec/feature-title.yaml`
-- Relevant PRD, user story, and flow context plus any assumptions/open decisions needing callouts
-- Instructions to reference Feature IDs consistently, document APIs/data structures, and request approval before saving each spec with refreshed timestamps
+- Relevant PRD, user story, and flow context plus any assumptions/open decisions
+- Instructions to reference Feature IDs consistently, document APIs/data structures, write files immediately, and make edits if adjustments are requested
+- Reminder to update timestamps
 
 Continue clarifying requirements or prepping later steps while the agent works. Monitor via streaming updates; use `./agent-responses/await {agent_id}` only when the draft must gate later actions.
 
@@ -35,13 +36,13 @@ Continue clarifying requirements or prepping later steps while the agent works. 
    - **Rollout Plan:** feature flags, migration steps, monitoring metrics
    - **Open Questions:** unresolved technical decisions
 
-2. Make reasonable assumptions about implementation details; call them out and ask for confirmation.
+2. Make reasonable assumptions about implementation details; call them out clearly in the documents.
 
-3. Present a summary of each spec (Feature ID, title, key APIs, open questions); ask for sign-off.
-
-4. On sign-off, write one file per feature:
+3. Write one file per feature immediately:
    - Filename: `docs/feature-spec/F-<##>-<kebab-case-title>.yaml`
    - Front-matter: `title`, `status: draft`, `feature_id` (must match PRD)
+
+4. If the user requests adjustments, edit the files accordingly.
 
 ---
 

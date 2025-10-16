@@ -18,7 +18,8 @@ Your job is to collaborate with the user to draft the PRD, then save it to `docs
 **Default approach:** Spawn a `@agent-documentor` to draft and save the PRD while you continue orchestrating. Provide:
 - Target project root and output path (`<project_root>/docs/product-requirements.yaml`)
 - Template reference `@/file-templates/init-project/product-requirements.yaml` plus cross-doc rules in `@/file-templates/init-project/CLAUDE.md`
-- Collected answers, assumptions awaiting confirmation, and any open questions for the agent to flag
+- Collected answers, assumptions, and any open questions to document
+- Instruction to write the file immediately and make edits if adjustments are requested
 - Reminder to update metadata
 
 Keep gathering inputs or lining up downstream commands while the documentor runs. Monitor through hook updates and only call `./agent-responses/await {agent_id}` if the deliverable blocks progress.
@@ -37,16 +38,16 @@ Keep gathering inputs or lining up downstream commands while the documentor runs
    - Non-functional requirements (performance, security, reliability, compliance, scalability)
    - Risks and mitigations
 
-3. Make reasonable assumptions, call them out, and ask for confirmation.
+3. Make reasonable assumptions and call them out clearly in the document.
 
-4. Produce a draft with:
+4. Produce the complete document with:
    - Feature List table (ID, Feature, Priority, Description, Owner)
    - Success Metrics table (Metric, Target, Measurement Method)
    - Risks table (Risk, Likelihood, Impact, Mitigation)
 
-5. Present summary and ask for sign-off.
+5. Write the file immediately with `version: 0.1`, `status: draft`, `last_updated: YYYY-MM-DD`.
 
-6. On sign-off, write the file with `version: 0.1`, `status: draft`, `last_updated: YYYY-MM-DD`.
+6. If the user requests adjustments, edit the file accordingly.
 
 ---
 

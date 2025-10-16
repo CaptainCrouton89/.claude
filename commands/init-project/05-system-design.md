@@ -19,8 +19,9 @@ Your job is to collaborate with the user to draft the high-level system design, 
 
 **Default approach:** Delegate the system-design brief to `@agent-documentor` so you can keep coordinating subsequent steps. Provide:
 - Output path (`<project_root>/docs/system-design.yaml`) and template `@/file-templates/init-project/system-design.yaml`
-- Summaries from PRD, feature specs, and any architectural assumptions or constraints collected so far
-- Instructions to surface open questions, align components with Feature IDs and refresh metadata
+- Summaries from PRD, feature specs, and any architectural assumptions or constraints collected
+- Instructions to surface open questions, align components with Feature IDs, write the file immediately, and make edits if adjustments are requested
+- Reminder to refresh metadata
 
 Continue probing for requirements or prepping next workflows while the agent works. Monitor via hook updates; only `await` if their deliverable blocks downstream routing.
 
@@ -36,11 +37,11 @@ Continue probing for requirements or prepping next workflows while the agent wor
 
 2. Ensure the design covers all features from the PRD and aligns with feature specs.
 
-3. Make reasonable assumptions about tech choices; call them out and ask for confirmation.
+3. Make reasonable assumptions about tech choices; call them out clearly in the document.
 
-4. Present a summary of key architectural decisions and open questions; ask for sign-off.
+4. Write the file immediately with `status: draft`, `last_updated: YYYY-MM-DD`.
 
-5. On sign-off, write the file with `status: draft`, `last_updated: YYYY-MM-DD`.
+5. If the user requests adjustments, edit the file accordingly.
 
 ---
 

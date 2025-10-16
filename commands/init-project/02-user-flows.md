@@ -18,8 +18,9 @@ Your job is to collaborate with the user to draft 2–5 primary user flows, then
 
 **Default approach:** Spawn a `@agent-documentor` to draft each user-flow file asynchronously. Provide:
 - Target directory (`<project_root>/docs/user-flows/`) and template `@/file-templates/init-project/user-flows/user-flow-title.yaml`
-- Persona and feature context pulled from the PRD plus any clarifications/assumptions still pending
+- Persona and feature context pulled from the PRD plus any clarifications/assumptions
 - Guidance on naming slugs, referencing Feature IDs, and capturing edge cases per this workflow
+- Instruction to write files immediately and make edits if adjustments are requested
 - Expectation to update metadata
 
 Continue interviewing the user and teeing up downstream steps while the agent works. Monitor via hook updates; call `./agent-responses/await {agent_id}` only if you must review the draft before proceeding.
@@ -34,14 +35,14 @@ Continue interviewing the user and teeing up downstream steps while the agent wo
    - **Outcome:** successful end state
    - **Edge Cases / Errors:** what can go wrong
 
-3. Make reasonable assumptions about user goals and system behavior; call them out and ask for confirmation.
+3. Make reasonable assumptions about user goals and system behavior; call them out clearly in the documents.
 
-4. Present a summary of personas and flows; ask for sign-off.
-
-5. On sign-off, write one file per flow:
+4. Write one file per flow immediately:
    - Filename: `docs/user-flows/<kebab-case-flow-name>.yaml`
    - Front-matter: `title: <Flow Name>`
    - Include personas table and flow details per template
+
+5. If the user requests adjustments, edit the files accordingly.
 
 ---
 

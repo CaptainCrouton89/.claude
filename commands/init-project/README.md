@@ -10,7 +10,7 @@ The agent will:
 1. Automatically assess whether docs exist and their state
 2. Route to greenfield (full generation) or brownfield (migration/updates) path
 3. Daisy-chain through all necessary steps without asking for routing decisions
-4. Ask for content approval at gates (what to generate), but not workflow routing (which command runs next)
+4. Write documents directly and make edits if adjustments are requested
 
 **You don't need to know if your project is greenfield or brownfield.** The workflow handles it.
 
@@ -80,8 +80,8 @@ Agents must read:
 
 **Idempotency:**
 - Every command checks if files exist before writing
-- Agents ask: improve/replace/skip
-- Never overwrite without user approval
+- Existing content is read and incorporated into improved versions
+- Files are written directly; adjustments are made through edits if requested
 
 ## How It Works
 
@@ -92,7 +92,7 @@ Agents must read:
 
 **Daisy-Chaining:**
 - Each command ends with "Next Step" instruction
-- Agent runs the next command automatically after approval
+- Agent writes documents and runs the next command automatically
 - No manual workflow navigation required
 
 **Idempotency:**
@@ -104,7 +104,7 @@ Agents must read:
 
 1. **Always start with orchestrator:** Just run `00-orchestrate.md` - it handles everything
 2. **Manual step execution:** You can run individual steps (e.g., `01-prd.md`) if you need to regenerate a specific doc
-3. **Approval gates:** Agent asks for content approval (what features, what details) but not workflow routing (which command next)
+3. **Write-first approach:** Agent writes documents directly, then makes edits if adjustments are requested
 4. **Chat resets:** Each step re-reads templates and prior docs - no persistent context assumed
 5. **Delegation:** Orchestrator recommends delegating to `documentor` agent for heavy multi-doc workflows
 
@@ -119,10 +119,11 @@ Agent: [runs 00a-assess-existing.md]
        Recommendation: /commands/init-project/01-prd.md
        
        [automatically runs 01-prd.md]
-       [gathers requirements, presents draft, gets approval, saves]
+       [gathers requirements, writes PRD immediately]
        
        Next: /commands/init-project/02-user-flows.md
        [automatically runs 02-user-flows.md]
+       [writes user flows immediately]
        ...continues through 09...
        
        ✅ Init-project workflow complete.
@@ -139,13 +140,13 @@ Agent: [runs 00a-assess-existing.md]
        Recommendation: /commands/init-project/00c-normalize-legacy.md
        
        [automatically runs 00c-normalize-legacy.md]
-       [backs up originals, migrates to YAML, assigns IDs]
+       [backs up originals, migrates to YAML, assigns IDs, writes immediately]
        
        Next: /commands/init-project/00b-selective-update.md
        [identifies remaining gaps, runs targeted updates]
        
        Next: /commands/init-project/09-traceability-pass.md
-       [validates cross-references]
+       [validates cross-references, updates files immediately]
        
        ✅ Init-project workflow complete.
 ```

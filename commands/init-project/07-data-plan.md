@@ -20,8 +20,9 @@ Your job is to collaborate with the user to draft the data and analytics plan, t
 
 **Default approach:** Delegate the data-plan drafting to `@agent-documentor` so you can keep orchestration flowing. Provide:
 - Output path (`<project_root>/docs/data-plan.yaml`) and template `@/file-templates/init-project/data-plan.yaml`
-- Success metrics from the PRD, structured data from feature specs, and API context, plus any assumptions needing confirmation
-- Instructions to map every metric to events/sources, surface privacy callouts, and request approval before writing with updated metadata
+- Success metrics from the PRD, structured data from feature specs, and API context, plus any assumptions
+- Instructions to map every metric to events/sources, surface privacy callouts, write the file immediately, and make edits if adjustments are requested
+- Reminder to update metadata
 
 Continue collecting clarifications or prepping the next command while the agent works. Monitor via hook updates; `await` only when you must review the deliverable before advancing.
 
@@ -35,11 +36,11 @@ Continue collecting clarifications or prepping the next command while the agent 
 
 2. Ensure all PRD success metrics have corresponding events and storage.
 
-3. Make reasonable assumptions about analytics tools and privacy policies; call them out and ask for confirmation.
+3. Make reasonable assumptions about analytics tools and privacy policies; call them out clearly in the document.
 
-4. Present a summary of data sources, key events, and metrics alignment; ask for sign-off.
+4. Write the file immediately with `last_updated: YYYY-MM-DD`.
 
-5. On sign-off, write the file with `last_updated: YYYY-MM-DD`.
+5. If the user requests adjustments, edit the file accordingly.
 
 ---
 

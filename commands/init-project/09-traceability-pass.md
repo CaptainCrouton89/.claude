@@ -24,7 +24,8 @@ Your job is to perform a final cross-document consistency check and update any f
 
 **Default approach:** Use `@agent-documentor` (and additional specialists if needed) to execute the cross-document fixes asynchronously while you coordinate reviews. Provide:
 - Full list of discrepancies, affected file paths, and required alignment rules from this workflow
-- Reminder to update `last_updated` fields, maintain ID conventions, and surface any unresolved blockers before saving
+- Instructions to update files immediately, make edits if adjustments are requested, update `last_updated` fields, and maintain ID conventions
+- Reminder to surface any unresolved blockers
 
 Continue reconciling outstanding questions or prepping implementation workflows while they work. Monitor via hook updates; `await` only when you must verify the fixes before proceeding.
 
@@ -63,15 +64,15 @@ Continue reconciling outstanding questions or prepping implementation workflows 
    - Screens in flows not covered in Design Spec
    - Any "TBD" or placeholder content left over
 
-3. Present a summary of inconsistencies and proposed fixes; ask for sign-off.
-
-4. On sign-off, update the affected files:
+3. Update the affected files immediately:
    - Add missing IDs or cross-references
    - Align titles and descriptions
    - Fill in placeholders with concrete details
    - Update `last_updated` fields to current date
 
-5. After updates, re-read all files and confirm consistency.
+4. After updates, re-read all files and confirm consistency.
+
+5. If the user identifies additional issues, make the necessary edits.
 
 ---
 
