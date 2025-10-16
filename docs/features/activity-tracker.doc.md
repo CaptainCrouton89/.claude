@@ -93,9 +93,7 @@ Hook returns JSON output with critical instruction for Claude:
     "hookEventName": "UserPromptSubmit",
     "additionalContext": "<system-reminder>Detected debugging activity (confidence: 95%, effort: 6).
 
-CRITICAL: You MUST read /path/to/protocols/BUG-FIXING.md for comprehensive guidance on debugging workflows before proceeding.
-
-Only after reading and understanding this protocol should you begin work on this task.
+Note: Protocol guidance has been removed. Follow structured debugging workflows for this activity.
 </system-reminder>"
   }
 }
@@ -133,20 +131,12 @@ Activity classification logged to `~/.claude/logs/activity-tracker.log`:
   - Lines 224-229: OpenAI API call with GPT-4.1-mini
   - Lines 251-262: Activity-specific effort thresholds
   - Lines 264-265: Threshold evaluation logic
-  - Lines 267-278: Activity-to-protocol filename mapping
   - Lines 283-312: Session state tracking and context injection
 
 **Protocol Definitions:**
-- `hooks/state-tracking/protocols/ARCHITECTURE-DESIGN.md` - Architecture workflow (1050 lines)
-- `hooks/state-tracking/protocols/BUG-FIXING.md` - Debugging workflow (547 lines)
-- `hooks/state-tracking/protocols/CODE-REVIEW.md` - Review workflow (720 lines)
-- `hooks/state-tracking/protocols/DOCUMENTATION.md` - Documentation workflow
-- `hooks/state-tracking/protocols/FEATURE-DEVELOPMENT.md` - Feature workflow (632 lines)
-- `hooks/state-tracking/protocols/INVESTIGATION.md` - Investigation workflow (782 lines)
-- `hooks/state-tracking/protocols/REQUIREMENTS-GATHERING.md` - Requirements workflow (559 lines)
-- `hooks/state-tracking/protocols/SECURITY-AUDIT.md` - Security workflow
+(Protocols directory removed - see legacy documentation for previous protocols)
 
-Each protocol provides:
+Each protocol provided:
 - Structured multi-phase workflows
 - Context-appropriate discovery questions
 - Quality checklists and criteria
@@ -245,17 +235,6 @@ const activityThresholds = {
 };
 ```
 
-### Protocol File Paths
-Protocols must exist at `~/.claude/hooks/state-tracking/protocols/`:
-- `ARCHITECTURE-DESIGN.md`
-- `BUG-FIXING.md`
-- `CODE-REVIEW.md`
-- `DOCUMENTATION.md`
-- `FEATURE-DEVELOPMENT.md`
-- `INVESTIGATION.md`
-- `REQUIREMENTS-GATHERING.md`
-- `SECURITY-AUDIT.md`
-
 ## Usage Example
 
 ### Example 1: Bug Fixing Detection
@@ -268,9 +247,8 @@ $ claude
 # - Reads conversation history
 # - Classifies as "debugging" (confidence: 92%, effort: 5)
 # - Exceeds threshold (≥80% confidence, ≥3 effort)
-# - Injects BUG-FIXING.md protocol
 
-# Claude receives context and follows protocol:
+# Claude receives context and follows debugging workflow:
 # 1. Asks discovery questions (reproduction steps, scope, recent changes)
 # 2. Forms hypothesis about root cause
 # 3. Proposes fix with verification plan
@@ -286,9 +264,8 @@ $ claude
 # Hook processes prompt
 # - Classifies as "feature-development" (confidence: 88%, effort: 8)
 # - Exceeds threshold (≥80% confidence, ≥7 effort)
-# - Injects FEATURE-DEVELOPMENT.md protocol
 
-# Claude follows structured workflow:
+# Claude follows structured feature development workflow:
 # 1. Asks 5-7 behavioral unpacking questions
 # 2. Creates behavioral specification
 # 3. Generates technical inferences with confidence levels

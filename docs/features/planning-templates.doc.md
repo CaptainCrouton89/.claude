@@ -65,6 +65,5 @@ When users run planning commands (`/shared`, `/requirements`, `/parallel`, quick
 - Expected behavior: Commands should produce consistently structured documents following template formats
 
 ## Related Documentation
-- Planning workflow: `protocols/comprehensive/planning.md`
 - Template files: `file-templates/`
 - Init project docs: `docs/product-requirements.md`, `docs/system-design.md`, `docs/api-contracts.yaml`, `docs/data-plan.md`
