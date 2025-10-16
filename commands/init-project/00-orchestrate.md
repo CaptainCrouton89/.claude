@@ -38,6 +38,23 @@ This command:
 
 ---
 
+## Setup: Copy Scripts and Guide (for greenfield projects)
+
+**For new projects detected by assessment**, run the setup script from the project root:
+
+```bash
+cd <project_root>
+bash ~/.claude/file-templates/init-project/setup-project-docs.sh
+```
+
+This script automatically:
+- Creates `docs/` directory structure (user-flows/, user-stories/, feature-specs/)
+- Copies management scripts (check-project.sh, generate-docs.sh, list-apis.sh, list-*.sh)
+- Adds CLAUDE.md guide
+- Makes all scripts executable
+
+---
+
 ## Workflow Paths (handled automatically)
 
 **Path A: Greenfield** (no existing docs)
