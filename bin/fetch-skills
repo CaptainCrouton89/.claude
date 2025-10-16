@@ -1,0 +1,287 @@
+#!/bin/bash
+
+# Fetch all skills across ~/.claude/skills, ~/.claude/skills.archive, and project .claude/skills
+# Outputs markdown table with duplicates detection and deduplication options
+
+set -e
+
+PERSONAL_SKILLS_DIR="$HOME/.claude/skills"
+ARCHIVED_SKILLS_DIR="$HOME/.claude/skills.archive"
+
+# Smart argument parsing
+OUTPUT_MODE="table"
+PROJECT_SKILLS_DIR="./.claude/skills"
+TARGET_DIR=""
+
+# Check if first argument is a known mode
+case "$1" in
+    table|json|copy|deduplicate)
+        OUTPUT_MODE="$1"
+        TARGET_DIR="$2"
+        ;;
+    *)
+        # First arg is project dir or target dir
+        if [ -n "$1" ]; then
+            PROJECT_SKILLS_DIR="$1"
+        fi
+        if [ -n "$2" ]; then
+            OUTPUT_MODE="$2"
+        fi
+        if [ -n "$3" ]; then
+            TARGET_DIR="$3"
+        fi
+        ;;
+esac
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to extract skill name and description from SKILL.md
+extract_skill_metadata() {
+    local skill_path="$1"
+    local skill_file="$skill_path/SKILL.md"
+
+    if [ ! -f "$skill_file" ]; then
+        echo ""
+        return
+    fi
+
+    # Extract name and description from YAML frontmatter
+    local name=$(sed -n 's/^name: //p' "$skill_file" | head -1 | tr -d '"')
+    local description=$(sed -n 's/^description: //p' "$skill_file" | head -1 | tr -d '"')
+
+    if [ -z "$name" ]; then
+        name=$(basename "$skill_path")
+    fi
+
+    echo "$name|$description|$skill_path"
+}
+
+# Fetch all skills
+fetch_all_skills() {
+    local skills_list=""
+
+    # Fetch from personal skills
+    if [ -d "$PERSONAL_SKILLS_DIR" ]; then
+        for skill_dir in "$PERSONAL_SKILLS_DIR"/*; do
+            if [ -d "$skill_dir" ]; then
+                local metadata=$(extract_skill_metadata "$skill_dir")
+                if [ -n "$metadata" ]; then
+                    skills_list="$skills_list$metadata"$'\n'
+                fi
+            fi
+        done
+    fi
+
+    # Fetch from archived skills
+    if [ -d "$ARCHIVED_SKILLS_DIR" ]; then
+        for skill_dir in "$ARCHIVED_SKILLS_DIR"/*; do
+            if [ -d "$skill_dir" ]; then
+                local metadata=$(extract_skill_metadata "$skill_dir")
+                if [ -n "$metadata" ]; then
+                    skills_list="$skills_list$metadata"$'\n'
+                fi
+            fi
+        done
+    fi
+
+    # Fetch from current project skills (if directory exists and we're in a project)
+    if [ -d "$PROJECT_SKILLS_DIR" ] && [ "$OUTPUT_MODE" != "copy" ]; then
+        for skill_dir in "$PROJECT_SKILLS_DIR"/*; do
+            if [ -d "$skill_dir" ]; then
+                local metadata=$(extract_skill_metadata "$skill_dir")
+                if [ -n "$metadata" ]; then
+                    skills_list="$skills_list$metadata"$'\n'
+                fi
+            fi
+        done
+    fi
+
+    echo "$skills_list" | sort | uniq
+}
+
+# Check for duplicates
+check_duplicates() {
+    local skills_list="$1"
+    local names=$(echo "$skills_list" | cut -d'|' -f1 | sort)
+    local duplicates=$(echo "$names" | uniq -d)
+
+    if [ -n "$duplicates" ]; then
+        echo "$duplicates"
+    fi
+}
+
+# Output as markdown table
+output_table() {
+    local skills_list="$1"
+    local duplicates="$2"
+
+    echo ""
+    echo "# Available Skills"
+    echo ""
+    echo "| Skill Name | Description | Path |"
+    echo "|------------|-------------|------|"
+
+    echo "$skills_list" | while IFS='|' read -r name description path; do
+        if [ -z "$name" ]; then
+            continue
+        fi
+
+        # Check if this skill is a duplicate
+        if echo "$duplicates" | grep -q "^$name$"; then
+            echo "| **$name** ⚠️ | $description | $path |"
+        else
+            echo "| $name | $description | $path |"
+        fi
+    done
+    echo ""
+}
+
+# Output duplicates section
+output_duplicates_section() {
+    local duplicates="$1"
+
+    if [ -n "$duplicates" ]; then
+        echo ""
+        echo "${RED}## ⚠️ Duplicate Skills Detected${NC}"
+        echo ""
+        echo "$duplicates" | while read -r name; do
+            if [ -z "$name" ]; then
+                continue
+            fi
+            echo "**$name** appears in multiple locations:"
+            find "$PERSONAL_SKILLS_DIR" "$ARCHIVED_SKILLS_DIR" -maxdepth 2 -type d -name "$name" 2>/dev/null | while read -r path; do
+                echo "  - $path"
+            done
+        done
+        echo ""
+        echo "Consider deduplication with: ${BLUE}fetch-skills deduplicate${NC}"
+    fi
+}
+
+# Copy skills to target directory
+copy_skills() {
+    local target_dir="$1"
+
+    if [ -z "$target_dir" ] || [ ! -d "$target_dir" ]; then
+        echo "${RED}Error: Target directory not specified or doesn't exist${NC}" >&2
+        return 1
+    fi
+
+    mkdir -p "$target_dir"
+
+    local skills_list=$(fetch_all_skills)
+    local count=0
+
+    echo "${BLUE}Copying skills to $target_dir...${NC}"
+    echo ""
+
+    # Only copy personal and archived skills, not project-specific ones
+    for skills_dir in "$PERSONAL_SKILLS_DIR" "$ARCHIVED_SKILLS_DIR"; do
+        if [ -d "$skills_dir" ]; then
+            for skill_dir in "$skills_dir"/*; do
+                if [ -d "$skill_dir" ]; then
+                    local skill_name=$(basename "$skill_dir")
+                    echo "  ${GREEN}✓${NC} Copying $skill_name"
+                    cp -r "$skill_dir" "$target_dir/$skill_name"
+                    ((count++))
+                fi
+            done
+        fi
+    done
+
+    echo ""
+    echo "${GREEN}Successfully copied $count skills to $target_dir${NC}"
+}
+
+# Interactive deduplication
+interactive_deduplicate() {
+    local skills_list=$(fetch_all_skills)
+    local duplicates=$(check_duplicates "$skills_list")
+
+    if [ -z "$duplicates" ]; then
+        echo "${GREEN}No duplicate skills found!${NC}"
+        return 0
+    fi
+
+    echo ""
+    echo "${YELLOW}Found duplicate skills. Choose which version to keep:${NC}"
+    echo ""
+
+    echo "$duplicates" | while read -r name; do
+        if [ -z "$name" ]; then
+            continue
+        fi
+
+        echo ""
+        echo "${BLUE}Skill: $name${NC}"
+
+        local count=0
+        local -a paths
+        declare -A versions
+
+        find "$PERSONAL_SKILLS_DIR" "$ARCHIVED_SKILLS_DIR" -maxdepth 2 -type d -name "$name" 2>/dev/null | sort | while read -r path; do
+            ((count++))
+            echo "  [$count] $path"
+            description=$(sed -n 's/^description: //p' "$path/SKILL.md" 2>/dev/null | head -1)
+            if [ -n "$description" ]; then
+                echo "       Description: $description"
+            fi
+        done
+
+        echo ""
+        echo "Which version should be kept? (Enter number or 'skip' to leave both):"
+        read -r choice
+
+        if [ "$choice" != "skip" ] && [ -n "$choice" ]; then
+            echo "Deduplication for $name would proceed with option $choice"
+            # Implementation would continue here
+        fi
+    done
+}
+
+# Main
+main() {
+    case "$OUTPUT_MODE" in
+        table)
+            local skills_list=$(fetch_all_skills)
+            local duplicates=$(check_duplicates "$skills_list")
+
+            output_table "$skills_list" "$duplicates"
+            output_duplicates_section "$duplicates"
+
+            if [ -n "$duplicates" ]; then
+                exit 1
+            fi
+            ;;
+        json)
+            fetch_all_skills | jq -Rs 'split("\n") | map(select(length > 0) | split("|") | {name: .[0], description: .[1], path: .[2]}) | sort_by(.name)'
+            ;;
+        copy)
+            if [ -z "$TARGET_DIR" ]; then
+                echo "${RED}Error: TARGET_DIR not specified for copy mode${NC}" >&2
+                exit 1
+            fi
+            copy_skills "$TARGET_DIR"
+            ;;
+        deduplicate)
+            interactive_deduplicate
+            ;;
+        *)
+            echo "Usage: $0 [mode] [options]"
+            echo ""
+            echo "Modes:"
+            echo "  table           Output skills as markdown table (default)"
+            echo "  json            Output skills as JSON"
+            echo "  copy <dir>      Copy all skills to target directory"
+            echo "  deduplicate     Interactive deduplication tool"
+            exit 1
+            ;;
+    esac
+}
+
+main
