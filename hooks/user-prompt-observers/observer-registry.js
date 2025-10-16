@@ -201,13 +201,13 @@ Return needsParallelGuidance = true if the user mentions parallelization in ANY 
  */
 async function runAllObservers(userPrompt) {
   // Run all activity observers in parallel
-  const activityPromises = ACTIVITY_OBSERVERS.map(async (observer) => {
-    const result = await runObserver(observer.name, userPrompt);
-    return {
-      ...observer,
-      ...result
-    };
-  });
+//   const activityPromises = ACTIVITY_OBSERVERS.map(async (observer) => {
+//     const result = await runObserver(observer.name, userPrompt);
+//     return {
+//       ...observer,
+//       ...result
+//     };
+//   });
 
   // Run specialized observers in parallel
   const specializedPromises = [

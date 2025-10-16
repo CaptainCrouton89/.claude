@@ -13,14 +13,6 @@
 - `docs/system-design.md` - [Architecture]
 - `docs/data-plan.md` - [Data model]
 
-## User Flow
-
-### Happy Path
-1. User [action/trigger]
-2. System [validation/processing]
-3. User sees [outcome/feedback]
-4. [Next step or completion]
-
 ### Edge Cases
 - **Empty state:** [Behavior when no data]
 - **Error state:** [Behavior on failure]

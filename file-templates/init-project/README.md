@@ -47,6 +47,10 @@ cp -r file-templates/init-project/feature-specs <project>/docs/
 - `check-project.sh` - Comprehensive documentation validation
 - `generate-docs.sh` - Generate human-readable markdown docs
 
+### Manage-Project Templates
+- `manage-project/plans/implement-requirements.md` - Requirements capture scaffold populated during `/manage-project/implement/investigate`
+- `manage-project/plans/implement-plan.md` - Execution plan scaffold populated during `/manage-project/implement/plan`
+
 All scripts support:
 - `--help` for detailed usage
 - Multiple output formats (summary, detailed, json, etc.)
@@ -140,4 +144,3 @@ All scripts support:
 ---
 
 *Part of the .claude project initialization workflow*
-
