@@ -4,6 +4,27 @@ Understand user intent, show current state, route to appropriate commands.
 
 @~/.claude/file-templates/init-project/CLAUDE.md
 
+---
+
+## ⚡ Delegation Decision
+
+Most manage-project commands route to specialized workflows that should **delegate aggressively**:
+
+### DELEGATE to specialists:
+- **`implement/` workflows** → `backend-developer`, `frontend-ui-developer`, or orchestrator agent
+- **`add/add-feature`, `update/update-*`** → `documentor` (document generation/updates)
+- **`validate/*` checks** → `validation-orchestrator` (comprehensive audits)
+- **Complex multi-step flows** → Create orchestrator agent to coordinate phases
+
+### HANDLE DIRECTLY:
+- **Intent routing** (this file) — lightweight command selection
+- **Single-file queries** — e.g., showing current state, quick reads
+- **User interaction gates** — confirmations, approvals, clarifications
+
+**Quick reference:** See `@CLAUDE.md` for full delegation heuristics.
+
+---
+
 ## Process
 
 ### 1. Show Current State
@@ -18,6 +39,8 @@ Route based on response:
 
 | Intent | Command |
 |--------|---------|
+| Start work (smart routing) | run /manage-project/start |
+| Implement feature/story/API | run /manage-project/implement/00-orchestrate |
 | Add feature | run /manage-project/add/add-feature |
 | Add story | run /manage-project/add/add-story |
 | Add API | run /manage-project/add/add-api |
@@ -39,11 +62,16 @@ If intent unclear, ask:
 
 ### 4. Multi-Step Workflows
 
-**Adding complete feature:**
+**Complete feature development (recommended):**
+1. `start.md` - Intelligently adds feature/story/API/flow
+2. `implement/00-orchestrate.md` - Full investigation → planning → implementation → validation
+
+**Adding complete feature manually:**
 1. `add/add-feature.md`
 2. `add/add-story.md` (×N)
 3. `add/add-api.md` (×N)
 4. `validate/check-consistency.md`
+5. `implement/00-orchestrate.md` - Implement the feature
 
 **Requirements change:**
 1. `update/update-requirements.md`

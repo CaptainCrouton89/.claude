@@ -258,3 +258,12 @@ The key is resisting the urge to build features immediately. The foundation you 
 MCP for implementing/requirements/etc—trigger workflow, and it knows what to do?
 
 As it goes, when things happen, guidance is injected in.
+
+
+ENTER THE SUBAGENT!!! 
+it can run a command to "enter" the subagent. user is now talking to the subagent. The subagent has context that it's a subagent and should run exit once the user's task is complete. Output still logged to responses.md.
+
+After exiting, the main agent sees that the subagent has been updated. 
+
+Claude.md files being yaml structure, so that only the relevant context is read in automatically. 
+Custom pre-tool. When it reads, it automatically reads the "memory.md" and the "api.md" in that directory or wtvr depending on the type of task.

@@ -611,7 +611,7 @@ Review the above work and validate it thoroughly according to your instructions.
       maxTurns: 30,
       options: {
         customSystemPrompt: systemPrompt,
-        model: "claude-sonnet-4-5",
+        model: "claude-haiku-4-5",
         allowedTools: ["Read", "Grep", "Glob", "Task", "mcp__validation__saveValidationFailure", "mcp__validation__removeValidationFailure"],
         permissionMode: "bypassPermissions",
         disableHooks: true,

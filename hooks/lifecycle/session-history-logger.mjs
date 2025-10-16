@@ -177,7 +177,7 @@ Analyze the conversation and log substantive changes using logHistoryEntry.`;
       cwd: cwd,
       options: {
         systemPrompt,
-        model: 'claude-sonnet-4-5-20250929',
+        model: 'claude-haiku-4-5',
         allowedTools: ['Read'],
         permissionMode: 'bypassPermissions',
         hooks: {},

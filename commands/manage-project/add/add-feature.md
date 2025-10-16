@@ -4,8 +4,11 @@ Add feature to PRD and create feature specification.
 
 @~/.claude/file-templates/init-project/CLAUDE.md
 @~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+@agent-documentor
 
 ## Process
+
+**Note:** For complex features requiring extensive documentation, consider delegating to `@agent-documentor` to synthesize comprehensive feature specifications.
 
 ### 1. Show Existing Features
 ```bash

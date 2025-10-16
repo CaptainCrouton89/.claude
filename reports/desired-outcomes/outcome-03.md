@@ -1,0 +1,21 @@
+# Outcome 3 – Subagents For Major Implementation
+
+- **Status:** ✓ Addressed (2025-10-16)
+- **Evidence:**
+  - The implementation orchestrator explicitly calls for spawning investigation, planning, execution, and validation agents at `commands/manage-project/implement/00-orchestrate.md:22`–`commands/manage-project/implement/00-orchestrate.md:26`.
+  - Specialized implementors such as `backend-developer` and `frontend-ui-developer` are positioned for parallel, multi-agent work and cross-linked throughout implementation phases.
+  - Delegation norms for complex work are reiterated in the general-purpose agent brief at `agents/general-purpose.md:31`–`agents/general-purpose.md:52`.
+  - **NEW:** Explicit delegation checkpoint added at `commands/manage-project/implement/00-orchestrate.md:51`–`commands/manage-project/implement/00-orchestrate.md:76` prompting users to spawn implementor orchestrator for substantial features.
+- **Previously Identified Gaps (Now Resolved):**
+  - ~~No automated hand-off from `/manage-project/start` to spawn an implementor~~ → **FIXED:** Added explicit orchestration delegation checkpoint in step 2.5 that presents delegation option before phase selection.
+  - ~~Missing mirrored guidance for frontend/design implementors~~ → **FIXED:** Cross-linked `@agent-frontend-ui-developer` and `@agent-documentor` throughout:
+    - Investigation phase: `commands/manage-project/implement/investigate.md:12`–`commands/manage-project/implement/investigate.md:13`, `investigate.md:80`, `investigate.md:86`
+    - Planning phase: `commands/manage-project/implement/plan.md:10`, `plan.md:30`–`plan.md:32`
+    - Execution phase: `commands/manage-project/implement/execute.md:38`–`commands/manage-project/implement/execute.md:39`
+    - Add feature: `commands/manage-project/add/add-feature.md:7`, `add-feature.md:11`
+    - Orchestrator: `commands/manage-project/implement/00-orchestrate.md:24`–`commands/manage-project/implement/00-orchestrate.md:25`, `00-orchestrate.md:114`
+- **Completed Actions (2025-10-16):**
+  - ✓ Added explicit delegate prompt with recommendation in implementation orchestrator after spec is loaded (step 2.5)
+  - ✓ Cross-linked `@agent-frontend-ui-developer` in investigation, execution, and orchestrator command files
+  - ✓ Cross-linked `@agent-documentor` in planning, add-feature, and orchestrator command files
+  - ✓ Made delegation recommendations explicit with "See @agent-X" references for discoverability

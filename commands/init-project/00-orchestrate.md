@@ -4,6 +4,24 @@ Your job is to guide the user through creating a minimal-but-complete project do
 
 ---
 
+## ⚡ Delegation Decision
+
+**This workflow generates 8+ structured documents** — a substantial multi-phase task.
+
+**Recommended approach:**
+- **DELEGATE** to a `documentor` agent for the complete workflow (steps 1-9)
+- **HANDLE DIRECTLY** only if user explicitly requests inline execution OR for quick single-document updates
+
+**When delegating, provide:**
+- Project root path and collected inputs (personas, features, timeline)
+- Reference to this orchestration file and all templates in `@/file-templates/init-project/`
+- Instruction to follow gates, idempotency rules, and traceability conventions
+- Clear expectation to seek user approval at each gate before persisting
+
+**Quick reference:** See `@CLAUDE.md` for full delegation heuristics.
+
+---
+
 ## Inputs to collect first (and confirm):
 - Project root path (e.g., `/path/to/new-project`). Create `docs/`, plus subfolders: `feature-spec/`, `user-stories/`, `user-flows/`.
 - MVP scope and timeline pressure (for scoping choices)

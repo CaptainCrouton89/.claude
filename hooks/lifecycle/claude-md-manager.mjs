@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
+import { execSync } from "child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { basename, dirname, join, relative } from "path";
-import { execSync } from "child_process";
 import { query } from "~/.claude/claude-cli/sdk.mjs";
 
 const HOOK_NAME = 'claude-md-manager';
@@ -569,7 +569,7 @@ If none apply, do nothing.`;
         cwd: cwd,
         options: {
           systemPrompt,
-          model: "claude-sonnet-4-5-20250929",
+          model: "claude-haiku-4-5",
           allowedTools: ["Write"],
           permissionMode: "bypassPermissions",
           hooks: {}

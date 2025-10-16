@@ -1,4 +1,4 @@
-Your task is to convert this plan into a plan document at `docs/plans/quick-plans/[relevant-name].md` using the template `~/.claude/file-templates/plan.quick.template.md`.
+Your task is to convert this plan into a plan document at `docs/plans/quick-plans/[relevant-name].md` using the template `~/.claude/file-templates.archive/plan.quick.template.md`.
 
 Populate the template with:
 - A concise summary of the goal and approach

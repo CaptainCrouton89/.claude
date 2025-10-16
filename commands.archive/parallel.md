@@ -1,8 +1,8 @@
 For this task, create a `docs/plans/[feature-name]/plan.md` document using the appropriate template:
 
-- Small scope: `~/.claude/file-templates/plan.quick.template.md`
+- Small scope: `~/.claude/file-templates.archive/plan.quick.template.md`
 - Medium scope: `~/.claude/file-templates/plan.template.md`
-- Large/cross-cutting: `~/.claude/file-templates/plan.comprehensive.template.md`
+- Large/cross-cutting: `~/.claude/file-templates.archive/plan.comprehensive.template.md`
 
 Process:
 1. Read existing research in `docs/plans/[feature-name]/` (start with `shared.md` and `requirements.md`). If `shared.md` is missing, abort and ask to run `/shared` first.

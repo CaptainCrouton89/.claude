@@ -376,7 +376,7 @@ ${JSON.stringify(toolResponse, null, 2)}
       maxTurns: 10,
       options: {
         customSystemPrompt: systemPrompt,
-        model: "claude-sonnet-4-5",
+        model: "claude-haiku-4-5",
         allowedTools: ["Write", "Bash", "Edit", "Read", "mcp__validation__saveValidationFailure", "mcp__validation__removeValidationFailure"],
         permissionMode: "bypassPermissions",
         disableHooks: true,
