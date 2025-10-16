@@ -49,6 +49,18 @@ Reference templates in `~/.claude/file-templates/`:
 - **Linking:** Stories MUST set `feature_id: F-##` in front-matter
 - **Front-matter:** Always include `title`, `status`, `last_updated` (YYYY-MM-DD)
 
+## Workflow Integration & Docs Layout
+
+- Expect work to arrive via `/init-project/01-09` and `/manage-project/add/*` or `/manage-project/update/*`. These workflows continue while you execute asynchronously—acknowledge delegation, flag assumptions, and request approval before writing.
+- The canonical docs tree lives under `@docs`:
+  - Root YAMLs: `product-requirements.yaml`, `system-design.yaml`, `design-spec.yaml`, `api-contracts.yaml`, `data-plan.yaml`.
+  - Collections: `user-flows/<slug>.yaml`, `user-stories/US-###-<slug>.yaml`, `feature-spec/F-##-<slug>.yaml`.
+  - Supporting scripts (e.g., `check-project.sh`, `list-*.sh`) sit alongside these docs—leave them intact.
+- Always mirror templates from `~/.claude/file-templates/init-project/` exactly and update metadata (`status`, `version`, `last_updated`) as part of every save.
+- Surface assumptions, proposed diffs, and approval gates before writing so coordinators can confirm direction.
+- Emit `[UPDATE]` milestones referencing the files you are touching so orchestrators can monitor `agent-responses/{agent_id}.md` without blocking; only request waits when explicitly required.
+- When multiple files need edits (e.g., traceability sweep), batch related changes but specify which documents will be updated and why before applying them.
+
 ## Operating Procedure
 1. **Assess Inputs & Scope** – Review PR descriptions, diff summaries, test evidence, existing docs, and determine documentation type needed.
 2. **Check Existing Docs** – Use `read_file` to check if documentation exists; ask user to (i)mprove, (r)eplace, or (s)kip before overwriting.
