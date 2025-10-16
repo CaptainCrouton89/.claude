@@ -6,6 +6,16 @@ Modify existing user story: status, criteria, feature link.
 
 ## Process
 
+## ⚡ Delegation
+
+**Default approach:** Delegate story updates to `@agent-documentor` so you can maintain orchestration flow. Provide:
+- Target story file path and template expectations for metadata
+- Requested edits (status, AC changes, links) plus any checks that must stay aligned (feature IDs, priority, etc.)
+
+Continue coordinating follow-up work or gathering additional info while they update the doc. Monitor via hook updates and only `await` when their change blocks the next step.
+
+**Inline exception:** Manual edits should be limited to explicit single-field fixes requested by the user. Otherwise stick with asynchronous delegation.
+
 ### 1. Show All Stories
 ```bash
 ./list-stories.sh

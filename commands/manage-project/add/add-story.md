@@ -7,6 +7,17 @@ Add user story linked to existing feature.
 
 ## Process
 
+## ⚡ Delegation
+
+**Default approach:** Delegate story drafting to `@agent-documentor` so you can keep orchestrating. Provide:
+- Output path (`user-stories/US-###-<slug>.yaml`) and template `@/file-templates/init-project/user-stories/story-title.yaml`
+- Selected feature ID, gathered story inputs, acceptance criteria notes, and any pending questions
+- Instruction to maintain sequential IDs and update metadata
+
+Continue collecting user input or prepping next commands while the agent works. Monitor via hook updates; only `await` if you must review the draft before moving forward.
+
+**Inline exception:** Apply quick manual edits only when the user asks for a single-field correction. Otherwise default to the async delegation path.
+
 ### 1. Show Available Features
 ```bash
 ./list-features.sh

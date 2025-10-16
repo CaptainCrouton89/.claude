@@ -6,6 +6,17 @@ Modify existing API endpoint in contracts and update feature specs.
 
 ## Process
 
+## ⚡ Delegation
+
+**Default approach:** Delegate contract and spec updates to `@agent-documentor` (or `@agent-backend-developer` for heavy schema refactors) so you can coordinate approvals. Provide:
+- Target sections in `api-contracts.yaml` and any related feature-spec files, plus template guidance
+- Requested changes, downstream impacts, and validations that must remain aligned
+- Instruction to refresh metadata/versioning
+
+Continue managing stakeholder input or dependencies while they work. Monitor via hook updates and only `await` if their edits block further actions.
+
+**Inline exception:** Manual edits are acceptable only for explicit, narrow adjustments requested by the user. Otherwise adhere to the async delegation default.
+
 ### 1. Show All APIs
 ```bash
 ./list-apis.sh

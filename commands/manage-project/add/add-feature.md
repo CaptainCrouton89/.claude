@@ -8,7 +8,16 @@ Add feature to PRD and create feature specification.
 
 ## Process
 
-**Note:** For complex features requiring extensive documentation, consider delegating to `@agent-documentor` to synthesize comprehensive feature specifications.
+## ⚡ Delegation
+
+**Default approach:** Spawn `@agent-documentor` to handle PRD updates and feature-spec creation asynchronously while you gather details. Provide:
+- Target files (`product-requirements.yaml`, `feature-specs/F-##-<slug>.yaml`) and relevant templates in `@/file-templates/init-project/`
+- Collected feature inputs, dependencies, and any open questions that require confirmation
+- Instruction to align IDs and update metadata
+
+Continue gathering answers or routing follow-up commands while the agent works. Rely on hook updates for status and only run `./agent-responses/await {agent_id}` when the written docs block the next step.
+
+**Inline exception:** Direct edits are acceptable only when the user explicitly wants a tiny tweak (e.g., adjust priority). Otherwise, stick with asynchronous delegation.
 
 ### 1. Show Existing Features
 ```bash

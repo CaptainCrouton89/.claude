@@ -6,6 +6,16 @@ Modify PRD: scope, metrics, risks, features. Maintain consistency.
 
 ## Process
 
+## ⚡ Delegation
+
+**Default approach:** Delegate PRD and related doc edits to `@agent-documentor` while you manage orchestration. Provide:
+- Target files (`product-requirements.yaml` and any downstream docs) plus relevant templates/conventions
+- Requested updates, dependencies to check, and assumptions needing confirmation
+
+Continue coordinating impact analysis or follow-up workflows while the agent works. Monitor via hook updates; only `await` when their edits block the next steps.
+
+**Inline exception:** Manual edits are limited to explicit narrow fixes the user asks for; otherwise maintain the async delegation default.
+
 ### 1. Show Current PRD State
 Read `product-requirements.yaml` and show summary.
 

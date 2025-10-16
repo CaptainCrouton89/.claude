@@ -33,6 +33,7 @@ For complex features, spawn `@agent-documentor` with all requirements and invest
 **See:** `@agent-documentor` for documentation orchestration capabilities, plan synthesis expertise, and task breakdown methodology.
 
 Output: `@docs/plans/implement-{item-id}-plan.md`
+- When creating this document for the first time, copy the scaffold from `@/file-templates/manage-project/plans/implement-plan.md` prior to filling it in.
 
 ### 4. Create Implementation Plan
 Plan must include:
