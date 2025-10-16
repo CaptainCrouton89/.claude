@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Claude launch wrapper that enables enter-agent to seamlessly switch sessions
+# Usage: claude-wrapper [args...] (same as claude)
+
+WRAPPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+NEXT_SESSION_FILE="$WRAPPER_DIR/.next-session"
+WRAPPER_LOG="/tmp/claude-wrapper.log"
+WRAPPER_PID_FILE="$WRAPPER_DIR/.wrapper-pid"
+
+log_msg() {
+  echo "[$(date '+%H:%M:%S')] $1" >> "$WRAPPER_LOG"
+}
+
+log_msg "Wrapper starting with args: $*"
+log_msg "Wrapper PID: $$"
+echo "$$" > "$WRAPPER_PID_FILE"
+
+# Remove any stale next-session marker before starting
+rm -f "$NEXT_SESSION_FILE"
+
+# Loop to handle session switches
+while true; do
+  log_msg "Launching claude in foreground: /opt/homebrew/bin/claude $*"
+
+  # Run claude in foreground (not backgrounded, not exec)
+  # This keeps the wrapper alive while claude gets proper terminal
+  /opt/homebrew/bin/claude "$@"
+  CLAUDE_EXIT=$?
+
+  log_msg "Claude exited with code: $CLAUDE_EXIT"
+
+  # Check if exit-agent wrote a session switch marker
+  if [ -f "$NEXT_SESSION_FILE" ]; then
+    NEXT_SESSION=$(cat "$NEXT_SESSION_FILE" 2>/dev/null || echo "")
+    log_msg "Marker file found, content: $NEXT_SESSION"
+    if [ -n "$NEXT_SESSION" ]; then
+      log_msg "Session switch detected, resuming parent session"
+      rm -f "$NEXT_SESSION_FILE"
+
+      echo "" >&2
+      echo "Session switch detected, resuming: $NEXT_SESSION" >&2
+
+      # Loop continues, will launch claude again with --resume
+      set -- --resume "$NEXT_SESSION"
+      continue
+    fi
+  fi
+
+  log_msg "No marker file found, exiting normally"
+  break
+done
+
+rm -f "$WRAPPER_PID_FILE"
+exit $CLAUDE_EXIT

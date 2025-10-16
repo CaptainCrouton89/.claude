@@ -71,10 +71,32 @@ function updateAgentPid(registryPath, agentId, pid) {
   }
 }
 
+/**
+ * Updates session tracking fields for an agent in the registry
+ * @param {string} registryPath - Path to registry file
+ * @param {string} agentId - Agent ID
+ * @param {Object} sessionInfo - Session information object
+ * @param {string} sessionInfo.sessionId - Agent's session ID (from Claude SDK)
+ * @param {string} sessionInfo.transcriptPath - Full path to transcript file
+ * @param {string} sessionInfo.parentSessionId - Parent session ID
+ * @param {number} sessionInfo.parentPid - Parent process ID
+ */
+function updateAgentSessionInfo(registryPath, agentId, sessionInfo) {
+  const registry = readRegistry(registryPath);
+  if (registry[agentId]) {
+    registry[agentId].sessionId = sessionInfo.sessionId;
+    registry[agentId].transcriptPath = sessionInfo.transcriptPath;
+    registry[agentId].parentSessionId = sessionInfo.parentSessionId;
+    registry[agentId].parentPid = sessionInfo.parentPid;
+    writeRegistry(registryPath, registry);
+  }
+}
+
 module.exports = {
   readRegistry,
   writeRegistry,
   createAgentRegistryEntry,
-  updateAgentPid
+  updateAgentPid,
+  updateAgentSessionInfo
 };
 

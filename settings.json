@@ -224,9 +224,23 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/lifecycle/session-tracker.mjs"
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/lifecycle/session-tracker.mjs"
+          },
           {
             "type": "command",
             "command": "~/.claude/hooks/lifecycle/session-history-logger.mjs"
@@ -243,5 +257,5 @@
     "type": "command",
     "command": "~/.claude/hooks/statusline/statusline-wrapper.sh"
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": false
 }

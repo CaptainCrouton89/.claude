@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { appendFileSync, readFileSync, writeFileSync } from 'fs';
+import { appendFileSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 
@@ -15,11 +15,14 @@ const allowedAgentsJson = process.env.AGENT_ALLOWED_AGENTS || 'null';
 const mcpServersConfigJson = process.env.AGENT_MCP_SERVERS || 'null';
 const agentId = process.env.CLAUDE_AGENT_ID;
 const childDepth = parseInt(process.env.CLAUDE_AGENT_DEPTH || '1', 10);
+const registryPath = process.env.CLAUDE_RUNNER_REGISTRY_PATH;
+const parentPid = process.env.CLAUDE_PARENT_PID;
 
 const allowedAgents = allowedAgentsJson === 'null' ? null : JSON.parse(allowedAgentsJson);
 const mcpServersConfig = mcpServersConfigJson === 'null' ? null : JSON.parse(mcpServersConfigJson);
 
 const blockStates = new Map();
+let sessionIdCaptured = false;
 
 const appendToLog = (text) => {
   if (!text) {
@@ -138,6 +141,55 @@ const appendDeltaText = (message, deltaText) => {
   blockStates.set(key, next);
 };
 
+/**
+ * Sanitizes a cwd path to match SDK's algorithm
+ * @param {string} path - Working directory path
+ * @returns {string} Sanitized path
+ */
+const sanitizeCwd = (path) => {
+  return path.replace(/^\//, '').replace(/\//g, '-');
+};
+
+/**
+ * Captures session information when first message arrives
+ * @param {string} sessionId - Session ID from SDK
+ */
+const captureSessionInfo = (sessionId) => {
+  if (sessionIdCaptured || !sessionId || !registryPath || !parentPid) {
+    return;
+  }
+
+  try {
+    const markersDir = join(homedir(), '.claude', '.session-markers');
+    const parentMarkerPath = join(markersDir, `${parentPid}.json`);
+
+    let parentSessionId = null;
+    if (existsSync(parentMarkerPath)) {
+      const markerContent = readFileSync(parentMarkerPath, 'utf-8');
+      const marker = JSON.parse(markerContent);
+      parentSessionId = marker.sessionId || null;
+    }
+
+    // Calculate transcript path using SDK's path sanitization algorithm
+    const sanitized = sanitizeCwd(cwd);
+    const transcriptPath = join(homedir(), '.claude', 'transcripts', sanitized, `session_${sessionId}.jsonl`);
+
+    // Update registry with session info
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
+    if (registry[agentId]) {
+      registry[agentId].sessionId = sessionId;
+      registry[agentId].transcriptPath = transcriptPath;
+      registry[agentId].parentSessionId = parentSessionId;
+      registry[agentId].parentPid = parseInt(parentPid, 10);
+      writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
+    }
+
+    sessionIdCaptured = true;
+  } catch (error) {
+    // Silently fail - session tracking is non-critical
+  }
+};
+
 (async () => {
   try {
     const queryOptions = {
@@ -185,6 +237,11 @@ const appendDeltaText = (message, deltaText) => {
     });
 
     for await (const message of result) {
+      // Capture session info on first message with session_id
+      if (message.session_id) {
+        captureSessionInfo(message.session_id);
+      }
+
       if (message.type === 'assistant') {
         if (Array.isArray(message.message?.content)) {
           message.message.content.forEach((block, index) => {

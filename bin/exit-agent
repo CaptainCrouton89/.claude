@@ -1,0 +1,76 @@
+#!/bin/bash
+set -euo pipefail
+
+# Exit an agent session and return to parent
+# Usage: exit-agent
+
+REGISTRY="./agent-responses/.active-pids.json"
+WRAPPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CURRENT_AGENT_FILE="$WRAPPER_DIR/.current-agent-id"
+
+# Read current agent ID from file written by enter-agent
+if [ ! -f "$CURRENT_AGENT_FILE" ]; then
+  echo "Error: Not in an agent session (no agent ID file found)" >&2
+  exit 1
+fi
+
+CURRENT_AGENT=$(cat "$CURRENT_AGENT_FILE" 2>/dev/null || echo "")
+
+if [ -z "$CURRENT_AGENT" ]; then
+  echo "Error: Current agent ID file is empty" >&2
+  exit 1
+fi
+
+PARENT_SESSION=$(jq -r ".\"$CURRENT_AGENT\".parentSessionId // empty" "$REGISTRY" 2>/dev/null || echo "")
+
+if [ -z "$PARENT_SESSION" ]; then
+  echo "Error: Parent session not found" >&2
+  exit 1
+fi
+
+echo "[DEBUG] Exiting agent, returning to parent" >&2
+echo "[DEBUG] Current agent: $CURRENT_AGENT" >&2
+echo "[DEBUG] Parent session: $PARENT_SESSION" >&2
+echo "[DEBUG] Current agent ID file: $CURRENT_AGENT_FILE" >&2
+echo "[DEBUG] Registry content for agent: $(jq -r ".\"$CURRENT_AGENT\"" "$REGISTRY" 2>/dev/null || echo 'NOT FOUND')" >&2
+
+# Write marker file for wrapper to resume parent
+NEXT_SESSION_FILE="$WRAPPER_DIR/.next-session"
+
+echo "[DEBUG] Writing to marker: $NEXT_SESSION_FILE" >&2
+echo "$PARENT_SESSION" > "$NEXT_SESSION_FILE"
+echo "[DEBUG] Marker written. Content: $(cat $NEXT_SESSION_FILE)" >&2
+
+# Find Claude process by walking up the process tree
+find_claude_pid() {
+  local current_pid=$$
+  while true; do
+    local ppid=$(ps -o ppid= -p "$current_pid" 2>/dev/null)
+    if [ -z "$ppid" ]; then
+      break
+    fi
+    local comm=$(ps -o comm= -p "$ppid" 2>/dev/null)
+    if [[ "$comm" == "claude" ]]; then
+      echo "$ppid"
+      return 0
+    fi
+    current_pid="$ppid"
+  done
+  return 1
+}
+
+# Clean up the current agent ID file so parent doesn't think it's in an agent
+rm -f "$CURRENT_AGENT_FILE"
+echo "[DEBUG] Cleaned up agent ID file" >&2
+
+# Kill Claude process so wrapper detects exit and resumes parent
+CLAUDE_PID=$(find_claude_pid)
+if [ -n "$CLAUDE_PID" ]; then
+  echo "[DEBUG] Killing Claude process: $CLAUDE_PID" >&2
+  kill "$CLAUDE_PID" 2>/dev/null || true
+else
+  echo "[DEBUG] Warning: Could not find Claude process" >&2
+fi
+
+echo "[DEBUG] Exiting to return to parent session" >&2
+exit 0
