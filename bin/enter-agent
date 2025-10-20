@@ -1,6 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+debug_enabled() {
+  [ -n "${CLAUDE_AGENT_DEBUG:-}" ]
+}
+
+log_debug() {
+  if debug_enabled; then
+    printf '[DEBUG] %s\n' "$1" >&2
+  fi
+}
+
 AGENT_ID="${1:-}"
 if [ -z "$AGENT_ID" ]; then
   echo "Usage: enter-agent <agent_id>"
@@ -64,25 +74,32 @@ PARENT_PID=$(jq -r ".\"$AGENT_ID\".parentPid // empty" "$REGISTRY" 2>/dev/null |
 WRAPPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NEXT_SESSION_FILE="$WRAPPER_DIR/.next-session"
 
-echo "[DEBUG] Writing marker: $NEXT_SESSION_FILE" >&2
-echo "[DEBUG] Session ID: $SESSION_ID" >&2
-echo "[DEBUG] Parent PID: $PARENT_PID" >&2
+log_debug "Writing marker: $NEXT_SESSION_FILE"
+log_debug "Session ID: $SESSION_ID"
+log_debug "Parent PID: $PARENT_PID"
 
 echo "$SESSION_ID" > "$NEXT_SESSION_FILE"
-echo "[DEBUG] Marker written: $(cat $NEXT_SESSION_FILE)" >&2
+if debug_enabled; then
+  marker_content=$(cat "$NEXT_SESSION_FILE")
+  log_debug "Marker written: $marker_content"
+fi
 
 # Write current agent ID file so exit-agent knows which agent we are
 CURRENT_AGENT_FILE="$WRAPPER_DIR/.current-agent-id"
 echo "$AGENT_ID" > "$CURRENT_AGENT_FILE"
-echo "[DEBUG] Agent ID file written: $AGENT_ID" >&2
+log_debug "Agent ID file written: $AGENT_ID"
 
 # Kill parent CLI process (signals wrapper to wake up and resume new session)
 if [ -n "$PARENT_PID" ]; then
-  echo "[DEBUG] Killing parent PID: $PARENT_PID" >&2
+  log_debug "Killing parent PID: $PARENT_PID"
   sleep 0.2
-  kill "$PARENT_PID" 2>&1 | sed 's/^/[DEBUG] /' >&2 || echo "[DEBUG] Kill failed or already dead" >&2
+  if debug_enabled; then
+    kill "$PARENT_PID" 2>&1 | sed 's/^/[DEBUG] /' >&2 || log_debug "Kill failed or already dead"
+  else
+    kill "$PARENT_PID" >/dev/null 2>&1 || true
+  fi
 fi
 
-echo "[DEBUG] Exiting enter-agent" >&2
+log_debug "Exiting enter-agent"
 # Exit to let wrapper detect the marker and switch
 exit 0

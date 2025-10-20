@@ -113,9 +113,9 @@ function extractUpdateContent(content, previousContent) {
 function getRelativePath(cwd, filePath) {
   // Remove cwd prefix if present, otherwise use basename
   if (filePath.startsWith(cwd)) {
-    return `@${filePath.slice(cwd.length).replace(/^\//, '')}`;
+    return `${filePath.slice(cwd.length).replace(/^\//, '')}`;
   }
-  return `@${basename(filePath)}`;
+  return `${basename(filePath)}`;
 }
 
 function markAgentAsInterrupted(filePath, currentContent) {

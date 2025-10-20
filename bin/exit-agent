@@ -1,6 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+debug_enabled() {
+  [ -n "${CLAUDE_AGENT_DEBUG:-}" ]
+}
+
+log_debug() {
+  if debug_enabled; then
+    printf '[DEBUG] %s\n' "$1" >&2
+  fi
+}
+
 # Exit an agent session and return to parent
 # Usage: exit-agent
 
@@ -28,18 +38,23 @@ if [ -z "$PARENT_SESSION" ]; then
   exit 1
 fi
 
-echo "[DEBUG] Exiting agent, returning to parent" >&2
-echo "[DEBUG] Current agent: $CURRENT_AGENT" >&2
-echo "[DEBUG] Parent session: $PARENT_SESSION" >&2
-echo "[DEBUG] Current agent ID file: $CURRENT_AGENT_FILE" >&2
-echo "[DEBUG] Registry content for agent: $(jq -r ".\"$CURRENT_AGENT\"" "$REGISTRY" 2>/dev/null || echo 'NOT FOUND')" >&2
+log_debug "Exiting agent, returning to parent"
+log_debug "Current agent: $CURRENT_AGENT"
+log_debug "Parent session: $PARENT_SESSION"
+log_debug "Current agent ID file: $CURRENT_AGENT_FILE"
+if debug_enabled; then
+  log_debug "Registry content for agent: $(jq -r ".\"$CURRENT_AGENT\"" "$REGISTRY" 2>/dev/null || echo 'NOT FOUND')"
+fi
 
 # Write marker file for wrapper to resume parent
 NEXT_SESSION_FILE="$WRAPPER_DIR/.next-session"
 
-echo "[DEBUG] Writing to marker: $NEXT_SESSION_FILE" >&2
+log_debug "Writing to marker: $NEXT_SESSION_FILE"
 echo "$PARENT_SESSION" > "$NEXT_SESSION_FILE"
-echo "[DEBUG] Marker written. Content: $(cat $NEXT_SESSION_FILE)" >&2
+if debug_enabled; then
+  marker_content=$(cat "$NEXT_SESSION_FILE")
+  log_debug "Marker written. Content: $marker_content"
+fi
 
 # Find Claude process by walking up the process tree
 find_claude_pid() {
@@ -61,16 +76,16 @@ find_claude_pid() {
 
 # Clean up the current agent ID file so parent doesn't think it's in an agent
 rm -f "$CURRENT_AGENT_FILE"
-echo "[DEBUG] Cleaned up agent ID file" >&2
+log_debug "Cleaned up agent ID file"
 
 # Kill Claude process so wrapper detects exit and resumes parent
 CLAUDE_PID=$(find_claude_pid)
 if [ -n "$CLAUDE_PID" ]; then
-  echo "[DEBUG] Killing Claude process: $CLAUDE_PID" >&2
+  log_debug "Killing Claude process: $CLAUDE_PID"
   kill "$CLAUDE_PID" 2>/dev/null || true
 else
-  echo "[DEBUG] Warning: Could not find Claude process" >&2
+  log_debug "Warning: Could not find Claude process"
 fi
 
-echo "[DEBUG] Exiting to return to parent session" >&2
+log_debug "Exiting to return to parent session"
 exit 0

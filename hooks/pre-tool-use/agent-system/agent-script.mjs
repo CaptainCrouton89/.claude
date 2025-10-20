@@ -1,8 +1,17 @@
 #!/usr/bin/env node
 
-import { appendFileSync, readFileSync, writeFileSync, existsSync } from 'fs';
+import {
+  appendFileSync,
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  statSync,
+  readdirSync,
+  promises as fsPromises
+} from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
+import { setTimeout as delay } from 'timers/promises';
 
 const { query } = await import(join(homedir(), '.claude', 'claude-cli', 'sdk.mjs'));
 
@@ -22,7 +31,14 @@ const allowedAgents = allowedAgentsJson === 'null' ? null : JSON.parse(allowedAg
 const mcpServersConfig = mcpServersConfigJson === 'null' ? null : JSON.parse(mcpServersConfigJson);
 
 const blockStates = new Map();
+const processedMessageIds = new Set();
 let sessionIdCaptured = false;
+let transcriptPath = null;
+let transcriptPathCandidates = [];
+let sessionMarkerPath = null;
+let exitLogged = false;
+
+const { open } = fsPromises;
 
 const appendToLog = (text) => {
   if (!text) {
@@ -32,7 +48,7 @@ const appendToLog = (text) => {
 };
 
 const resolveMessageId = (message) => {
-  return (
+  const resolvedId =
     message.message_id ||
     message.messageId ||
     message.id ||
@@ -40,9 +56,21 @@ const resolveMessageId = (message) => {
     message.message?.message_id ||
     message.message?.uuid ||
     message.uuid ||
-    agentId ||
-    'message'
-  );
+    null;
+
+  if (resolvedId) {
+    return resolvedId;
+  }
+
+  const timestamp =
+    message.timestamp ||
+    message.message?.timestamp ||
+    (Array.isArray(message.message?.content)
+      ? message.message.content.find((block) => typeof block?.timestamp === 'string')?.timestamp
+      : null);
+
+  const fallback = timestamp || `${Date.now()}:${Math.random().toString(36).slice(2)}`;
+  return `${agentId || 'agent'}:${fallback}`;
 };
 
 const getBlockKey = (message, index = 0) => {
@@ -147,7 +175,7 @@ const appendDeltaText = (message, deltaText) => {
  * @returns {string} Sanitized path
  */
 const sanitizeCwd = (path) => {
-  return path.replace(/^\//, '').replace(/\//g, '-');
+  return path.replace(/^\//, '-').replace(/\//g, '-').replace(/\./g, '-');
 };
 
 /**
@@ -172,21 +200,395 @@ const captureSessionInfo = (sessionId) => {
 
     // Calculate transcript path using SDK's path sanitization algorithm
     const sanitized = sanitizeCwd(cwd);
-    const transcriptPath = join(homedir(), '.claude', 'transcripts', sanitized, `session_${sessionId}.jsonl`);
+    const transcriptDir = join(homedir(), '.claude', 'projects', sanitized);
+    const legacyTranscriptDir = join(homedir(), '.claude', 'transcripts', sanitized);
+
+    const candidatePaths = [
+      join(transcriptDir, `session_${sessionId}.jsonl`),
+      join(transcriptDir, `${sessionId}.jsonl`),
+      join(legacyTranscriptDir, `session_${sessionId}.jsonl`)
+    ];
+
+    const resolvedTranscriptPath = candidatePaths.find((candidate) => {
+      try {
+        return existsSync(candidate);
+      } catch {
+        return false;
+      }
+    }) || candidatePaths[0];
 
     // Update registry with session info
     const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
     if (registry[agentId]) {
       registry[agentId].sessionId = sessionId;
-      registry[agentId].transcriptPath = transcriptPath;
+      registry[agentId].transcriptPath = resolvedTranscriptPath;
       registry[agentId].parentSessionId = parentSessionId;
       registry[agentId].parentPid = parseInt(parentPid, 10);
       writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
     }
 
+    transcriptPath = resolvedTranscriptPath;
+    transcriptPathCandidates = candidatePaths;
+
+    // Attempt to locate the active session marker for this session
+    try {
+      const markersDir = join(homedir(), '.claude', '.session-markers');
+      const markerEntries = readdirSync(markersDir, { withFileTypes: true });
+      for (const entry of markerEntries) {
+        if (!entry.isFile() || !entry.name.endsWith('.json')) {
+          continue;
+        }
+        const markerFile = join(markersDir, entry.name);
+        try {
+          const markerContent = JSON.parse(readFileSync(markerFile, 'utf-8'));
+          if (markerContent?.sessionId === sessionId) {
+            sessionMarkerPath = markerFile;
+            break;
+          }
+        } catch {
+          // Ignore malformed marker files
+        }
+      }
+    } catch {
+      // Marker discovery best-effort only
+    }
+
     sessionIdCaptured = true;
   } catch (error) {
     // Silently fail - session tracking is non-critical
+  }
+};
+
+const updateEndedTimestamp = () => {
+  try {
+    const content = readFileSync(agentLogPath, 'utf-8');
+    let updated = content;
+    const timestamp = new Date().toISOString();
+
+    if (updated.includes('Ended:')) {
+      updated = updated.replace(/Ended: .*\n/, `Ended: ${timestamp}\n`);
+    } else {
+      updated = updated.replace(/Status: ([^\n]+)/, `Status: $1\nEnded: ${timestamp}`);
+    }
+
+    if (updated !== content) {
+      writeFileSync(agentLogPath, updated, 'utf-8');
+    }
+  } catch {
+    // Best effort only
+  }
+};
+
+const appendSpeakerLine = (label, text) => {
+  const trimmed = typeof text === 'string' ? text.trim() : '';
+  if (!trimmed) {
+    return;
+  }
+
+  try {
+    const currentContent = readFileSync(agentLogPath, 'utf-8');
+    if (currentContent.includes(`**${label}:** ${trimmed}`)) {
+      return;
+    }
+  } catch {
+    // Ignore read errors and attempt to append anyway
+  }
+
+  appendToLog(`\n\n**${label}:** ${trimmed}\n`);
+  updateEndedTimestamp();
+};
+
+const extractMessageText = (content) => {
+  if (!content) {
+    return '';
+  }
+
+  if (typeof content === 'string') {
+    return content.trim();
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .filter((block) => block && block.type === 'text' && typeof block.text === 'string')
+      .map((block) => block.text.trim())
+      .filter(Boolean)
+      .join('\n\n');
+  }
+
+  if (typeof content === 'object' && typeof content.text === 'string') {
+    return content.text.trim();
+  }
+
+  return '';
+};
+
+const registerMessageId = (message) => {
+  try {
+    const messageId = resolveMessageId(message);
+    if (messageId) {
+      processedMessageIds.add(messageId);
+    }
+  } catch {
+    // Ignore ID registration failures
+  }
+};
+
+const shouldSkipUserEcho = (text) => {
+  if (!text) {
+    return true;
+  }
+
+  const normalizedText = text.trim();
+  const normalizedPrompt = (prompt || '').trim();
+  return normalizedText === normalizedPrompt;
+};
+
+const shouldSkipUserTranscript = (text) => {
+  if (!text) {
+    return true;
+  }
+
+  const normalized = text.trim();
+  if (!normalized) {
+    return true;
+  }
+
+  const lower = normalized.toLowerCase();
+  if (lower.startsWith('caveat: the messages below were generated by the user while running local commands')) {
+    return true;
+  }
+
+  const commandTagPatterns = [
+    '<command-name>',
+    '</command-name>',
+    '<command-message>',
+    '</command-message>',
+    '<command-args>',
+    '</command-args>',
+    '<local-command-stdout>',
+    '</local-command-stdout>'
+  ];
+
+  return commandTagPatterns.some((tag) => normalized.includes(tag));
+};
+
+const processTranscriptRecord = (line) => {
+  const trimmedLine = line.trim();
+  if (!trimmedLine) {
+    return;
+  }
+
+  let record;
+  try {
+    record = JSON.parse(trimmedLine);
+  } catch {
+    return;
+  }
+
+  if (!record || typeof record !== 'object') {
+    return;
+  }
+
+  const messageId = resolveMessageId(record);
+  if (processedMessageIds.has(messageId)) {
+    return;
+  }
+
+  if (record.type === 'user') {
+    const text = extractMessageText(record.message?.content);
+    if (shouldSkipUserEcho(text)) {
+      processedMessageIds.add(messageId);
+      return;
+    }
+
+    if (shouldSkipUserTranscript(text)) {
+      processedMessageIds.add(messageId);
+      return;
+    }
+
+    if (text) {
+      appendSpeakerLine('User', text);
+      processedMessageIds.add(messageId);
+    }
+  } else if (record.type === 'assistant') {
+    const text = extractMessageText(record.message?.content);
+    if (text) {
+      appendSpeakerLine('Assistant', text);
+      processedMessageIds.add(messageId);
+    }
+  }
+};
+
+const sessionMarkerActive = () => {
+  if (!sessionMarkerPath) {
+    return true;
+  }
+
+  try {
+    return existsSync(sessionMarkerPath);
+  } catch {
+    return true;
+  }
+};
+
+const updateRegistryTranscriptPath = (updatedPath) => {
+  if (!updatedPath) {
+    return;
+  }
+
+  try {
+    const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
+    if (registry[agentId] && registry[agentId].transcriptPath !== updatedPath) {
+      registry[agentId].transcriptPath = updatedPath;
+      writeFileSync(registryPath, JSON.stringify(registry, null, 2), 'utf-8');
+    }
+  } catch {
+    // Ignore registry update failures
+  }
+};
+
+const transcriptExists = () => {
+  const resolveCandidate = () => {
+    if (transcriptPathCandidates.length === 0) {
+      return;
+    }
+
+    for (const candidate of transcriptPathCandidates) {
+      try {
+        if (existsSync(candidate)) {
+          transcriptPath = candidate;
+          updateRegistryTranscriptPath(candidate);
+          break;
+        }
+      } catch {
+        // Ignore candidate failures and continue scanning
+      }
+    }
+  };
+
+  if (!transcriptPath) {
+    resolveCandidate();
+  }
+
+  if (!transcriptPath) {
+    return false;
+  }
+
+  try {
+    if (existsSync(transcriptPath)) {
+      return true;
+    }
+  } catch {
+    // Fall through to candidate resolution
+  }
+
+  // Current path missing—try again to find a new candidate (file may have been created under a different name)
+  const previousPath = transcriptPath;
+  resolveCandidate();
+
+  if (!transcriptPath) {
+    return false;
+  }
+
+  if (transcriptPath !== previousPath) {
+    try {
+      return existsSync(transcriptPath);
+    } catch {
+      return false;
+    }
+  }
+
+  try {
+    return existsSync(transcriptPath);
+  } catch {
+    return false;
+  }
+};
+
+const ensureExitLogged = () => {
+  if (exitLogged) {
+    return;
+  }
+
+  appendSpeakerLine('Assistant', '[exited]');
+  exitLogged = true;
+};
+
+const tailTranscript = async () => {
+  if (!transcriptPath) {
+    return;
+  }
+
+  let lastSize = 0;
+  let bufferRemainder = '';
+  let idleMs = 0;
+  const pollIntervalMs = 1000;
+  const maxIdleMs = 5 * 60 * 1000; // 5 minutes safety cap
+
+  while (true) {
+    if (!transcriptExists()) {
+      idleMs += pollIntervalMs;
+      if (!sessionMarkerActive() && idleMs > 10_000) {
+        break;
+      }
+      if (idleMs >= maxIdleMs) {
+        break;
+      }
+      await delay(pollIntervalMs).catch(() => {});
+      continue;
+    }
+
+    idleMs += pollIntervalMs;
+
+    let stats;
+    try {
+      stats = statSync(transcriptPath);
+    } catch {
+      await delay(pollIntervalMs).catch(() => {});
+      continue;
+    }
+
+    if (stats.size < lastSize) {
+      lastSize = 0;
+      bufferRemainder = '';
+    }
+
+    if (stats.size > lastSize) {
+      const readLength = stats.size - lastSize;
+      try {
+        const file = await open(transcriptPath, 'r');
+        const buffer = Buffer.alloc(readLength);
+        await file.read(buffer, 0, readLength, lastSize);
+        await file.close();
+
+        lastSize = stats.size;
+        idleMs = 0;
+
+        const combined = bufferRemainder + buffer.toString('utf-8');
+        const lines = combined.split('\n');
+        bufferRemainder = lines.pop() || '';
+
+        for (const line of lines) {
+          processTranscriptRecord(line);
+        }
+      } catch {
+        // Ignore read failures and retry on next loop
+      }
+    }
+
+    if (!sessionMarkerActive() && idleMs > 10_000) {
+      break;
+    }
+
+    if (idleMs >= maxIdleMs) {
+      break;
+    }
+
+    await delay(pollIntervalMs).catch(() => {});
+  }
+
+  if (bufferRemainder.trim().length > 0) {
+    processTranscriptRecord(bufferRemainder);
   }
 };
 
@@ -248,6 +650,9 @@ const captureSessionInfo = (sessionId) => {
             appendFullText(message, block, index);
           });
         }
+        registerMessageId(message);
+      } else if (message.type === 'user') {
+        registerMessageId(message);
       } else if (message.type === 'content_block_start') {
         const blockType =
           message.content_block?.type || message.contentBlock?.type;
@@ -274,9 +679,14 @@ const captureSessionInfo = (sessionId) => {
         const updatedContent = content.replace(/Status: in-progress/, `Status: ${status}\nEnded: ${endTime}`);
 
         writeFileSync(agentLogPath, updatedContent, 'utf-8');
+        registerMessageId(message);
       }
     }
+
+    await tailTranscript();
+    ensureExitLogged();
   } catch (error) {
     appendFileSync(agentLogPath, `\n\n## Status: Failed\n\nError: ${error.message}\n`, 'utf-8');
+    ensureExitLogged();
   }
 })();
