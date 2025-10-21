@@ -21,9 +21,10 @@ PRD → User Flows → User Stories → Feature Specs → System Design → API 
 
 **List existing before creating:**
 ```bash
-./docs/user-stories/list-stories.sh
-./docs/feature-specs/list-features.sh
-./docs/check-project.sh -v  # validate all
+cd docs
+./run.sh list-stories
+./run.sh list-features
+./run.sh check-project -v  # validate all
 ```
 
 ## Idempotency
@@ -60,7 +61,7 @@ Update upstream if gaps found. Propose edits, wait for approval.
 
 ## Final Check
 
-Run `./docs/check-project.sh -v` then manually verify cross-refs:
+Run `cd docs && ./run.sh check-project -v` then manually verify cross-refs:
 - PRD F-## ↔ Specs ↔ Stories
 - Metrics ↔ Events
 - Spec APIs ↔ Contracts

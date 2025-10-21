@@ -9,19 +9,20 @@ docs/
 ├── product-requirements.yaml  ├── system-design.yaml  ├── design-spec.yaml
 ├── api-contracts.yaml         ├── data-plan.yaml
 ├── user-flows/*.yaml          ├── user-stories/*.yaml  ├── feature-specs/*.yaml
-├── list-apis.sh               ├── check-project.sh     ├── generate-docs.sh
-└── */list-*.sh (in subdirs)
+├── list-apis.js (TypeScript)  ├── check-project.js     ├── generate-docs.js
+├── run.sh (convenience wrapper) └── */list-*.js (in subdirs, TypeScript)
 ```
 
 ## Management Scripts
 
 ```bash
-./docs/user-stories/list-stories.sh        # Filter by feature/status
-./docs/user-flows/list-flows.sh            # Filter by persona
-./docs/feature-specs/list-features.sh      # Stats, tree view
-./docs/list-apis.sh --format curl          # Generate curl/postman
-./docs/check-project.sh -v                 # Validate all docs
-./docs/generate-docs.sh                    # Export to markdown
+cd docs
+./run.sh list-stories                      # Filter by feature/status
+./run.sh list-flows                        # Filter by persona
+./run.sh list-features --format stats      # Stats, tree view
+./run.sh list-apis --format curl           # Generate curl commands
+./run.sh check-project -v                  # Validate all docs
+./run.sh generate-docs                     # Export to markdown
 ```
 
 All scripts support `--help`, multiple formats (summary/detailed/json/tree), and filters.
@@ -38,7 +39,7 @@ All scripts support `--help`, multiple formats (summary/detailed/json/tree), and
 
 PRD → User Flows → User Stories → Feature Specs → System Design → API Contracts → Data Plan → Design Spec → Traceability Pass
 
-Check existing files first (`list-*.sh`) before creating. Re-read upstream docs at each step.
+Check existing files first (`./run.sh list-*`) before creating. Re-read upstream docs at each step.
 
 ## YAML Requirements
 
@@ -56,7 +57,7 @@ Check existing files first (`list-*.sh`) before creating. Re-read upstream docs 
 - API Contracts → feature IDs
 - Data Plan → PRD metrics
 
-Run `./docs/check-project.sh` regularly. Fix errors before next step.
+Run `cd docs && ./run.sh check-project` regularly. Fix errors before next step.
 
 ## Pitfalls
 

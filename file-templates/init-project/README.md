@@ -4,21 +4,34 @@ YAML-based project documentation workflow with CLI management tools.
 
 ## Quick Start
 
-**Copy template to new project:**
+**Automated Setup (Recommended):**
+```bash
+cd <your-project-root>
+bash ~/.claude/file-templates/init-project/setup-project-docs.sh
+```
+
+This will:
+1. Create `docs/` directory structure
+2. Copy TypeScript source files
+3. Install dependencies (@types/node, typescript)
+4. Compile TypeScript to JavaScript
+5. Make scripts executable
+
+**Manual Setup (Advanced):**
 ```bash
 # Copy CLAUDE.template.md to your project's docs directory
-cp file-templates/init-project/CLAUDE.template.md <project>/docs/CLAUDE.md
+cp ~/.claude/file-templates/init-project/CLAUDE.template.md <project>/docs/CLAUDE.md
 
 # Copy templates you need
-cp file-templates/init-project/product-requirements.yaml <project>/docs/
-cp file-templates/init-project/system-design.yaml <project>/docs/
-# ... etc
+cp ~/.claude/file-templates/init-project/*.yaml <project>/docs/
 
-# Copy management scripts
-cp file-templates/init-project/*.sh <project>/docs/
-cp -r file-templates/init-project/user-stories <project>/docs/
-cp -r file-templates/init-project/user-flows <project>/docs/
-cp -r file-templates/init-project/feature-specs <project>/docs/
+# Copy all TypeScript scripts and build files
+cp ~/.claude/file-templates/init-project/*.ts <project>/docs/
+cp ~/.claude/file-templates/init-project/{package.json,tsconfig.json,.gitignore} <project>/docs/
+cp -r ~/.claude/file-templates/init-project/{user-stories,user-flows,feature-specs} <project>/docs/
+
+# Build
+cd <project>/docs && pnpm install && pnpm build
 ```
 
 ## Available Templates
@@ -37,15 +50,17 @@ cp -r file-templates/init-project/feature-specs <project>/docs/
 
 ## Management Scripts
 
+**TypeScript-based** - Run with `node <script>.js` after setup. All scripts support `--help`.
+
 ### List/View Scripts
-- `list-apis.sh` - Query API endpoints (curl, markdown, postman output)
-- `user-stories/list-stories.sh` - View/filter user stories
-- `user-flows/list-flows.sh` - View/filter user flows
-- `feature-specs/list-features.sh` - View/filter feature specs
+- `list-apis.js` - Query API endpoints (curl, markdown output)
+- `user-stories/list-stories.js` - View/filter user stories
+- `user-flows/list-flows.js` - View/filter user flows
+- `feature-specs/list-features.js` - View/filter feature specs
 
 ### Utility Scripts
-- `check-project.sh` - Comprehensive documentation validation
-- `generate-docs.sh` - Generate human-readable markdown docs
+- `check-project.js` - Comprehensive documentation validation
+- `generate-docs.js` - Generate human-readable markdown docs
 
 ### Manage-Project Templates
 - `manage-project/plans/implement-requirements.md` - Requirements capture scaffold populated during `/manage-project/implement/investigate`
@@ -56,6 +71,7 @@ All scripts support:
 - Multiple output formats (summary, detailed, json, etc.)
 - Filtering and sorting options
 - Color-coded output
+- Type-safe TypeScript implementation (compiled to JavaScript)
 
 ## File Structure
 
@@ -70,16 +86,17 @@ All scripts support:
     ├── data-plan.yaml
     ├── user-flows/
     │   ├── <flow-name>.yaml
-    │   └── list-flows.sh
+    │   └── list-flows.js
     ├── user-stories/
     │   ├── <story-slug>.yaml
-    │   └── list-stories.sh
+    │   └── list-stories.js
     ├── feature-specs/
     │   ├── <feature-slug>.yaml
-    │   └── list-features.sh
-    ├── list-apis.sh
-    ├── check-project.sh
-    └── generate-docs.sh
+    │   └── list-features.js
+    ├── list-apis.js
+    ├── check-project.js
+    ├── generate-docs.js
+    └── run.sh
 ```
 
 ## Workflow
@@ -92,7 +109,7 @@ All scripts support:
 6. **API Contracts** - Endpoint definitions
 7. **Data Plan** - Analytics and storage
 8. **Design Spec** - UI/UX details
-9. **Validation** - Run `check-project.sh`
+9. **Validation** - Run `./run.sh check-project`
 
 ## ID Conventions
 
@@ -104,27 +121,27 @@ All scripts support:
 
 **View incomplete stories:**
 ```bash
-./docs/user-stories/list-stories.sh
+cd docs && node user-stories/list-stories.js
 ```
 
 **Check all documentation:**
 ```bash
-./docs/check-project.sh -v
+cd docs && node check-project.js -v
 ```
 
 **Generate API documentation:**
 ```bash
-./docs/list-apis.sh --format markdown > API.md
+cd docs && node list-apis.js --format markdown > API.md
 ```
 
 **Get feature statistics:**
 ```bash
-./docs/feature-specs/list-features.sh --format stats
+cd docs && node feature-specs/list-features.js --format stats
 ```
 
 **Generate curl commands:**
 ```bash
-./docs/list-apis.sh --format curl --base-url https://api.example.com
+cd docs && node list-apis.js --format curl --base-url https://api.example.com
 ```
 
 ## Documentation
@@ -136,10 +153,25 @@ All scripts support:
 ## Notes
 
 - All templates use pure YAML (no markdown hybrid)
-- Scripts parse YAML directly (no external dependencies)
+- **TypeScript implementation** - No bash/awk, type-safe parsing
+- Scripts parse YAML directly (no external YAML libraries)
 - Color-coded output for better readability
 - Supports both `.yaml` and `.yml` extensions
 - Validates cross-references between documents
+- ESM modules (Node.js 18+)
+
+## Migration from Bash
+
+The original bash scripts (`.sh` files) have been replaced with TypeScript (`.ts` compiled to `.js`). All functionality is preserved:
+
+- ✅ Same command-line arguments
+- ✅ Identical output formats
+- ✅ Better error handling
+- ✅ Type safety and IDE support
+- ✅ Easier to maintain and extend
+
+Old: `./list-features.sh --format stats`
+New: `node list-features.js --format stats`
 
 ---
 

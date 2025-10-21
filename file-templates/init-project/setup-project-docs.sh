@@ -30,34 +30,70 @@ mkdir -p "${DOCS_DIR}/user-flows"
 mkdir -p "${DOCS_DIR}/user-stories"
 mkdir -p "${DOCS_DIR}/feature-specs"
 
-# Copy root-level management scripts
-echo "✓ Copying management scripts..."
-cp "${SCRIPT_DIR}/check-project.sh" "${DOCS_DIR}/"
-cp "${SCRIPT_DIR}/generate-docs.sh" "${DOCS_DIR}/"
-cp "${SCRIPT_DIR}/list-apis.sh" "${DOCS_DIR}/"
+# Copy TypeScript source files
+echo "✓ Copying TypeScript scripts..."
+cp "${SCRIPT_DIR}/yaml-parser.ts" "${DOCS_DIR}/"
+cp "${SCRIPT_DIR}/check-project.ts" "${DOCS_DIR}/"
+cp "${SCRIPT_DIR}/generate-docs.ts" "${DOCS_DIR}/"
+cp "${SCRIPT_DIR}/list-apis.ts" "${DOCS_DIR}/"
+cp "${SCRIPT_DIR}/user-flows/list-flows.ts" "${DOCS_DIR}/user-flows/"
+cp "${SCRIPT_DIR}/user-stories/list-stories.ts" "${DOCS_DIR}/user-stories/"
+cp "${SCRIPT_DIR}/feature-spec/list-features.ts" "${DOCS_DIR}/feature-specs/"
 
-# Copy subdirectory list scripts
-cp "${SCRIPT_DIR}/user-flows/list-flows.sh" "${DOCS_DIR}/user-flows/"
-cp "${SCRIPT_DIR}/user-stories/list-stories.sh" "${DOCS_DIR}/user-stories/"
-cp "${SCRIPT_DIR}/feature-spec/list-features.sh" "${DOCS_DIR}/feature-specs/"
+# Copy build configuration
+echo "✓ Copying build configuration..."
+cp "${SCRIPT_DIR}/package.json" "${DOCS_DIR}/"
+cp "${SCRIPT_DIR}/tsconfig.json" "${DOCS_DIR}/"
+cp "${SCRIPT_DIR}/.gitignore" "${DOCS_DIR}/"
+cp "${SCRIPT_DIR}/run.sh" "${DOCS_DIR}/"
+chmod +x "${DOCS_DIR}/run.sh"
 
 # Copy CLAUDE guide
 echo "✓ Copying CLAUDE guide..."
 cp "${SCRIPT_DIR}/CLAUDE.template.md" "${DOCS_DIR}/CLAUDE.md"
 
-# Make all scripts executable
+# Install dependencies and build TypeScript
+echo "✓ Installing dependencies..."
+cd "${DOCS_DIR}"
+if command -v pnpm &> /dev/null; then
+  pnpm install --silent
+else
+  npm install --silent
+fi
+
+echo "✓ Building TypeScript scripts..."
+if command -v pnpm &> /dev/null; then
+  pnpm build
+else
+  npm run build
+fi
+
+# Make compiled scripts executable
 echo "✓ Making scripts executable..."
-chmod +x "${DOCS_DIR}"/*.sh
-chmod +x "${DOCS_DIR}/user-flows"/*.sh
-chmod +x "${DOCS_DIR}/user-stories"/*.sh
-chmod +x "${DOCS_DIR}/feature-specs"/*.sh
+chmod +x *.js 2>/dev/null || true
+chmod +x user-flows/*.js 2>/dev/null || true
+chmod +x user-stories/*.js 2>/dev/null || true
+chmod +x feature-specs/*.js 2>/dev/null || true
+
+cd "${PROJECT_ROOT}"
 
 echo ""
 echo "✅ Project documentation setup complete!"
 echo ""
 echo "Next steps:"
 echo "  1. Review CLAUDE.md in ${DOCS_DIR}/"
-echo "  2. Run: cd ${DOCS_DIR} && ./check-project.sh --help"
+echo "  2. Run: cd ${DOCS_DIR} && node check-project.js --help"
 echo "  3. Begin with product-requirements.yaml (agent will generate from templates)"
 echo ""
-
+echo "Available scripts (via run.sh wrapper):"
+echo "  • ./run.sh check-project -v    - Validate documentation"
+echo "  • ./run.sh list-apis           - List API endpoints"
+echo "  • ./run.sh generate-docs       - Generate markdown docs"
+echo "  • ./run.sh list-features       - List features"
+echo "  • ./run.sh list-stories        - List user stories"
+echo "  • ./run.sh list-flows          - List user flows"
+echo ""
+echo "Or run directly with Node:"
+echo "  • node check-project.js"
+echo "  • node feature-specs/list-features.js"
+echo ""
