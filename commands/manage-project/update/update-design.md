@@ -13,9 +13,9 @@ Modify design spec: goals, components, screens, interactions.
 ## ⚡ Delegation
 
 **Default approach:** Delegate design-spec edits to `@agent-documentor` while you coordinate related workflows. Provide:
-- Target file (`design-spec.yaml`) and relevant templates/conventions
-- Requested updates, dependencies (flows/stories/components), and assumptions needing confirmation
-- Instruction to request approval before saving, align references, and refresh versioning/timestamps
+- Target file: `design-spec.yaml`
+- Update details: requested updates, dependencies (flows/stories/components), and assumptions needing confirmation
+- Context: user flows and feature specs that reference affected components/screens
 
 Continue handling flow impact checks or next commands while they work. Monitor via hook updates; only `await` when their changes gate further progress.
 

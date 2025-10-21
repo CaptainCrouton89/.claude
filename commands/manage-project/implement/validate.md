@@ -37,15 +37,17 @@ Verify execution phase complete. If missing artifacts, prompt to run `/manage-pr
 ```markdown
 Perform comprehensive final validation of {item-id} implementation.
 
-**Requirements:** @docs/plans/implement-{item-id}-requirements.md
-**Plan:** @docs/plans/implement-{item-id}-plan.md
-**Task Validations:** agent-responses/agent_*.md
-**Patterns:** agent-responses/agent_*.md
-**Original Spec:** [Feature/Story/API spec]
+**Context:**
+- Requirements: @docs/plans/implement-{item-id}-requirements.md
+- Implementation plan: @docs/plans/implement-{item-id}-plan.md
+- Task validation reports: agent-responses/agent_*.md
+- Investigation findings: agent-responses/agent_*.md
+- Original specification: [Feature/Story/API spec path]
+- Modified files: [list or git diff reference]
 
-Systematically verify ALL requirements met, patterns followed, edge cases handled, no regressions.
+Analyze these artifacts to understand what was supposed to be built, then systematically verify the implementation meets all requirements, follows established patterns, handles edge cases appropriately, and introduces no regressions.
 
-**Output:** agent-responses/agent_{agent_id}.md
+Determine your own validation strategy based on the complexity and domain of the implementation.
 ```
 
 ### 4. Comprehensive Validation

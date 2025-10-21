@@ -9,6 +9,8 @@ I have just finished one or more changes. It's time to commit and push.
 
 Analyze git diffs, running any additional `git` commands necessary to understand the scope of change.
 
+**1.1**: Update the .gitignore if anything doesn't belong.
+
 ## Phase 2: Commit Strategy
 
 ### For Small Changes

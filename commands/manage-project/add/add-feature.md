@@ -16,9 +16,10 @@ Add feature to PRD and create feature specification.
 ## ⚡ Delegation
 
 **Default approach:** Spawn `@agent-documentor` to handle PRD updates and feature-spec creation asynchronously while you gather details. Provide:
-- Target files (`product-requirements.yaml`, `feature-specs/F-##-<slug>.yaml`) and relevant templates in `@/file-templates/init-project/`
-- Collected feature inputs, dependencies, and any open questions that require confirmation
-- Instruction to align IDs and update metadata
+- Target files: `product-requirements.yaml`, `feature-specs/F-##-<slug>.yaml`
+- Templates: `@/file-templates/init-project/feature-spec/feature-title.yaml`, `@/file-templates/init-project/product-requirements.yaml`
+- Feature inputs: collected feature details, dependencies, and any open questions
+- Context: existing features via `./list-features.sh` output
 
 Continue gathering answers or routing follow-up commands while the agent works. Rely on hook updates for status and only run `./agent-responses/await {agent_id}` when the written docs block the next step.
 

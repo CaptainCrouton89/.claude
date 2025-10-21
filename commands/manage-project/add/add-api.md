@@ -14,9 +14,10 @@ Add API endpoint to contracts and optionally update feature specs.
 ## ⚡ Delegation
 
 **Default approach:** Spawn `@agent-documentor` (or a backend specialist if schemas are complex) to update `api-contracts.yaml` asynchronously. Provide:
-- Target sections within `docs/api-contracts.yaml` and template guidance from `@/file-templates/init-project/api-contracts.yaml`
-- Endpoint details collected from the user plus related feature/spec context
-- Instruction to align with existing schemas and refresh metadata
+- Target file: `docs/api-contracts.yaml`
+- Template: `@/file-templates/init-project/api-contracts.yaml`
+- Endpoint details: collected from the user plus related feature/spec context
+- Context: existing API contracts via `./list-apis.sh` for schema alignment
 
 Keep interviewing the user or coordinating downstream updates while the agent works. Monitor via hook updates; use `./agent-responses/await {agent_id}` only when the contract changes block further routing.
 

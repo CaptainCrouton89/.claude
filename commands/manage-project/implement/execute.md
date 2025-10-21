@@ -48,16 +48,15 @@ Based on plan's parallelization analysis:
 As soon as task implementation completes, spawn validation agent:
 
 ```markdown
-Validate implementation of [Task T#]:
+Validate implementation of [Task T#].
 
-**Code:** [Files modified/created in T#]
-**Success Criteria:** [From plan T# section]
-**Requirements:** @docs/plans/implement-{item-id}-requirements.md
-**Patterns:** agent-responses/agent_*.md
+**Context:**
+- Modified files: [Files modified/created in T#]
+- Success criteria: @docs/plans/implement-{item-id}-plan.md (Task T# section)
+- Requirements: @docs/plans/implement-{item-id}-requirements.md
+- Patterns: agent-responses/agent_*.md
 
-Verify success criteria met, patterns followed, code quality standards, edge cases handled, no regressions.
-
-**Output:** agent-responses/agent_{agent_id}.md
+Determine validation strategy to verify the implementation meets success criteria and follows established patterns.
 ```
 
 Validation agent runs asynchronously while next task proceeds.

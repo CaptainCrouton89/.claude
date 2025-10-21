@@ -14,9 +14,10 @@ Add user flow describing how users accomplish tasks.
 ## ⚡ Delegation
 
 **Default approach:** Delegate creation of flow docs to `@agent-documentor` while you keep orchestrating. Provide:
-- Output directory (`user-flows/<slug>.yaml`) and template `@/file-templates/init-project/user-flows/user-flow-title.yaml`
-- Persona information, flow steps, edge cases gathered from the user, plus any assumptions needing confirmation
-- Instruction to reference relevant Feature IDs and update metadata consistently
+- Output path: `user-flows/<slug>.yaml`
+- Template: `@/file-templates/init-project/user-flows/user-flow-title.yaml`
+- Flow details: persona information, flow steps, edge cases gathered from the user, plus any assumptions needing confirmation
+- Context: existing features via `./list-features.sh` for reference alignment
 
 Continue gathering additional details or routing follow-up commands while the agent works. Monitor via hook updates; only `await` when their output blocks the next step.
 

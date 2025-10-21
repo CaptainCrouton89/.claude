@@ -62,50 +62,50 @@ Ask 5-7 discovery questions before delegating investigators:
 Present for confirmation before proceeding.
 
 ### 4. Delegate Investigation Agents
-Based on scope analysis, spawn 2-5 investigation agents in parallel.
+Based on scope analysis, spawn 2-5 investigation agents in parallel using `@agent-code-finder`.
+
+**Context to provide each agent:**
+- Requirements: `@docs/plans/implement-{item-id}-requirements.md`
+- Feature specification: [path to feature/story/API spec]
+- Investigation focus area: [e.g., "existing patterns", "related code structures", "integration points"]
 
 **Standard investigation pattern (full-stack):**
 
 **Agent 1: Existing Patterns & Conventions**
-- Prompt: "Find and document coding patterns, error handling, validation patterns, naming conventions for [feature area]."
 - Focus: How similar features are implemented
-- Output: `agent-responses/agent_{agent_id}.md`
+- Let agent determine search strategy for patterns, conventions, error handling
 
 **Agent 2: Related Code Structures**
-- Prompt: "Find and document related code structures, similar implementations, reusable components for [feature]."
 - Focus: What exists that can be leveraged or extended
-- Output: `agent-responses/agent_{agent_id}.md`
+- Let agent discover similar implementations and reusable components
 
 **Agent 3: Integration Points & Dependencies**
-- Prompt: "Document all integration points, dependencies, data flows, external APIs for [feature]."
 - Focus: Where this touches other systems
-- Output: `agent-responses/agent_{agent_id}.md`
+- Let agent trace data flows, dependencies, external APIs
 
 **Agent 4: UI/UX Patterns (if frontend)**
 - Use: `@agent-frontend-ui-developer` for pattern analysis
-- Prompt: "Document component patterns, state management, styling approach, accessibility patterns for [feature]."
 - Focus: Frontend-specific concerns
-- Output: `agent-responses/agent_{agent_id}.md`
+- Let agent analyze component patterns, state management, styling, accessibility
 
 **Agent 5: Database & API Layer (if backend)**
 - Use: `@agent-backend-developer` for pattern analysis
-- Prompt: "Document data models, queries, API patterns, database schema for [feature]."
 - Focus: Backend-specific concerns
-- Output: `agent-responses/agent_{agent_id}.md`
+- Let agent document data models, queries, API patterns, database schema
 
 **Alternative patterns:**
 
 **For performance issues:**
-- Agent 1: Frontend performance (renders, bundle, assets)
-- Agent 2: API/Network (queries, payloads, caching)
-- Agent 3: Backend performance (algorithms, database, external services)
+- Agent 1: Frontend performance
+- Agent 2: API/Network performance
+- Agent 3: Backend performance
 
 **For architectural changes:**
-- Agent 1: Current implementation (how it works now)
-- Agent 2: Related features (integration points)
-- Agent 3: Test coverage (what's tested, edge cases)
+- Agent 1: Current implementation analysis
+- Agent 2: Related features and integration points
+- Agent 3: Test coverage and edge cases
 
-Delegate agents using `@agent-code-finder` for pattern discovery.
+Each agent receives context artifacts and determines its own investigation methodology.
 
 ### 5. Monitor Investigation Progress
 ```markdown

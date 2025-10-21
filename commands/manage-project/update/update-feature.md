@@ -13,9 +13,9 @@ Update both PRD feature entry and feature spec. Maintain consistency with depend
 ## ⚡ Delegation
 
 **Default approach:** Delegate documentation updates to `@agent-documentor` so the primary agent can focus on orchestration. Provide:
-- Target files (`product-requirements.yaml`, `feature-specs/F-##-<slug>.yaml`) and relevant template references
-- Diff summary or bullet list of requested changes, downstream impacts, and any open questions for confirmation
-- Instruction to synchronize IDs/versions, and refresh `last_updated`
+- Target files: `product-requirements.yaml`, `feature-specs/F-##-<slug>.yaml`
+- Change details: diff summary or bullet list of requested changes, downstream impacts, and any open questions for confirmation
+- Context: related stories via `./list-stories.sh -f F-##`, APIs via `./list-apis.sh | grep "F-##"`
 
 Continue coordinating dependency checks or next steps while the agent works. Monitor via hook updates; only `await` when their changes block subsequent actions.
 
