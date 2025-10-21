@@ -1,0 +1,29 @@
+title: Execute Attack with Timing Mechanic
+story_id: US-202
+feature_id: F-02
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-19
+
+user_story:
+  as_a: "Mobile RPG Player"
+  i_want: "to tap a moving dial to optimize my attack damage"
+  so_that: "I can use skill to maximize damage output in combat"
+
+acceptance_criteria:
+  - "[ ] Given player's turn, when attack dial appears, then show moving indicator sweeping across dial"
+  - "[ ] Given moving dial, when player taps screen, then stop indicator and calculate multiplier"
+  - "[ ] Given tap near center, when indicator stops, then apply high multiplier (1.5x - 2.0x)"
+  - "[ ] Given tap far from center, when indicator stops, then apply low multiplier (0.5x - 1.0x)"
+  - "[ ] Given multiplier calculated, when applied, then compute damage: base_ATK * multiplier - enemy_DEF"
+  - "[ ] Given damage calculated, when applied, then reduce enemy HP and display damage number"
+  - "[ ] Given attack complete, when damage applied, then enemy counter-attacks"
+
+context:
+  why: "Timing mechanic adds skill-based gameplay beyond just stats, rewarding player engagement during combat"
+  related: "Links to US-201 (Initiate Combat), US-203 (Complete Combat)"
+
+technical_notes:
+  apis: "POST /combat/attack with tap_accuracy (0.0-1.0) to calculate damage server-side"
+  data: "Multiplier formula: 0.5 + (1.5 * accuracy). Damage: (ATK * multiplier) - DEF, min 1"
+  dependencies: "SwiftUI animation for dial movement, haptic feedback on tap"

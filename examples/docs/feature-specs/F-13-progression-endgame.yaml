@@ -1,0 +1,449 @@
+title: Technical Specification - Progression Balance & Endgame Content
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-13
+status: planned
+last_updated: 2025-01-27
+
+summary: "Long-term progression mechanics, endgame goals, and balance systems to prevent power creep and economy inflation. Includes soft level caps with diminishing returns, prestige/rebirth system for seasonal resets, additional gold sinks (cosmetics, convenience features), endgame content for max-level players, and economy balance mechanisms."
+
+functional_overview:
+  core_logic: "Progressive XP scaling with soft cap at level 50, exponential growth beyond level 50. Optional prestige system allows level reset while keeping items/materials in exchange for permanent gold bonus. Additional gold sinks prevent economy inflation. Endgame achievement system provides long-term goals for max-level players. Seasonal content and leaderboards drive competitive engagement."
+  data_schema: "PlayerProgression table (extended with prestige fields), Achievements table (post-MVP), SeasonalLeaderboards (future), CosmeticUnlocks (future), EconomyTransactions (existing)"
+  api_endpoints:
+    - "POST /progression/prestige"
+    - "GET /progression/endgame-goals"
+    - "POST /cosmetics/reroll"
+    - "POST /loadouts/expand"
+  integration_points:
+    - "PlayerProgression table for XP/level tracking"
+    - "EconomyTransactions for all gold sink purchases"
+    - "Items system for cosmetic rerolls and loadout expansion"
+    - "Achievements system (post-MVP) for endgame goals"
+    - "User authentication for prestige persistence"
+
+detailed_design:
+  data_structures:
+    - name: "PlayerProgression (extended table)"
+      purpose: "XP/level tracking with soft cap formula and prestige system"
+      status: "base table implemented, prestige fields new"
+      columns:
+        - "user_id: UUID (PK, FK to Users)"
+        - "xp: INT (total experience points earned)"
+        - "level: INT (current account level, computed from xp)"
+        - "xp_to_next_level: INT (cached XP required for next level)"
+        - "prestige_level: INT (default 0, max 10) - NEW FIELD"
+        - "prestige_gold_bonus: DECIMAL (0.05 per prestige) - NEW FIELD"
+        - "total_lifetime_xp: INT (never resets, for prestige eligibility) - NEW FIELD"
+        - "last_level_up_at: TIMESTAMP (nullable)"
+        - "last_prestige_at: TIMESTAMP (nullable) - NEW FIELD"
+        - "created_at: TIMESTAMP"
+        - "updated_at: TIMESTAMP"
+      indexes:
+        - "INDEX on (level DESC, xp DESC) for leaderboards"
+        - "INDEX on (prestige_level DESC, level DESC) for prestige leaderboards"
+      constraints:
+        - "FK user_id → Users.id ON DELETE CASCADE"
+        - "CHECK (prestige_level >= 0 AND prestige_level <= 10)"
+        - "CHECK (prestige_gold_bonus = prestige_level * 0.05)"
+
+    - name: "Achievements (post-MVP table)"
+      purpose: "Track endgame milestones and long-term goals"
+      status: "post-MVP implementation"
+      columns:
+        - "id: UUID (PK)"
+        - "user_id: UUID (FK to Users)"
+        - "achievement_type: VARCHAR (combat_mastery, collection_completion, style_collector, vanity_milestone, gold_hoarder, prestige_ranks)"
+        - "achievement_name: VARCHAR (descriptive name)"
+        - "progress_current: INT (current progress value)"
+        - "progress_target: INT (target value for completion)"
+        - "is_completed: BOOLEAN (default false)"
+        - "completed_at: TIMESTAMP (nullable)"
+        - "reward_gold: INT (nullable, gold reward on completion)"
+        - "reward_cosmetic_id: UUID (nullable, cosmetic unlock)"
+        - "created_at: TIMESTAMP"
+        - "updated_at: TIMESTAMP"
+      indexes:
+        - "INDEX on (user_id, achievement_type)"
+        - "INDEX on (is_completed, completed_at DESC)"
+
+    - name: "CosmeticUnlocks (future table)"
+      purpose: "Track unlocked cosmetic variants from gold sinks"
+      status: "future implementation"
+      columns:
+        - "id: UUID (PK)"
+        - "user_id: UUID (FK to Users)"
+        - "cosmetic_type: VARCHAR (item_appearance, material_style, badge, title, loadout_theme)"
+        - "cosmetic_id: VARCHAR (identifier for specific cosmetic)"
+        - "cosmetic_name: VARCHAR (display name)"
+        - "unlocked_via: VARCHAR (reroll, achievement, prestige, purchase)"
+        - "gold_spent: INT (nullable, if purchased)"
+        - "unlocked_at: TIMESTAMP"
+      indexes:
+        - "INDEX on (user_id, cosmetic_type)"
+        - "UNIQUE (user_id, cosmetic_type, cosmetic_id)"
+
+  formulas:
+    - name: "XP to Next Level"
+      description: "Progressive scaling with soft cap at level 50"
+      formula: |
+        def xp_to_next_level(current_level):
+            base_xp = 100
+            if current_level < 50:
+                # Linear progression: predictable early game
+                return base_xp * current_level
+            else:
+                # Exponential soft cap: encourages prestige
+                soft_cap_multiplier = 1.5
+                return int(base_xp * current_level * (soft_cap_multiplier ** (current_level - 50)))
+
+        # Examples:
+        # Level 1 → 2: 100 XP (1 combat victory)
+        # Level 10 → 11: 1,000 XP (20 combat victories)
+        # Level 50 → 51: 5,000 XP (100 combat victories)
+        # Level 51 → 52: 7,500 XP (150 combat victories)
+        # Level 60 → 61: 34,590 XP (692 combat victories)
+        # Level 100 → 101: 10,959,988,754 XP (effectively unreachable)
+
+    - name: "Prestige Gold Bonus"
+      description: "Permanent gold multiplier from prestige ranks"
+      formula: |
+        gold_bonus_multiplier = 1.0 + (prestige_level * 0.05)
+
+        # Examples:
+        # Prestige 0: 1.0x all gold rewards (baseline)
+        # Prestige 1: 1.05x all gold rewards (+5%)
+        # Prestige 5: 1.25x all gold rewards (+25%)
+        # Prestige 10: 1.5x all gold rewards (+50%)
+
+    - name: "Prestige Eligibility"
+      description: "Requirements to unlock prestige option"
+      formula: |
+        def can_prestige(level, total_lifetime_xp, prestige_level):
+            return (
+                level >= 50 and
+                prestige_level < 10 and
+                total_lifetime_xp >= xp_for_level(50)
+            )
+
+  apis:
+    - method: "POST"
+      endpoint: "/progression/prestige"
+      description: "Reset level to 1, grant prestige rank and permanent gold bonus"
+      request: "{confirm: boolean}"
+      response: "{success: boolean, new_prestige_level: int, gold_bonus_multiplier: float, reset_stats: {old_level, old_xp, new_level, new_xp}}"
+      validation:
+        - "Must be level 50+"
+        - "Max prestige level 10"
+        - "Requires confirmation boolean"
+      side_effects:
+        - "Reset PlayerProgression.xp to 0 and level to 1"
+        - "Increment PlayerProgression.prestige_level"
+        - "Update PlayerProgression.prestige_gold_bonus"
+        - "Set PlayerProgression.last_prestige_at"
+        - "Log event: prestige_activated"
+      errors:
+        - "400: Not eligible for prestige (level < 50 or max prestige reached)"
+        - "400: Missing confirmation"
+        - "401: Unauthorized"
+
+    - method: "GET"
+      endpoint: "/progression/endgame-goals"
+      description: "Get player's progress on endgame achievements"
+      request: "No body"
+      response: "{goals: [{type, name, progress_current, progress_target, progress_percentage, is_completed, reward}]}"
+      caching: "Cache for 5 minutes, refresh on achievement progress"
+      example_goals:
+        - "Combat Mastery: Defeat each enemy type 100 times (73/100 types completed)"
+        - "Collection Completion: Obtain all 26 item types (24/26 types obtained)"
+        - "Style Collector: Obtain all 5 style variants of every material (89/100 style-material combos)"
+        - "Vanity Milestone: Reach vanity level 500 (current: 347/500)"
+        - "Gold Hoarder: Accumulate 100,000 gold (current: 67,500/100,000)"
+        - "Prestige Ranks: Reach prestige level 5 (current: 2/5)"
+
+    - method: "POST"
+      endpoint: "/cosmetics/reroll"
+      description: "Spend gold to reroll item visual appearance (keep stats)"
+      request: "{item_id: UUID, cosmetic_category: string}"
+      response: "{success: boolean, new_appearance: {color_scheme, icon_variant, visual_effects}, gold_spent: int, remaining_gold: int}"
+      cost: "1000 gold per reroll"
+      validation:
+        - "Item must exist and belong to user"
+        - "User must have sufficient gold"
+        - "cosmetic_category must be valid (color_scheme, icon_variant, visual_effects)"
+      side_effects:
+        - "Generate new cosmetic variant for item"
+        - "Write EconomyTransaction (type: cosmetic_purchase)"
+        - "Add entry to CosmeticUnlocks table"
+        - "Log event: cosmetic_purchased"
+
+    - method: "POST"
+      endpoint: "/loadouts/expand"
+      description: "Unlock additional loadout slot for gold"
+      request: "{confirm: boolean}"
+      response: "{success: boolean, new_loadout_count: int, gold_spent: int, remaining_gold: int}"
+      cost: "5000 gold per additional slot"
+      validation:
+        - "Max 10 loadouts per user"
+        - "User must have sufficient gold"
+        - "Requires confirmation boolean"
+      side_effects:
+        - "Increment user's max_loadout_slots"
+        - "Write EconomyTransaction (type: loadout_expansion)"
+        - "Log event: cosmetic_purchased"
+
+  gold_sinks:
+    - name: "Cosmetic Item Rerolls"
+      cost: "1000 gold"
+      description: "Change item visual appearance without affecting stats"
+      frequency: "Unlimited per item"
+      rationale: "Provides customization for collectors, removes excess gold"
+
+    - name: "Loadout Slot Expansion"
+      cost: "5000 gold"
+      description: "Unlock additional loadout slot (max 10 total)"
+      frequency: "One-time per slot"
+      total_cost: "45,000 gold for all 9 additional slots"
+      rationale: "Major convenience feature for endgame players"
+
+    - name: "Material Style Recolor"
+      cost: "500 gold"
+      description: "Change material visual style (visual only, stats unchanged)"
+      frequency: "Unlimited per material instance"
+      rationale: "Low-cost customization option"
+
+    - name: "Fast Travel"
+      cost: "100 gold per use"
+      description: "Teleport to previously visited location"
+      frequency: "Per-use payment"
+      rationale: "Convenience feature that scales with usage"
+
+    - name: "Inventory Expansion"
+      cost: "2000 gold per 50 slots"
+      description: "Increase inventory capacity beyond base limit"
+      frequency: "Multiple purchases allowed"
+      rationale: "Quality of life for collectors"
+
+    - name: "Pet Rename"
+      cost: "250 gold"
+      description: "Change pet name (unlimited times)"
+      frequency: "Unlimited per pet"
+      rationale: "Low-cost personalization option"
+
+  endgame_goals:
+    - name: "Combat Mastery"
+      description: "Defeat each enemy type 100 times"
+      target: "100 defeats per enemy type"
+      reward: "2000 gold + Combat Master badge"
+      tracking: "EnemyDefeats table or combat event logs"
+
+    - name: "Collection Completion"
+      description: "Obtain all 26 item types at least once"
+      target: "26/26 item types in inventory"
+      reward: "5000 gold + Collector badge"
+      tracking: "Distinct item_type_id count in user's Items"
+
+    - name: "Style Collector"
+      description: "Obtain all 5 style variants of every material"
+      target: "100 unique style-material combinations"
+      reward: "3000 gold + Style Master badge"
+      tracking: "Distinct (material_id, style_id) pairs in MaterialStacks"
+
+    - name: "Vanity Milestone"
+      description: "Reach vanity level 500 (sum of equipped item levels)"
+      target: "500 total vanity level"
+      reward: "4000 gold + Vanity Lord badge"
+      tracking: "Users.vanity_level field"
+
+    - name: "Gold Hoarder"
+      description: "Accumulate 100,000 gold at once"
+      target: "100,000 current gold balance"
+      reward: "10,000 additional gold + Midas badge"
+      tracking: "Users.gold_balance field"
+
+    - name: "Prestige Ranks"
+      description: "Reach prestige level 5"
+      target: "5 prestige ranks"
+      reward: "Exclusive prestige cosmetics + Prestige Master badge"
+      tracking: "PlayerProgression.prestige_level field"
+
+  balance_tuning:
+    philosophy: "Early levels (1-20) provide fast progression to encourage engagement. Mid levels (20-50) establish core gameplay loop with moderate pacing. Late levels (50+) create slow grind that incentivizes prestige. Gold sinks prevent inflation while providing meaningful choices."
+
+    progression_pacing:
+      - "Levels 1-20: ~30 minutes per level (fast early game)"
+      - "Levels 20-50: ~2 hours per level (core gameplay)"
+      - "Levels 50-60: ~8 hours per level (prestige incentive)"
+      - "Levels 60+: ~20+ hours per level (theoretical maximum)"
+
+    gold_economy_targets:
+      - "Average combat reward: 50 gold"
+      - "Daily quest reward: 200 gold"
+      - "Achievement rewards: 500-5000 gold"
+      - "Major sinks: Item upgrades (100-5000), loadout expansion (5000)"
+      - "Minor sinks: Cosmetic rerolls (1000), fast travel (100), pet rename (250)"
+      - "Goal: Players feel 'wealthy enough' but have meaningful spending choices"
+
+    retention_hooks:
+      - "Prestige system for competitive players seeking leaderboard rankings"
+      - "Collection completion for completionist players"
+      - "Seasonal content for recurring engagement and FOMO"
+      - "Social features (leaderboards, achievements) for comparison and status"
+
+dependencies:
+  libraries: "SwiftUI for prestige confirmation dialogs, achievement progress displays"
+  services: "Backend progression logic, XP calculation functions, achievement tracking system"
+  data_sources: "PlayerProgression table (extended), EconomyTransactions for gold sinks, combat victory events for XP awards"
+
+implementation_status:
+  notes:
+    - "MVP: None (focus on core gameplay loop first)"
+    - "Post-MVP Phase 1: XP soft cap implementation, basic endgame achievements, gold sink features (cosmetic rerolls, loadout expansion)"
+    - "Post-MVP Phase 2: Prestige system with permanent gold bonuses, seasonal leaderboards"
+    - "Future: Full seasonal content with unique rewards, advanced cosmetic systems, social features"
+    - "Critical: XP formula must feel rewarding early but create clear prestige incentive at level 50+. Gold sinks must be desirable but not mandatory."
+
+acceptance_criteria:
+  level_progression:
+    - id: "AC-13-01"
+      description: "XP requirements scale linearly up to level 50"
+      test: "Verify xp_to_next_level(1-50) follows base_xp * level formula"
+
+    - id: "AC-13-02"
+      description: "XP requirements scale exponentially after level 50 (soft cap)"
+      test: "Verify xp_to_next_level(51+) follows exponential formula with 1.5x multiplier"
+
+    - id: "AC-13-03"
+      description: "PlayerProgression.level computed correctly from XP formula"
+      test: "Test level calculation matches XP thresholds for levels 1-100"
+
+    - id: "AC-13-04"
+      description: "Level progression becomes prohibitively slow after level 60"
+      test: "Verify level 70 requires 100+ hours of gameplay, level 100 is theoretical maximum"
+
+  prestige_system:
+    - id: "AC-13-05"
+      description: "Players at level 50+ can initiate prestige"
+      test: "POST /progression/prestige succeeds for level 50+ players, fails for level <50"
+
+    - id: "AC-13-06"
+      description: "Prestige resets level/XP but keeps items/materials"
+      test: "After prestige, level=1 and xp=0, but Items and MaterialStacks unchanged"
+
+    - id: "AC-13-07"
+      description: "Prestige grants permanent 5% gold bonus per rank"
+      test: "Combat gold rewards multiplied by (1 + prestige_level * 0.05)"
+
+    - id: "AC-13-08"
+      description: "Prestige level tracked with maximum of 10"
+      test: "prestige_level increments on prestige, caps at 10, prevents further prestige"
+
+    - id: "AC-13-09"
+      description: "Prestige status displayed in player profile"
+      test: "UI shows prestige level, gold bonus, and prestige-specific badges"
+
+  gold_sinks:
+    - id: "AC-13-10"
+      description: "All gold sinks implemented as EconomyTransactions"
+      test: "Every gold sink writes transaction record with correct type and amount"
+
+    - id: "AC-13-11"
+      description: "Cosmetic reroll changes item appearance, not stats"
+      test: "Item stats unchanged after reroll, only visual properties modified"
+
+    - id: "AC-13-12"
+      description: "Loadout expansion allows up to 10 loadouts"
+      test: "Users can purchase additional loadout slots, capped at 10 total"
+
+    - id: "AC-13-13"
+      description: "Fast travel consumes gold and teleports player"
+      test: "Fast travel deducts 100 gold and updates player location"
+
+  endgame_goals:
+    - id: "AC-13-14"
+      description: "Achievements track endgame milestones"
+      test: "GET /progression/endgame-goals returns accurate progress for all goal types"
+
+    - id: "AC-13-15"
+      description: "Leaderboards show top players by level, vanity, gold"
+      test: "Leaderboard endpoints return correctly sorted player rankings"
+
+events:
+  - event_name: "prestige_activated"
+    trigger: "Player resets to level 1 via prestige system"
+    properties:
+      - "user_id: UUID"
+      - "old_level: INT"
+      - "old_xp: INT"
+      - "new_prestige_level: INT"
+      - "new_gold_bonus_multiplier: DECIMAL"
+      - "total_lifetime_xp: INT"
+      - "timestamp: TIMESTAMP"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "endgame_goal_completed"
+    trigger: "Player completes an endgame achievement milestone"
+    properties:
+      - "user_id: UUID"
+      - "goal_type: VARCHAR (combat_mastery, collection_completion, etc.)"
+      - "goal_name: VARCHAR"
+      - "progress_final: INT"
+      - "reward_gold: INT"
+      - "reward_cosmetic_id: UUID (nullable)"
+      - "timestamp: TIMESTAMP"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "cosmetic_purchased"
+    trigger: "Player spends gold on cosmetic feature or convenience"
+    properties:
+      - "user_id: UUID"
+      - "cosmetic_type: VARCHAR (reroll, loadout_slot, rename, fast_travel, etc.)"
+      - "item_id: UUID (nullable, if item-specific)"
+      - "gold_spent: INT"
+      - "remaining_gold: INT"
+      - "cosmetic_result: VARCHAR (new_appearance_id, slot_number, etc.)"
+      - "timestamp: TIMESTAMP"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "soft_cap_reached"
+    trigger: "Player reaches level 50 (soft cap threshold)"
+    properties:
+      - "user_id: UUID"
+      - "total_xp: INT"
+      - "total_playtime_hours: DECIMAL"
+      - "combat_victories: INT"
+      - "items_collected: INT"
+      - "prestige_eligible: BOOLEAN"
+      - "timestamp: TIMESTAMP"
+    destinations: ["Backend Analytics DB"]
+
+open_questions:
+  - "Should prestige reset combat history stats or keep cumulative lifetime stats?"
+  - "Should seasonal leaderboards have tangible rewards or just bragging rights?"
+  - "What specific visual changes should cosmetic rerolls provide? (color palettes, icon variants, particle effects?)"
+  - "Should fast travel be free after tutorial completion or always cost gold?"
+  - "How to prevent 'prestige griefing' where low-level prestiged players dominate new player areas?"
+  - "Should there be prestige-only content or areas accessible only to prestiged players?"
+  - "What should be the gold cost progression for multiple inventory expansions?"
+
+implementation_priority:
+  mvp: "None - focus on core gameplay loop (combat, items, materials)"
+  post_mvp_phase_1: "XP soft cap formula, basic endgame achievements, gold sink features (cosmetic rerolls, loadout expansion, fast travel)"
+  post_mvp_phase_2: "Full prestige system with permanent bonuses, seasonal leaderboards with rankings"
+  future: "Seasonal content with unique rewards, advanced cosmetic systems, social features integration"
+
+related_features:
+  - "F-06: Item Upgrade System (primary gold sink)"
+  - "F-05: Material Drop System (gold economy source)"
+  - "F-02: Combat System (XP awards from victories)"
+  - "PlayerProgression table (base XP/level tracking)"
+  - "Users.vanity_level (endgame milestone tracking)"
+  - "EconomyTransactions (gold sink audit trail)"
+  - "Future: Achievements system (endgame goal tracking)"
+  - "Future: Leaderboards (competitive rankings)"
+
+user_stories:
+  - "US-1301: As a level 50+ player, I want to prestige to reset my level in exchange for permanent gold bonuses"
+  - "US-1302: As an endgame player, I want cosmetic customization options to personalize my items"
+  - "US-1303: As a collector, I want clear endgame goals to work toward after reaching max level"
+  - "US-1304: As a competitive player, I want leaderboards to compare my progress with others"
+  - "US-1305: As a convenience-seeking player, I want to spend gold on quality-of-life features"

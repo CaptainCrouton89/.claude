@@ -1,0 +1,27 @@
+title: View Nearby Locations on Map
+story_id: US-101
+feature_id: F-01
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-19
+
+user_story:
+  as_a: "Mobile RPG Player"
+  i_want: "to see nearby locations with enemies on a map"
+  so_that: "I can plan which location to visit for specific items or pets"
+
+acceptance_criteria:
+  - "[ ] Given player opens app, when map screen loads, then display map centered on player's current GPS location"
+  - "[ ] Given locations exist nearby, when map is visible, then show location markers within 5km radius"
+  - "[ ] Given location markers, when player taps marker, then show preview: enemy type, item type, and distance"
+  - "[ ] Given player location updates, when GPS position changes, then update map center and recalculate nearby locations"
+  - "[ ] Given no GPS permission, when map loads, then show permission request and fallback to default location"
+
+context:
+  why: "Map navigation is core to exploration gameplay. Players need clear visual guidance to find desired enemies/items."
+  related: "Links to US-102 (Navigate to Location), F-02 (Combat System)"
+
+technical_notes:
+  apis: "Google Maps SDK for iOS, CoreLocation for GPS, GET /locations/nearby endpoint"
+  data: "Location schema: id, lat/lng, enemy_type, item_type, city_id"
+  dependencies: "Requires Google Maps API key, location permissions in Info.plist"

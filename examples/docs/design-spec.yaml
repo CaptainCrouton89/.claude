@@ -1,0 +1,353 @@
+# Design Specification
+# UI/UX design details, components, and interaction patterns.
+
+status: draft
+last_updated: 2025-10-20
+
+overview:
+  design_goals: "Create an immersive RPG experience with clear visual hierarchy, responsive animations, and intuitive touch interactions. Emphasize fantasy aesthetic while maintaining modern iOS design patterns. Prioritize readability for stats and combat feedback."
+  design_links:
+    - "TBD: Figma designs to be created during Full MVP phase"
+  design_system: "Custom design system built on SwiftUI, leveraging SF Symbols for icons and native iOS components for familiarity. Custom components for combat dial, stat displays, and item cards."
+
+color_palette:
+  primary:
+    - name: "Dark Gray"
+      hex: "#1A1A1A"
+      usage: "Primary background, main containers"
+    - name: "Charcoal Gray"
+      hex: "#2F2F2F"
+      usage: "Secondary backgrounds, cards, depth layers"
+
+  secondary:
+    - name: "Neon Pink"
+      hex: "#FF1493"
+      usage: "Primary accent, CTAs, active states, highlights"
+    - name: "Neon Blue"
+      hex: "#00BFFF"
+      usage: "Secondary accent, interactive elements, success states"
+
+  neutral:
+    - name: "Light Gray"
+      hex: "#E5E5E5"
+      usage: "Primary text, borders on dark backgrounds"
+    - name: "White"
+      hex: "#FFFFFF"
+      usage: "High contrast text, icons"
+
+  interactive:
+    - name: "Bright Pink"
+      hex: "#FF69B4"
+      usage: "Hover states, pressed buttons, interactive feedback"
+    - name: "Bright Blue"
+      hex: "#1E90FF"
+      usage: "Hover states, secondary interactive elements"
+
+  semantic:
+    - name: "Secondary Text"
+      hex: "#B0B0B0"
+      usage: "Secondary text, captions, disabled states"
+    - name: "Error Pink"
+      hex: "#FF1493"
+      usage: "Error states, warnings, negative feedback"
+
+typography:
+  display:
+    family: "SF Pro Display"
+    weight: "Bold"
+    sizes: "32pt (titles), 24pt (headings)"
+    usage: "Screen titles, combat damage numbers, feature headers"
+
+  body:
+    family: "SF Pro Text"
+    weight: "Regular / Medium"
+    sizes: "17pt (body), 15pt (secondary)"
+    usage: "Item descriptions, stats, button labels"
+
+  mono:
+    family: "SF Mono"
+    weight: "Medium"
+    sizes: "13pt"
+    usage: "Numeric stats, generation indicators"
+
+layouts_components:
+  - screen: "Launch / Login Screen"
+    description: "First screen with app branding, login form, and registration option"
+    components:
+      - "App logo/title (centered, large)"
+      - "Email input field"
+      - "Password input field (secure)"
+      - "Login button (primary CTA)"
+      - "Sign Up link (text button)"
+      - "Forgot Password link (text button)"
+    notes: "Gradient background (Deep Indigo → Mystic Purple). Auto-focus email field. Show password strength indicator on registration."
+
+  - screen: "Map View (Main Screen)"
+    description: "Google Maps integration showing player location and nearby spawn points"
+    components:
+      - "Google Maps view (full screen)"
+      - "Player location marker (blue dot, pulsing)"
+      - "Spawn location markers (colored pins by type)"
+      - "Active location marker (glowing, tappable)"
+      - "Bottom sheet: selected location info"
+      - "Profile button (top-left)"
+      - "Inventory button (top-right)"
+      - "Location distance indicator (overlay on map)"
+    notes: "Map centered on player. Markers color-coded by item type (red=weapon, blue=armor, etc.). Active markers glow with animation. Bottom sheet shows enemy type, distance, and 'Start Combat' CTA."
+
+  - screen: "Combat Screen"
+    description: "Turn-based combat interface with attack dial and HP bars"
+    components:
+      - "Enemy card (top): image, name, type, stats"
+      - "Enemy HP bar (below card, animated)"
+      - "Player HP bar (bottom area, animated)"
+      - "Attack dial (center): rotating indicator, tap zone"
+      - "Player stats display (bottom): ATK/DEF/HP totals"
+      - "Damage numbers (floating, animated)"
+      - "Back button (top-left, cancels combat)"
+    notes: "Dark background for focus. Attack dial has concentric circles (center = best multiplier). Indicator rotates 2 seconds per cycle. Damage numbers float up with fade-out animation. HP bars decrease smoothly with color transition (green → yellow → red)."
+
+  - screen: "Inventory Screen"
+    description: "Grid view of collected items and pets with filtering"
+    components:
+      - "Tabs: Items / Pets"
+      - "Filter buttons: All / Equipped / By Type"
+      - "Sort dropdown: Type / Generation / Stats"
+      - "Item grid (2 columns on iPhone, 3 on iPad)"
+      - "Item card: image, name, stats, style badge, equipped badge"
+      - "Tap card → Detail view"
+    notes: "Styled items have unique visual treatment by style type (borders, effects, animations). Equipped items show green checkmark badge. Long-press for quick actions (equip/craft)."
+
+  - screen: "Item Detail View"
+    description: "Full-screen overlay showing item details and actions"
+    components:
+      - "Item image (large, centered)"
+      - "Item name and type"
+      - "Material slots indicator (0-3 applied)"
+      - "Style badge (if applicable)"
+      - "Stats breakdown: ATK / DEF / HP (color-coded)"
+      - "Description text (AI-generated)"
+      - "Equip button (or Unequip if equipped)"
+      - "Apply Materials button (if materials available)"
+      - "Close button (X, top-right)"
+    notes: "Modal presentation with blur background. Stats displayed as horizontal bars with numeric labels. Equip button disabled if slot occupied (show 'Unequip first' message)."
+
+  - screen: "Equipment Screen"
+    description: "Visual loadout showing all equipped items and active pet"
+    components:
+      - "Character silhouette (center)"
+      - "Equipment slots (overlay on silhouette): head, armor, weapon, offhand, feet, accessory_1, accessory_2"
+      - "Active pet (bottom-left of character)"
+      - "Total stats display (bottom): ATK / DEF / HP"
+      - "Tap slot → Open item selector"
+    notes: "Visual representation of equipped items on character model. Empty slots show placeholder icon. Stats update in real-time when changing equipment."
+
+  - screen: "Materials Application Screen"
+    description: "Apply materials to items interface with material selection"
+    components:
+      - "Base item selector (center)"
+      - "Material slots (1-3, drag and drop)"
+      - "Available materials list (bottom)"
+      - "Preview card: enhanced stats, craft count indicator"
+      - "Gold cost display (F-06 leveling system)"
+      - "Apply Materials button (primary CTA)"
+      - "Reset materials button (secondary)"
+    notes: "Up to 3 materials can be applied to any item. Preview shows stat bonuses from materials. Gold cost increases with item level (F-06). Instant application, no timers."
+
+  - screen: "Victory Screen"
+    description: "Combat completion with reward display"
+    components:
+      - "Victory banner/animation"
+      - "Reward card: item/pet image, stats, style badge"
+      - "Collection message: 'New [Type] collected!'"
+      - "Continue button → Returns to map"
+    notes: "Celebratory animation with confetti effect. Styled rewards have enhanced animations matching their visual style (pixel sparkles, watercolor swirls, neon glows). Haptic feedback on victory."
+
+  - screen: "Profile Screen"
+    description: "Player stats, achievements, and settings"
+    components:
+      - "Player name/level (top)"
+      - "Total stats: ATK / DEF / HP (from equipment)"
+      - "Collection progress: items collected, shinies, combat wins"
+      - "Settings button"
+      - "Logout button"
+    notes: "Simple stat dashboard. Future: Add leaderboards, achievements."
+
+accessibility:
+  color_contrast: "WCAG AA compliant for all text (4.5:1 minimum). Combat damage numbers use high contrast (white text on dark background with border). Colorblind-friendly: Use icons + labels in addition to color-coding."
+  keyboard_navigation: "Not applicable (mobile touch-first). VoiceOver labels on all interactive elements."
+  screen_reader: "VoiceOver support: All buttons labeled, stats announced as 'Attack 50, Defense 30, Health 100'. Combat dial provides audio cue on tap. Item cards announce type, generation, style variant (Normal, Pixel Art, Watercolor, Neon, Sketch)."
+
+responsive_behavior: |
+  - iPhone (compact): Single column layouts, bottom sheets for details
+  - iPad (regular): Two-column inventory, side-by-side combat UI (player left, enemy right)
+  - macOS: Same as iPad layout, keyboard shortcuts (Cmd+I for inventory, Cmd+M for map, Space for attack)
+  - Orientation: Portrait optimized, landscape supported (map view stretches horizontally)
+
+interaction_specs:
+  - component: "Primary Button"
+    states:
+      - "default: Mystic Purple background, white text, 12pt corner radius"
+      - "pressed: 90% opacity, scale 0.95"
+      - "disabled: 30% opacity, no interaction"
+    animation: "scale and opacity transition 100ms ease-out"
+    notes: "Use for main CTAs (Login, Start Combat, Confirm Craft). Minimum tap target 44x44pt."
+
+  - component: "Icon Button"
+    states:
+      - "default: SF Symbol icon, Soft White color, 20pt size"
+      - "pressed: Gold Accent color, haptic feedback"
+      - "disabled: 30% opacity"
+    animation: "color transition 150ms"
+    notes: "Use for Back, Profile, Inventory actions. Positioned in nav bar corners."
+
+  - component: "Attack Dial"
+    states:
+      - "rotating: indicator sweeps 360° in 2 seconds (continuous loop)"
+      - "tapped: indicator stops, multiplier calculated, flash effect on dial"
+      - "result: damage number animates up, dial resets for enemy turn"
+    animation: "rotation animation ease-in-out, flash effect 300ms"
+    notes: "Dial has 3 concentric zones (center=gold=2x, mid=white=1.5x, outer=red=0.5x). Haptic feedback on tap (impact medium)."
+
+  - component: "HP Bar"
+    states:
+      - "full: Emerald Green (100-70%)"
+      - "medium: Gold Accent (70-30%)"
+      - "low: Attack Red (30-0%)"
+      - "animating: smooth decrease with easing"
+    animation: "width transition 500ms ease-out, color transition 300ms"
+    notes: "Display numeric HP below bar (e.g., '75 / 100'). Pulse animation when low (<30%)."
+
+  - component: "Item Card"
+    states:
+      - "default: Charcoal Gray background, rounded corners (8pt)"
+      - "equipped: green border (2pt), checkmark badge"
+      - "styled: visual treatment by style type - Normal: default appearance, Pixel Art: pixelated border (2pt) + blocky effect, Watercolor: soft gradient border + subtle blur, Neon: glowing border (2pt) + pulsing effect, Sketch: hand-drawn border + sketchy animation"
+      - "pressed: scale 0.95, haptic feedback"
+    animation: "scale transition 100ms, sparkle keyframe animation"
+    notes: "Show item image (top), name (below), stats (bottom, small text). Generation badge in top-right corner."
+
+  - component: "Damage Number"
+    states:
+      - "appear: fade in from 0 → 1 opacity, move up 50pt"
+      - "critical (>50 damage): larger scale (1.5x), Attack Red color"
+      - "normal: white color, 1.0x scale"
+    animation: "opacity + translate 800ms ease-out, then fade out and remove"
+    notes: "Display above enemy on player turn, above player on enemy turn. Bold mono font (SF Mono)."
+
+  - component: "Location Marker (Map)"
+    states:
+      - "inactive: colored pin (by type), 30pt size"
+      - "active (within 50m): glowing ring animation, 40pt size, tappable"
+      - "selected: highlighted, bottom sheet appears"
+    animation: "glow pulse 1.5s infinite, scale transition 200ms"
+    notes: "Marker colors: red (weapon), blue (armor), green (pet), purple (premium). Active markers have white glow ring."
+
+
+animations_timing:
+  - name: "Screen Transitions"
+    duration: "300ms"
+    easing: "ease-in-out"
+    notes: "Push (map → combat), modal (inventory → item detail)"
+
+  - name: "Micro-interactions"
+    duration: "150ms"
+    easing: "ease-out"
+    notes: "Button presses, state changes, highlights"
+
+  - name: "Combat Actions"
+    duration: "500-800ms"
+    easing: "ease-out"
+    notes: "Damage numbers, HP bar changes, dial results"
+
+  - name: "Celebrations"
+    duration: "2s"
+    easing: "spring (bounce)"
+    notes: "Victory screen, style reveals (matching visual style), level-ups"
+
+visual_style_system:
+  normal:
+    description: "Default appearance with clean lines and standard colors"
+    border: "Standard gray border (1pt), no special effects"
+    background: "Standard item card background"
+    animation: "None"
+    badge_color: "#B0B0B0"
+    badge_text: "Normal"
+    accessibility: "Standard contrast ratios, no additional visual indicators needed"
+
+  pixel_art:
+    description: "Retro pixel art aesthetic with blocky, 8-bit inspired visuals"
+    border: "Pixelated border effect (2pt), blocky corners (2pt radius)"
+    background: "Slightly darkened with pixel texture overlay"
+    animation: "Subtle pixelated shimmer effect (2s loop)"
+    badge_color: "#8B4513"
+    badge_text: "Pixel"
+    accessibility: "High contrast pixelated pattern, distinct from other styles"
+
+  watercolor:
+    description: "Soft, artistic appearance with blended colors and gentle effects"
+    border: "Soft gradient border (2pt) with watercolor blend effect"
+    background: "Subtle watercolor texture with soft edges"
+    animation: "Gentle color flow animation (4s loop)"
+    badge_color: "#4682B4"
+    badge_text: "Watercolor"
+    accessibility: "Soft blue tint with maintained contrast ratios"
+
+  neon:
+    description: "Bright, glowing cyberpunk aesthetic with electric effects"
+    border: "Glowing neon border (2pt) with outer glow effect (4pt)"
+    background: "Darkened background to enhance glow contrast"
+    animation: "Pulsing glow effect (1.5s loop), occasional electric spark"
+    badge_color: "#00FFFF"
+    badge_text: "Neon"
+    accessibility: "High contrast glow effect, blue-cyan color for colorblind support"
+
+  sketch:
+    description: "Hand-drawn appearance with rough lines and artistic imperfections"
+    border: "Hand-drawn style border (2pt) with slight irregularities"
+    background: "Subtle paper texture with slight off-white tint"
+    animation: "Sketchy line animation (3s loop), simulates drawing motion"
+    badge_color: "#696969"
+    badge_text: "Sketch"
+    accessibility: "Distinct sketchy pattern, maintained readability with consistent line weight"
+
+style_implementation_guidelines:
+  badge_design: "Small rounded rectangle (16x8pt) in top-right corner of item cards. Text uses SF Pro Text 8pt bold. Colors defined per style above."
+  animation_performance: "All style animations use Core Animation for 60fps performance. Animations can be disabled in accessibility settings."
+  style_distribution: "Normal: 70%, Pixel Art: 10%, Watercolor: 8%, Neon: 7%, Sketch: 5% (configurable in backend)"
+  scalability: "Visual system designed to support additional styles in future updates. Each style requires: border treatment, background effect, animation, badge design."
+  colorblind_support: "Each style uses distinct patterns and shapes in addition to color. Neon uses cyan (colorblind-safe), Watercolor uses blue tones, Pixel uses brown earth tones."
+
+design_tokens:
+  spacing:
+    xs: "4pt"
+    sm: "8pt"
+    md: "16pt"
+    lg: "24pt"
+    xl: "32pt"
+
+  corner_radius:
+    small: "4pt"
+    medium: "8pt"
+    large: "12pt"
+    card: "16pt"
+
+  shadows:
+    light: "0 2 4 rgba(0,0,0,0.1)"
+    medium: "0 4 8 rgba(0,0,0,0.15)"
+    heavy: "0 8 16 rgba(0,0,0,0.2)"
+
+icons:
+  source: "SF Symbols (iOS native)"
+  custom: "Item type icons (helmet, sword, offhand, etc.) - to be designed or sourced from asset pack"
+  notes: "Use SF Symbols for UI controls, custom icons for game items/enemies"
+
+implementation_notes: |
+  - Light MVP: Basic layouts with native iOS components, no custom animations, Normal style only
+  - Full MVP: Custom components (attack dial, stat bars), basic animations, implement all 5 visual styles with Core Animation
+  - Finished: Polished style animations, haptic feedback, accessibility, dark mode support, style-specific victory animations
+  - Multi-Style System: Converted from binary shiny/normal to 5 distinct visual styles (Normal, Pixel Art, Watercolor, Neon, Sketch)
+  - Style Implementation: Each style requires unique border treatment, background effect, animation loop, and accessibility considerations
+  - Use SwiftUI previews for rapid iteration of style variants
+  - Extract reusable style components into design system module
+  - Document style system API and usage guidelines in separate file (future)

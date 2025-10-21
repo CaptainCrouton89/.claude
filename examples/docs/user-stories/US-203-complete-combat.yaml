@@ -1,0 +1,28 @@
+title: Complete Combat and Collect Reward
+story_id: US-203
+feature_id: F-02
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-20
+
+user_story:
+  as_a: "Collector"
+  i_want: "to receive the defeated enemy as an item or pet when I win combat"
+  so_that: "I can grow my collection and strengthen my loadout"
+
+acceptance_criteria:
+  - "[ ] Given enemy HP reaches 0, when defeated, then show victory animation and reward screen"
+  - "[ ] Given victory, when reward displayed, then show collected item/pet with stats and style status"
+  - "[ ] Given reward shown, when player taps continue, then add item/pet to inventory"
+  - "[ ] Given styled enemy, when defeated, then award styled variant with visual indicator"
+  - "[ ] Given player HP reaches 0, when defeated, then show loss screen with retry option"
+  - "[ ] Given loss, when retry selected, then restart combat from beginning with same enemy"
+
+context:
+  why: "Victory must feel rewarding with clear feedback on what was collected. Loss should allow retry without penalty."
+  related: "Links to US-202 (Attack), US-301 (Inventory), F-03 (Items), F-04 (Pets)"
+
+technical_notes:
+  apis: "POST /combat/complete with result (win/loss), returns item/pet data on win"
+  data: "Reward schema matches enemy: type, stats, generation, style_id. Added to player inventory."
+  dependencies: "Inventory system must accept new items/pets, handle duplicates"

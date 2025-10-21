@@ -1,0 +1,129 @@
+title: Technical Specification - Base Items & Equipment System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-03
+status: planned
+last_updated: 2025-01-20
+
+summary: "8 equipment slots (weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet) with normalized stat blocks. Base items have stats that sum to 1.0, modified by materials and scaled by level. Equipment state tracked in normalized UserEquipment table. Players start with 8 level-1 base items (one per slot)."
+
+functional_overview:
+  core_logic: "Each player has 8 equipment slots. Base items have normalized stats {atkPower, atkAccuracy, defPower, defAccuracy} summing to 1.0. Materials modify these stats (±0.05-0.30). Item rarity provides stat multipliers (1.00-2.00). Item level multiplies base stats. Total player stats = sum of all 8 equipped items."
+  data_schema: "Items table with item_type_id, level. Equipment state in UserEquipment table, materials in ItemMaterials table"
+  api_endpoints:
+    - "GET /inventory"
+    - "GET /equipment"
+    - "POST /equipment/equip"
+    - "POST /equipment/unequip"
+  integration_points:
+    - "Materials system (F-04) for stat modifications"
+    - "Combat system (F-02) reads player total stats"
+    - "Upgrade system (F-06) increases item levels"
+
+detailed_design:
+  data_structures:
+    - name: "item_types (seed data, ~20 items across 8 slots)"
+      columns:
+        - "id: UUID (PK)"
+        - "name: VARCHAR ('Enormous Key', 'Umbrella', 'Halo')"
+        - "category: VARCHAR (weapon, offhand, head, armor, feet, accessory, pet)"
+        - "base_stats_normalized: JSON {atkPower: 0.4, atkAccuracy: 0.2, defPower: 0.3, defAccuracy: 0.1} (sums to 1.0)"
+        - "description: TEXT"
+        - "rarity: VARCHAR (common, uncommon, rare, epic, legendary) - affects stat multiplier 1.0-2.0"
+
+    - name: "items"
+      columns:
+        - "id: UUID (PK)"
+        - "user_id: UUID (FK to users)"
+        - "item_type_id: UUID (FK to item_types)"
+        - "level: INT (default 1, scales stats)"
+        - "current_stats: JSON (optional cache: base_stats * rarity * level + material modifiers)"
+        - "created_at: TIMESTAMP"
+        - "Note: Equipment state in UserEquipment table, materials in ItemMaterials table"
+
+    - name: "user_equipment"
+      columns:
+        - "user_id: UUID (PK, FK to users)"
+        - "slot_name: VARCHAR (PK: weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet)"
+        - "item_id: UUID (nullable, FK to items)"
+        - "equipped_at: TIMESTAMP"
+
+  apis:
+    - method: "GET"
+      endpoint: "/inventory"
+      request: "Header: Authorization Bearer token"
+      response: "{items: [{id, item_type, level, rarity, applied_materials, is_styled, computed_stats, is_equipped}]}"
+      errors:
+        - "401: Unauthorized"
+
+    - method: "GET"
+      endpoint: "/equipment"
+      request: "Header: Authorization Bearer token"
+      response: "{slots: {weapon: item_obj, offhand: item_obj, head: item_obj, armor: item_obj, feet: item_obj, accessory_1: item_obj, accessory_2: item_obj, pet: item_obj}, total_stats: {atkPower, atkAccuracy, defPower, defAccuracy}}"
+      note: "Queries UserEquipment table joined with Items"
+      errors:
+        - "401: Unauthorized"
+
+    - method: "POST"
+      endpoint: "/equipment/equip"
+      request: "{item_id: UUID}"
+      response: "{success: true, slot: 'weapon', total_stats: {atkPower, atkAccuracy, defPower, defAccuracy}}"
+      note: "Replaces existing item in slot (if any). Writes to UserEquipment table"
+      errors:
+        - "400: Item already equipped in another slot"
+        - "404: Item not found"
+
+    - method: "POST"
+      endpoint: "/equipment/unequip"
+      request: "{slot: VARCHAR}"
+      response: "{success: true, total_stats: {atkPower, atkAccuracy, defPower, defAccuracy}}"
+      errors:
+        - "400: Slot already empty"
+
+  diagrams: |
+    Stat Calculation Flow:
+    1. Get base item stats (normalized to 1.0)
+    2. Apply rarity multiplier (ItemType.rarity: 1.0-2.0)
+    3. Apply each material modifier (±0.1-0.3, sum to 0)
+       - Materials have style_id (FK to StyleDefinitions) for visual variants only
+       - Style does not affect stat effectiveness
+    4. Multiply by item level
+    5. Result = item's final stats
+
+    Example:
+    Base Sword: {atkPower: 0.4, atkAccuracy: 0.2, defPower: 0.3, defAccuracy: 0.1}
+    × Rarity Multiplier (rare): 1.5
+    = Rare Base: {atkPower: 0.6, atkAccuracy: 0.3, defPower: 0.45, defAccuracy: 0.15}
+    + Iron Material: {atkPower: -0.1, atkAccuracy: 0, defPower: +0.1, defAccuracy: 0}
+    + Flame Material: {atkPower: +0.2, atkAccuracy: 0, defPower: -0.2, defAccuracy: 0}
+    = Modified: {atkPower: 0.7, atkAccuracy: 0.3, defPower: 0.35, defAccuracy: 0.15}
+    × Level 5
+    = Final: {atkPower: 3.5, atkAccuracy: 1.5, defPower: 1.75, defAccuracy: 0.75}
+
+    Player Total Stats:
+    Sum stats from all 8 equipped items (weapon + offhand + head + armor + feet + accessory_1 + accessory_2 + pet)
+
+    Equipment Slot Distribution:
+    - Weapon (3 types): Offensive focus (high atkPower, atkAccuracy)
+    - Shield (2 types): Defensive focus (high defPower, defAccuracy)
+    - Head (2 types): Balanced awareness
+    - Armor (2 types): Defensive focus (covers body/chest/legs)
+    - Feet (3 types): Mobility/balanced
+    - Accessory_1 (3 types): Utility/mixed stats
+    - Accessory_2 (3 types): Utility/mixed stats
+    - Pet (5 types): Support with personality system (F-11)
+
+dependencies:
+  libraries: "None (SwiftUI for UI)"
+  services: "Backend inventory and equipment services"
+  data_sources: "PostgreSQL items table, item_types seed data, materials table (F-04), StyleDefinitions table"
+
+implementation_status:
+  notes:
+    - "Light MVP: Hardcode 8 base items (one per slot), local stat calculation, simple equip/unequip"
+    - "Full MVP: Backend API with 26 base items, database persistence, material integration, stat formulas"
+    - "Finished: Multiple base types per slot, visual customization, item tooltips, compare items UI"
+    - "Seed data includes: 3 weapons, 2 offhands, 2 head items, 2 armor pieces, 3 footwear, 3 accessories (split across 2 slots), 5 pets = 20 total items"
+
+user_stories:
+  - US-301
+  - US-302

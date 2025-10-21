@@ -1,0 +1,27 @@
+title: User Registration
+story_id: US-601
+feature_id: F-07
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-19
+
+user_story:
+  as_a: "New Player"
+  i_want: "to create an account with email and password"
+  so_that: "I can save my progress and access it across devices"
+
+acceptance_criteria:
+  - "[ ] Given launch screen, when player taps 'Sign Up', then display registration form"
+  - "[ ] Given registration form, when player enters email and password, then validate email format and password strength in real-time"
+  - "[ ] Given valid inputs, when player submits, then create account via Supabase Auth"
+  - "[ ] Given account created, when successful, then send verification email and auto-login player"
+  - "[ ] Given email already registered, when submit attempted, then show error and link to login screen"
+
+context:
+  why: "Account creation is required for persistent progress. Supabase handles auth infrastructure."
+  related: "Links to US-602 (User Login), F-07 (Authentication)"
+
+technical_notes:
+  apis: "Supabase Auth: supabase.auth.signUp({email, password})"
+  data: "User profile created with default starter inventory (empty), level 1, starting stats"
+  dependencies: "Supabase project configured, email templates for verification"

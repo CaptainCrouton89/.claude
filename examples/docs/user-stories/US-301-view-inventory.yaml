@@ -1,0 +1,27 @@
+title: View Inventory
+story_id: US-301
+feature_id: F-09
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-20
+
+user_story:
+  as_a: "Collector"
+  i_want: "to view all my collected items and pets"
+  so_that: "I can see what I own and decide what to equip or craft"
+
+acceptance_criteria:
+  - "[ ] Given player opens inventory, when screen loads, then display all owned items grouped by type"
+  - "[ ] Given items displayed, when shown, then include: name, type, stats, generation, style badge"
+  - "[ ] Given inventory open, when player switches tab, then show pets separately from items"
+  - "[ ] Given item/pet selected, when tapped, then show detail view with full stats and equip option"
+  - "[ ] Given inventory, when displayed, then show total count and equipped status for each item"
+
+context:
+  why: "Inventory is central hub for collection management. Must be scannable and show key info at a glance."
+  related: "Links to US-302 (Equip Items), US-401 (Craft Items), F-03 (Items), F-04 (Pets)"
+
+technical_notes:
+  apis: "GET /inventory returns all items/pets owned by player"
+  data: "Item schema: id, type, stats (ATK/DEF/HP), generation, style_id, equipped_flag"
+  dependencies: "Filtering and sorting logic, style visual indicators"

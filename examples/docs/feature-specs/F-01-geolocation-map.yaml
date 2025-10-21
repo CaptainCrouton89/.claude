@@ -1,0 +1,82 @@
+title: Technical Specification - Geolocation & Map System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-01
+status: planned
+last_updated: 2025-10-20
+
+summary: "Integrate Google Maps to display player location and nearby enemy spawn points. Enable location-based discovery by tracking GPS position and calculating proximity to spawn locations."
+
+functional_overview:
+  core_logic: "Track player GPS coordinates continuously. Query backend for spawn locations within radius. Display markers on map. Activate locations when player within 50m threshold. GPS permission required to proceed - show permission request popup on app launch and block progression until granted."
+  data_schema: "Locations table: id, lat, lng, city_id, enemy_type, item_type, spawn_radius. Player location tracked client-side."
+  api_endpoints:
+    - "GET /locations/nearby?lat={lat}&lng={lng}&radius={meters}"
+    - "GET /locations/:id"
+  integration_points:
+    - "Google Maps SDK for iOS"
+    - "CoreLocation framework for GPS"
+    - "Backend location service"
+
+detailed_design:
+  data_structures:
+    - name: "locations"
+      columns:
+        - "id: UUID (PK)"
+        - "lat: DECIMAL(10,8)"
+        - "lng: DECIMAL(11,8)"
+        - "location_type: VARCHAR (library, gym, park, coffee_shop, etc.)"
+        - "state_code: VARCHAR (US state code: CA, NY, TX, etc.)"
+        - "country_code: VARCHAR (ISO country code: USA, CAN, etc.)"
+        # enemy_type and item_type deprecated - now handled by EnemyPools and LootPools
+        - "spawn_radius: INT (default 50m)"
+        - "is_premium: BOOLEAN (default false)"
+        - "created_at: TIMESTAMP"
+
+  apis:
+    - method: "GET"
+      endpoint: "/locations/nearby"
+      request: "Query params: lat (float), lng (float), radius (int, meters)"
+      response: "{locations: [{id, lat, lng, enemy_type, item_type, distance_meters}]}"
+      errors:
+        - "400: Invalid coordinates"
+        - "500: Database error"
+
+    - method: "GET"
+      endpoint: "/locations/:id"
+      request: "Path param: id (UUID)"
+      response: "{id, lat, lng, city_id, enemy_type, item_type, spawn_radius, is_premium}"
+      errors:
+        - "404: Location not found"
+
+  diagrams: |
+    Map View Flow:
+    1. App launches → Request location permissions via popup
+    2. If permission denied → Show blocking alert explaining GPS is required, re-request permission (loop until granted)
+    3. Once permission granted → CLLocationManager starts tracking
+    4. On location update → Center map, query /locations/nearby
+    5. Render markers on map
+    6. Monitor distance to each location
+    7. When distance < spawn_radius → Activate marker (change color/icon)
+    8. Player taps active marker → Launch encounter (trigger F-02)
+
+    Permission Handling:
+    - On first launch: Request "When In Use" location permission
+    - On denial: Block app with modal explaining GPS is required for gameplay
+    - Provide "Open Settings" button to guide user to enable location services
+    - Re-check permission status when app returns from background
+    - No fallback mode - GPS is mandatory for core gameplay
+
+dependencies:
+  libraries: "Google Maps SDK for iOS (pod 'GoogleMaps'), CoreLocation"
+  services: "Google Maps API with API key, backend location service"
+  data_sources: "PostgreSQL locations table, real-time GPS from device"
+
+implementation_status:
+  notes:
+    - "Light MVP: Use static hardcoded locations (no backend), simple map with pins"
+    - "Full MVP: Integrate Google Maps API, real GPS tracking, backend location queries"
+    - "Finished: Optimize marker rendering for 100+ locations, add location clustering, offline caching"
+
+user_stories:
+  - US-101
+  - US-102

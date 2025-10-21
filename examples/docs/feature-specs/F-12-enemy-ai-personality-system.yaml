@@ -1,0 +1,232 @@
+title: Technical Specification - Enemy AI Personality System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-12
+status: planned
+last_updated: 2025-10-20
+
+summary: "AI-powered enemy personalities that generate contextual trash-talk during combat based on enemy type, game state, and player history. Uses GPT-4.1-nano or similar lightweight model to create dynamic, antagonistic dialogue that enhances combat engagement and creates memorable enemy interactions."
+
+functional_overview:
+  core_logic: "Enemy personalities are ephemeral and generated fresh per combat encounter. Each enemy type (Spray Paint Goblin, Goopy Floating Eye, etc.) has personality traits that influence dialogue tone. The AI receives combat context (HP, stats, turn count, actions) plus player metadata (level attempts, win/loss history, streak) to generate taunts. Unlike pet personalities (F-11), enemy personalities are not persistent and focus on antagonistic/challenging themes."
+
+  data_schema: |
+    **enemy_types** (seed data)
+    - type: VARCHAR (PK: spray_paint_goblin, goopy_floating_eye, ferral_unicorn, bipedal_deer, politician)
+    - display_name: VARCHAR
+    - personality_traits: JSON ARRAY (e.g., ['arrogant', 'mocking', 'intellectual', 'wild'])
+    - dialogue_tone: VARCHAR (enum: aggressive, sarcastic, condescending, chaotic, political)
+    - verbosity: VARCHAR (terse, moderate, verbose)
+    - base_dialogue_prompt: TEXT (AI system prompt template)
+    - example_taunts: JSON ARRAY (fallback phrases if AI fails)
+
+    **player_combat_history** (new table for F-12 context)
+    - player_id: UUID (PK, FK to users)
+    - location_id: UUID (PK, FK to locations)
+    - attempts: INT (how many times fought at this location)
+    - victories: INT
+    - defeats: INT
+    - last_attempt: TIMESTAMP
+    - current_streak: INT (consecutive wins at this location)
+    - longest_streak: INT
+    - INDEX on (player_id, location_id)
+
+    **enemy_chatter_log** (analytics for F-12)
+    - id: UUID (PK)
+    - session_id: UUID (FK to combat_sessions)
+    - enemy_type: VARCHAR (FK to enemy_types.type)
+    - event_type: VARCHAR (combat_start, player_hit, player_miss, enemy_hit, low_player_hp, near_victory, defeat, victory)
+    - combat_context: JSON {turn_number, player_hp_pct, enemy_hp_pct, last_action, player_damage, enemy_damage}
+    - player_metadata: JSON {attempts, victories, defeats, current_streak}
+    - generated_dialogue: TEXT
+    - dialogue_tone: VARCHAR
+    - generation_time_ms: INT
+    - was_ai_generated: BOOLEAN
+    - timestamp: TIMESTAMP
+    - INDEX on (session_id, timestamp)
+    - INDEX on (enemy_type, event_type) for analytics
+
+  api_endpoints:
+    - "POST /combat/enemy-chatter - Generate enemy trash-talk for combat event"
+    - "GET /enemies/types - List available enemy types with personality traits"
+    - "GET /players/combat-history/{location_id} - Get player's combat history at location"
+
+  integration_points:
+    - "F-02 Combat System: Enemy chatter triggered by combat events (attack/defend/status changes)"
+    - "F-11 Pet Personality System: Similar AI generation pattern but with opposite tone (antagonistic vs supportive)"
+    - "F-01 Geolocation: Location ID links to player combat history"
+    - "AI Generation Service: Shared AI provider (OpenAI/Anthropic) with pet chatter but different prompts"
+    - "Data Plan: Player combat history metadata tracked per location"
+    - "Pool System: Enemy types selected via EnemyPools based on location attributes and combat level"
+
+detailed_design:
+  data_structures:
+    - name: "enemy_types (seed data)"
+      columns:
+        - "type: VARCHAR PK (spray_paint_goblin, goopy_floating_eye, ferral_unicorn, bipedal_deer, politician)"
+        - "display_name: VARCHAR (Spray Paint Goblin, Goopy Floating Eye, etc.)"
+        - "personality_traits: JSON ARRAY (['arrogant', 'street-smart', 'artistic'] for Spray Paint Goblin)"
+        - "dialogue_tone: VARCHAR (aggressive, sarcastic, condescending, chaotic, political)"
+        - "verbosity: VARCHAR (terse, moderate, verbose)"
+        - "base_dialogue_prompt: TEXT (System prompt template for AI)"
+        - "example_taunts: JSON ARRAY (Fallback phrases: ['Too slow!', 'Is that all?'])"
+
+    - name: "player_combat_history"
+      columns:
+        - "player_id: UUID PK FK to users"
+        - "location_id: UUID PK FK to locations"
+        - "attempts: INT (total combat attempts at this location)"
+        - "victories: INT (total wins)"
+        - "defeats: INT (total losses)"
+        - "last_attempt: TIMESTAMP"
+        - "current_streak: INT (consecutive wins, reset on loss)"
+        - "longest_streak: INT (best streak ever at this location)"
+        - "UNIQUE (player_id, location_id)"
+
+    - name: "enemy_chatter_log"
+      columns:
+        - "id: UUID PK"
+        - "session_id: UUID FK to combat_sessions"
+        - "enemy_type: VARCHAR FK to enemy_types.type"
+        - "event_type: VARCHAR (combat_start, player_hit, player_miss, enemy_hit, low_player_hp, near_victory, defeat, victory)"
+        - "combat_context: JSON {turn: 3, player_hp_pct: 0.65, enemy_hp_pct: 0.40, last_action: 'player_attack', damage: 45}"
+        - "player_metadata: JSON {attempts: 5, victories: 2, defeats: 3, current_streak: 0, is_first_time: false}"
+        - "generated_dialogue: TEXT (AI-generated trash-talk)"
+        - "dialogue_tone: VARCHAR (matches enemy_types.dialogue_tone)"
+        - "generation_time_ms: INT (AI latency)"
+        - "was_ai_generated: BOOLEAN (false if fallback used)"
+        - "timestamp: TIMESTAMP"
+
+  apis:
+    - method: "POST"
+      endpoint: "/combat/enemy-chatter"
+      description: "Generate enemy trash-talk for combat event (F-12). Similar to pet-chatter (F-11) but antagonistic tone."
+      request: |
+        {
+          "session_id": "uuid",
+          "event_type": "player_hit|player_miss|enemy_hit|low_player_hp|near_victory|combat_start|defeat|victory",
+          "event_details": {
+            "damage": 45,
+            "accuracy": 0.85,
+            "is_critical": false,
+            "turn_number": 3,
+            "player_hp_pct": 0.65,
+            "enemy_hp_pct": 0.40
+          }
+        }
+      response: |
+        {
+          "dialogue": "Ha! Call that a hit? I've been tickled harder by a feather!",
+          "enemy_type": "spray_paint_goblin",
+          "dialogue_tone": "sarcastic",
+          "generation_time_ms": 850,
+          "player_context_used": {
+            "attempts": 5,
+            "victories": 2,
+            "defeats": 3,
+            "current_streak": 0
+          }
+        }
+      errors:
+        - "400: Invalid event_type"
+        - "404: Combat session not found or expired"
+        - "503: AI service unavailable (returns fallback phrase with was_ai_generated: false)"
+
+    - method: "GET"
+      endpoint: "/enemies/types"
+      description: "List all enemy types with personality traits (F-12)"
+      request: "No body"
+      response: |
+        {
+          "enemy_types": [
+            {
+              "type": "spray_paint_goblin",
+              "display_name": "Spray Paint Goblin",
+              "personality_traits": ["arrogant", "street-smart", "artistic"],
+              "dialogue_tone": "sarcastic",
+              "verbosity": "moderate",
+              "example_taunts": ["Too slow!", "Call that art?", "Graffiti > your fighting style"]
+            },
+            {
+              "type": "goopy_floating_eye",
+              "display_name": "Goopy Floating Eye",
+              "personality_traits": ["all-seeing", "ominous", "prophetic"],
+              "dialogue_tone": "condescending",
+              "verbosity": "verbose",
+              "example_taunts": ["I foresaw this failure", "Your moves are transparent", "The universe pities you"]
+            },
+            {
+              "type": "politician",
+              "display_name": "Politician",
+              "personality_traits": ["manipulative", "eloquent", "self-serving"],
+              "dialogue_tone": "political",
+              "verbosity": "verbose",
+              "example_taunts": ["I promise this won't hurt... much", "My approval ratings are higher than your HP", "Let me be clear: you're losing"]
+            }
+          ]
+        }
+      errors: []
+
+    - method: "GET"
+      endpoint: "/players/combat-history/{location_id}"
+      description: "Get player's combat history at specific location (F-12)"
+      request: "No body (location_id in path, player_id from JWT)"
+      response: |
+        {
+          "location_id": "uuid",
+          "attempts": 5,
+          "victories": 2,
+          "defeats": 3,
+          "win_rate": 0.40,
+          "current_streak": 0,
+          "longest_streak": 1,
+          "last_attempt": "2025-10-19T14:32:00Z"
+        }
+      errors:
+        - "404: Location not found or player has never attempted combat there (returns zeroed stats)"
+
+  diagrams: |
+    Enemy Chatter Generation Flow:
+
+    1. Combat Event Occurs (player attacks, enemy attacks, HP threshold)
+    2. Client → POST /combat/enemy-chatter {session_id, event_type, event_details}
+    3. Backend → Redis: GET combat_session {enemy_type, player_id, combat_state}
+    4. Backend → PostgreSQL: SELECT enemy_types WHERE type = {enemy_type}
+    5. Backend → PostgreSQL: SELECT player_combat_history WHERE player_id + location_id
+    6. Backend → Construct AI Prompt:
+       - System: base_dialogue_prompt from enemy_types (tone, personality traits)
+       - Context: "Turn {turn}, Enemy HP: {hp}%, Player HP: {hp}%"
+       - Player History: "Player has attempted {attempts} times ({victories}W/{defeats}L), current streak: {streak}"
+       - Event: "Player just {action} for {damage} damage (accuracy: {accuracy})"
+       - Instruction: "Generate 1-2 sentence trash-talk. Be {verbosity}. Tone: {dialogue_tone}."
+    7. Backend → AI Service (GPT-4.1-nano): Generate dialogue (timeout 2s)
+    8. Backend → PostgreSQL: INSERT enemy_chatter_log (analytics)
+    9. Backend → PostgreSQL: UPDATE player_combat_history (increment attempts/victories/defeats as appropriate)
+    10. Backend → Client: {dialogue, enemy_type, tone, generation_time_ms}
+    11. Client: Display dialogue in speech bubble above enemy sprite (2-3s duration)
+    12. If AI timeout/error → Fallback: random example_taunt from enemy_types.example_taunts
+
+    Key Differences from Pet Chatter (F-11):
+    - Enemy personality NOT persistent (no personality assignment, ephemeral per combat)
+    - Enemy type determines personality (not player choice)
+    - Dialogue tone is antagonistic/taunting (not supportive)
+    - Player history metadata adds context (mock repeat failures, taunt first-timers)
+    - No custom naming (enemies always use display_name)
+    - Triggered by same combat events but different prompt engineering
+
+dependencies:
+  libraries: "OpenAI SDK or Anthropic SDK (same as F-11 pet chatter), Redis client (for combat session lookup)"
+  services: "AI Generation Service (shared with F-11), Supabase PostgreSQL (enemy_types seed data, player_combat_history, enemy_chatter_log)"
+  data_sources: "enemy_types (seed data ~5-10 enemy types), player_combat_history (per player/location tracking), combat_sessions (Redis, ephemeral)"
+
+implementation_status:
+  notes:
+    - "Shares AI infrastructure with F-11 Pet Personality System but uses different prompts"
+    - "Enemy types seed data must be populated before combat can generate chatter"
+    - "Player combat history tracking must update on combat_start and combat_complete events"
+    - "AI model recommendation: GPT-4.1-nano (fast, cheap) or GPT-4o-mini as fallback"
+    - "Timeout handling critical: fallback to example_taunts if AI latency >2s"
+    - "Analytics track dialogue quality: generation_time_ms, was_ai_generated, event_type distribution"
+    - "Enemy dialogue frequency: 1-2 messages per combat turn (attack + defend) + special events (low HP, near victory)"
+    - "Combat flow integration: POST /combat/attack and POST /combat/defend should trigger chatter generation on server-side"
+    - "Client-side display: Speech bubble above enemy sprite, auto-dismiss after 2-3s, queue if multiple messages"
+    - "Future enhancement: Enemy personality evolution based on player skill level (harder enemies = more arrogant)"

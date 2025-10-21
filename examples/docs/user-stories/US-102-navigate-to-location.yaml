@@ -1,0 +1,27 @@
+title: Navigate to Location
+story_id: US-102
+feature_id: F-01
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-19
+
+user_story:
+  as_a: "Location Explorer"
+  i_want: "to navigate to a selected location marker on the map"
+  so_that: "I can reach the physical location and trigger the encounter"
+
+acceptance_criteria:
+  - "[ ] Given player selects location marker, when tap occurs, then highlight marker and show distance/direction"
+  - "[ ] Given selected location, when player moves, then update distance in real-time"
+  - "[ ] Given player within 50m of location, when proximity threshold reached, then activate location icon"
+  - "[ ] Given active location, when player taps, then launch encounter screen"
+  - "[ ] Given player leaves location area, when distance > 100m, then deactivate location"
+
+context:
+  why: "Players must physically travel to locations to engage with gameplay, ensuring real-world exploration"
+  related: "Links to US-101 (View Map), US-201 (Initiate Combat)"
+
+technical_notes:
+  apis: "CoreLocation CLLocationManager for distance calculations"
+  data: "Location activation radius: 50m, deactivation: 100m"
+  dependencies: "Continuous GPS tracking, battery optimization for background location"

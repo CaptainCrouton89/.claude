@@ -1,0 +1,71 @@
+title: Technical Specification - Premium Items & Monetization
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-10
+status: incomplete
+
+summary: "Premium currency (Gems) and special single-location items available through premium purchases. Gems currency exists alongside Gold. Premium items flagged as premium_only require Gems to purchase/obtain. Users acquire Gems through real-money purchases (future). Premium items may be exclusive to specific locations or purchasable from premium store. STATUS: PLACEHOLDER SPEC - IAP implementation not yet designed."
+
+functional_overview:
+  core_logic: "Gems currency exists alongside Gold. Premium items flagged as premium_only require Gems to purchase/obtain. Users acquire Gems through real-money purchases (future). Premium items may be exclusive to specific locations or purchasable from premium store. Currencies table (GOLD, GEMS), UserCurrencyBalances replaces Users.gold_balance, ItemTypes.premium_only boolean field."
+  data_schema: "Currencies table (GOLD, GEMS), UserCurrencyBalances replaces Users.gold_balance, ItemTypes.premium_only boolean field. Future: IAPProducts, IAPPurchases, StoreItems, Entitlements tables for full monetization system."
+  api_endpoints:
+    - "GET /currencies (list available currency types)"
+    - "GET /users/me/balances (get user's currency balances)"
+    - "POST /iap/purchase (future - initiate gem purchase)"
+    - "GET /store/premium-items (future - browse premium catalog)"
+  integration_points:
+    - "Base items (F-03) extended with premium_only flag"
+    - "Combat system (F-02) respects premium item spawn rules"
+    - "Economy system tracks both GOLD and GEMS via EconomyTransactions"
+
+detailed_design:
+  data_structures:
+    - name: "Currencies"
+      columns:
+        - "code: VARCHAR PK (CHECK IN ('GOLD', 'GEMS'))"
+        - "display_name: VARCHAR (Gold, Gems)"
+        - "description: TEXT"
+        - "is_premium: BOOLEAN (false for GOLD, true for GEMS)"
+        - "icon_url: TEXT (nullable)"
+        - "created_at: TIMESTAMP"
+    - name: "UserCurrencyBalances"
+      columns:
+        - "user_id: UUID (part of composite PK)"
+        - "currency_code: VARCHAR (part of composite PK)"
+        - "balance: INT (NOT NULL, default 0, CHECK >= 0)"
+        - "updated_at: TIMESTAMP"
+    - name: "ItemTypes (extend)"
+      columns:
+        - "premium_only: BOOLEAN (default false, true for gem-exclusive items)"
+  apis:
+    - method: "GET"
+      endpoint: "/currencies"
+      request: "No parameters"
+      response: "{\"currencies\": [{\"code\": \"GOLD\", \"display_name\": \"Gold\", \"is_premium\": false, \"icon_url\": null}]}"
+      errors:
+        - "401: Unauthorized"
+    - method: "GET"
+      endpoint: "/users/me/balances"
+      request: "Authorization: Bearer <token>"
+      response: "{\"balances\": {\"GOLD\": 500, \"GEMS\": 0}}"
+      errors:
+        - "401: Unauthorized"
+    - method: "POST"
+      endpoint: "/iap/purchase"
+      request: "{\"product_id\": \"com.mystica.gems_100\", \"platform\": \"ios\", \"receipt_data\": \"base64_encoded_receipt\"}"
+      response: "{\"purchase_id\": \"uuid\", \"gems_awarded\": 100, \"status\": \"completed\"}"
+      errors:
+        - "400: Invalid product_id or receipt_data"
+        - "401: Unauthorized"
+  diagrams: "Future Implementation Checklist: 1. Define monetization strategy (pricing, bundles, premium vs cosmetic) 2. Choose IAP platform (Apple/Google/web payments) 3. Design store UI/UX 4. Implement IAPProducts, IAPPurchases tables 5. Integrate payment SDK 6. Add server-side receipt validation 7. Create premium item catalog (StoreItems) 8. Design entitlements system (premium features beyond items) 9. Add gem spending flows 10. Implement refund handling. Complexity Estimate: 4-6 weeks for full monetization system."
+
+dependencies:
+  libraries: "Apple StoreKit, Google Play Billing SDK, payment processing SDK"
+  services: "Apple Developer account ($99/year), Google Play Developer account ($25 one-time), Server-side receipt validation service"
+  data_sources: "IAP platform APIs, payment processor APIs, fraud detection services"
+
+implementation_status:
+  notes:
+    - "Current State: Currencies table exists with GOLD (active) and GEMS (reserved), UserCurrencyBalances tracks both but GEMS always 0, No way to acquire GEMS yet, No premium items in seed data yet"
+    - "Open Questions: What gem bundle tiers should we offer? Should premium items be exclusive single-location spawns or purchasable anywhere? What IAP platform integration? Should gems be earnable through gameplay or purchase-only? Premium items: cosmetic only or stat advantages allowed?"
+    - "Technical Debt: Users.gold_balance field deprecated but not removed (migration needed), No actual IAP implementation (placeholder spec only), No premium item seed data (ItemTypes.premium_only field needed), No store UI/UX (placeholder endpoints only)"

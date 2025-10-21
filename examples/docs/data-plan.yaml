@@ -1,0 +1,1497 @@
+# Data Plan
+# Defines data sources, tracking, storage, and metrics alignment.
+
+status: draft
+last_updated: 2025-10-20
+
+data_sources:
+  - source: "Supabase PostgreSQL"
+    description: "Primary database for all persistent game data: users, items, pets, locations, enemies, combat sessions, material inventory, image cache"
+    owner: "Backend Team"
+
+  - source: "CoreLocation (iOS)"
+    description: "Real-time GPS coordinates from player device for location tracking and proximity detection"
+    owner: "Mobile Team"
+
+  - source: "Google Maps API"
+    description: "Map tiles, geocoding, and location data for map rendering"
+    owner: "External (Google)"
+
+  - source: "Materials Seed Data"
+    description: "Pre-defined material library (~20 materials) with stat modifiers and metadata"
+    owner: "Game Design Team"
+
+  - source: "Supabase Auth"
+    description: "User authentication, session tokens, and account management"
+    owner: "External (Supabase)"
+
+event_tracking:
+  - event_name: "user_registered"
+    trigger: "When player completes registration"
+    properties:
+      - "user_id: UUID"
+      - "email: string (hashed)"
+      - "registration_source: string (organic, referral, etc.)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB", "Future: Mixpanel/Amplitude"]
+
+  - event_name: "location_visited"
+    trigger: "When player arrives within 50m of location marker"
+    properties:
+      - "user_id: UUID"
+      - "location_id: UUID"
+      - "distance_meters: int"
+      - "enemy_type: string"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "combat_started"
+    trigger: "When player initiates combat encounter"
+    properties:
+      - "user_id: UUID"
+      - "location_id: UUID"
+      - "enemy_id: UUID"
+      - "enemy_type: string"
+      - "enemy_style_id: UUID"
+      - "enemy_style_name: string (normal, pixel_art, etc.)"
+      - "player_total_stats: {atk, def, hp}"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "combat_completed"
+    trigger: "When combat ends (victory or defeat)"
+    properties:
+      - "user_id: UUID"
+      - "session_id: UUID"
+      - "result: string (victory, defeat)"
+      - "turns_taken: int"
+      - "damage_dealt: int"
+      - "damage_received: int"
+      - "reward_item_id: UUID (null if defeat)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "item_equipped"
+    trigger: "When player equips item to slot"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "item_type: string"
+      - "item_level: int"
+      - "slot: string"
+      - "new_total_stats: {atk, def, hp}"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "material_applied"
+    trigger: "When player applies material to item"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "material_id: string"
+      - "style_id: UUID"
+      - "style_name: string"
+      - "material_index: int (0-2)"
+      - "new_item_stats: object"
+      - "item_became_styled: boolean (true if item.is_styled changed to true)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "material_replaced"
+    trigger: "When player replaces material on item"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "old_material_id: string"
+      - "old_style_id: UUID"
+      - "new_material_id: string"
+      - "new_style_id: UUID"
+      - "gold_spent: int"
+      - "item_style_changed: boolean (true if item.is_styled flag changed)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "item_upgraded"
+    trigger: "When player spends gold to level up item"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "old_level: int"
+      - "new_level: int"
+      - "gold_spent: int"
+      - "new_vanity_level: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "styled_material_collected"
+    trigger: "When player receives styled (non-normal) material from combat"
+    properties:
+      - "user_id: UUID"
+      - "material_id: string"
+      - "style_id: UUID"
+      - "style_name: string (pixel_art, watercolor, etc.)"
+      - "location_id: UUID"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB", "Future: Push notification trigger"]
+
+  - event_name: "session_started"
+    trigger: "When player opens app and authenticates"
+    properties:
+      - "user_id: UUID"
+      - "session_id: UUID"
+      - "device_type: string (iOS, macOS)"
+      - "app_version: string"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "session_ended"
+    trigger: "When player closes app or session expires"
+    properties:
+      - "user_id: UUID"
+      - "session_id: UUID"
+      - "duration_seconds: int"
+      - "locations_visited: int"
+      - "combats_won: int"
+      - "items_collected: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "pet_personality_assigned"
+    trigger: "When player assigns or changes pet personality (F-11)"
+    properties:
+      - "user_id: UUID"
+      - "pet_item_id: UUID"
+      - "personality_type: string (sassy, encouraging, analytical, etc.)"
+      - "custom_name: string (nullable)"
+      - "previous_personality: string (nullable, if changing)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "pet_chatter_generated"
+    trigger: "When pet generates dialogue during combat (F-11)"
+    properties:
+      - "user_id: UUID"
+      - "session_id: UUID"
+      - "pet_item_id: UUID"
+      - "personality_type: string"
+      - "event_type: string (player_attack, enemy_attack, victory, etc.)"
+      - "dialogue_text: string (generated dialogue)"
+      - "generation_time_ms: int (AI latency)"
+      - "was_ai_generated: boolean (true if AI, false if fallback phrase)"
+      - "turn_number: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "pet_chatter_displayed"
+    trigger: "When pet dialogue is shown to player in UI (F-11)"
+    properties:
+      - "user_id: UUID"
+      - "session_id: UUID"
+      - "dialogue_id: UUID (reference to combat_chatter_log)"
+      - "display_duration_ms: int (how long shown on screen)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "enemy_chatter_generated"
+    trigger: "When enemy generates trash-talk during combat (F-12)"
+    properties:
+      - "user_id: UUID"
+      - "session_id: UUID"
+      - "enemy_type: string (spray_paint_goblin, goopy_floating_eye, etc.)"
+      - "dialogue_tone: string (aggressive, sarcastic, condescending, etc.)"
+      - "event_type: string (combat_start, player_hit, player_miss, etc.)"
+      - "dialogue_text: string (generated trash-talk)"
+      - "generation_time_ms: int (AI latency)"
+      - "was_ai_generated: boolean (true if AI, false if fallback taunt)"
+      - "turn_number: int"
+      - "player_context: object {attempts, victories, defeats, current_streak}"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "enemy_chatter_displayed"
+    trigger: "When enemy dialogue is shown to player in UI (F-12)"
+    properties:
+      - "user_id: UUID"
+      - "session_id: UUID"
+      - "dialogue_id: UUID (reference to enemy_chatter_log)"
+      - "display_duration_ms: int (how long shown on screen)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "combat_history_updated"
+    trigger: "When player combat history is updated after combat (F-12)"
+    properties:
+      - "user_id: UUID"
+      - "location_id: UUID"
+      - "combat_result: string (victory, defeat)"
+      - "new_attempts: int"
+      - "new_victories: int"
+      - "new_defeats: int"
+      - "new_current_streak: int"
+      - "previous_streak: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "tutorial_started"
+    trigger: "When player begins tutorial sequence"
+    properties:
+      - "user_id: UUID"
+      - "tutorial_version: string"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "tutorial_completed"
+    trigger: "When player finishes tutorial sequence"
+    properties:
+      - "user_id: UUID"
+      - "tutorial_version: string"
+      - "duration_seconds: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "first_combat"
+    trigger: "When player completes their first combat encounter"
+    properties:
+      - "user_id: UUID"
+      - "combat_result: string (victory, defeat)"
+      - "time_to_first_combat_seconds: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "first_upgrade"
+    trigger: "When player upgrades an item for the first time"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "time_to_first_upgrade_seconds: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "first_craft"
+    trigger: "When player applies first material to an item"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "material_id: UUID"
+      - "time_to_first_craft_seconds: int"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "xp_gained"
+    trigger: "When player earns experience points"
+    properties:
+      - "user_id: UUID"
+      - "xp_amount: int"
+      - "source: string (combat, quest, achievement, etc.)"
+      - "new_total_xp: int"
+      - "new_level: int"
+      - "leveled_up: boolean"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+  - event_name: "currency_balance_changed"
+    trigger: "When user currency balance changes (via EconomyTransactions)"
+    properties:
+      - "user_id: UUID"
+      - "currency_code: string (GOLD, GEMS)"
+      - "old_balance: int"
+      - "new_balance: int"
+      - "transaction_id: UUID (FK to EconomyTransactions)"
+      - "timestamp: datetime"
+    destinations: ["Backend Analytics DB"]
+
+database_schema:
+  enums: |
+    **Enums (PostgreSQL Types):**
+    - rarity: ENUM ('common', 'uncommon', 'rare', 'epic', 'legendary')
+    - combat_result: ENUM ('victory', 'defeat', 'escape', 'abandoned')
+    - actor: ENUM ('player', 'enemy', 'system')
+    - weapon_pattern: ENUM ('single_arc', 'dual_arcs', 'pulsing_arc', 'roulette', 'sawtooth')
+    - hit_band: ENUM ('injure', 'miss', 'graze', 'normal', 'crit')
+
+  core_entities: |
+    **Users** (F-07 Authentication)
+    - id: UUID (PK, Supabase Auth UUID)
+    - email: VARCHAR (unique, from Supabase Auth)
+    - created_at: TIMESTAMP
+    - last_login: TIMESTAMP
+    - vanity_level: INT (cached sum of all equipped item levels, maintained by trigger)
+    - gold_balance: INT (DEPRECATED - currency now tracked in UserCurrencyBalances, default 500)
+    - avg_item_level: DECIMAL (cached average of equipped items for enemy scaling, maintained by trigger)
+    - INDEX on (id, last_login)
+    - NOTE: gold_balance field deprecated in favor of UserCurrencyBalances table for multi-currency support
+
+    **EconomyTransactions** (audit ledger for all currency changes)
+    - id: UUID (PK)
+    - user_id: UUID (FK to Users)
+    - transaction_type: VARCHAR (CHECK IN ('source', 'sink'))
+    - currency: VARCHAR (CHECK IN ('GOLD', 'GEMS'))
+    - amount: INT (positive for source, negative for sink)
+    - balance_after: INT (snapshot of balance after transaction)
+    - source_type: VARCHAR (combat_victory, item_upgrade, material_replacement, daily_quest, achievement, iap, admin, etc.)
+    - source_id: UUID (nullable, FK to relevant entity: combat_session_id, item_id, etc.)
+    - metadata: JSONB (flexible payload for context)
+    - created_at: TIMESTAMP
+    - INDEX on (user_id, created_at DESC)
+    - INDEX on (currency, transaction_type, created_at DESC)
+    - INDEX on (source_type, created_at DESC)
+    - FK user_id → Users.id ON DELETE CASCADE
+    - NOTE: Every gold/gem change must write a ledger entry. Enables economy health monitoring, inflation tracking, abuse detection.
+
+    **PlayerProgression** (account-level progression separate from item levels)
+    - user_id: UUID (PK, FK to Users)
+    - xp: INT (total experience points earned)
+    - level: INT (current account level, computed from xp)
+    - xp_to_next_level: INT (cached XP required for next level)
+    - last_level_up_at: TIMESTAMP (nullable, when last leveled up)
+    - created_at: TIMESTAMP
+    - updated_at: TIMESTAMP
+    - INDEX on (level DESC, xp DESC) for leaderboards
+    - FK user_id → Users.id ON DELETE CASCADE
+    - NOTE: Separate from Users.vanity_level (sum of equipped items). Unlocks pacing, retention hooks, prestige systems.
+
+    **DeviceTokens** (push notification device registration)
+    - id: UUID (PK)
+    - user_id: UUID (FK to Users)
+    - platform: VARCHAR (CHECK IN ('ios', 'android', 'web'))
+    - token: TEXT (UNIQUE, device push token)
+    - is_active: BOOLEAN (default true, set false on unregister)
+    - last_seen_at: TIMESTAMP (updated on each app open)
+    - created_at: TIMESTAMP
+    - INDEX on (user_id, is_active) for active device lookup
+    - UNIQUE (token) to prevent duplicate registrations
+    - FK user_id → Users.id ON DELETE CASCADE
+    - NOTE: Required for push notifications (e.g., styled_material_collected event → push notification).
+
+    **Currencies** (enumeration of available currency types)
+    - code: VARCHAR (PK, CHECK IN ('GOLD', 'GEMS'))
+    - display_name: VARCHAR (Gold, Gems)
+    - description: TEXT (human-readable description)
+    - is_premium: BOOLEAN (false for GOLD, true for GEMS)
+    - icon_url: TEXT (nullable, URL to currency icon asset)
+    - created_at: TIMESTAMP
+    - NOTE: Currently only GOLD is active. GEMS reserved for future premium currency. No IAP implementation yet.
+
+    **UserCurrencyBalances** (tracks user currency balances)
+    - user_id: UUID (part of composite PK, FK to Users)
+    - currency_code: VARCHAR (part of composite PK, FK to Currencies.code)
+    - balance: INT (NOT NULL, default 0, CHECK balance >= 0)
+    - updated_at: TIMESTAMP
+    - PRIMARY KEY (user_id, currency_code)
+    - INDEX on (user_id)
+    - FK user_id → Users.id ON DELETE CASCADE
+    - FK currency_code → Currencies.code ON DELETE RESTRICT
+    - NOTE: Replaces Users.gold_balance. All currency operations must go through EconomyTransactions ledger.
+
+    **EquipmentSlots** (seed data, 8 slots, source of truth for F-03)
+    - slot_name: VARCHAR (PK: weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet)
+    - display_name: VARCHAR (Weapon, Offhand, Head, Armor, Feet, Accessory 1, Accessory 2, Pet)
+    - sort_order: INT (UI display order)
+    - description: TEXT
+
+    **RarityDefinitions** (seed data, centralized rarity multipliers for items only)
+    - rarity: rarity (PK, enum type)
+    - stat_multiplier: NUMERIC(6,3) (1.00 for common → 2.00 for legendary)
+    - base_drop_rate: NUMERIC(7,5) (0.60000 for common → 0.01000 for legendary)
+    - display_name: VARCHAR (Common, Uncommon, Rare, Epic, Legendary)
+    - color_hex: VARCHAR (UI color code, e.g., #FFFFFF)
+    - created_at: TIMESTAMP
+    - CHECK CONSTRAINT: stat_multiplier > 0
+    - CHECK CONSTRAINT: base_drop_rate >= 0 AND base_drop_rate <= 1
+    - NOTE: Rarity ONLY applies to items (ItemTypes), not materials. Determines base stat power scaling.
+
+    **StyleDefinitions** (seed data, art style variants for materials and enemies)
+    - id: UUID (PK)
+    - style_name: VARCHAR (UNIQUE: normal, pixel_art, watercolor, neon, sketch, etc.)
+    - display_name: VARCHAR (Normal, Pixel Art, Watercolor, Neon, Sketch)
+    - spawn_rate: NUMERIC(7,5) (1.00000 for normal, 0.01000 for pixel_art, configurable per style)
+    - description: TEXT (art style description)
+    - visual_modifier: TEXT (rendering hints for client: "pixelated", "soft_edges", "glowing", etc.)
+    - created_at: TIMESTAMP
+    - CHECK CONSTRAINT: spawn_rate >= 0 AND spawn_rate <= 1
+    - NOTE: Styles affect materials and enemies. Items inherit styled flag if any applied material is styled.
+
+    **Tiers** (seed data, additive tier progression for enemy scaling)
+    - id: SERIAL (PK)
+    - tier_num: INT (UNIQUE, NOT NULL, CHECK tier_num >= 1)
+    - enemy_atk_add: INT (default 6, additive attack per tier level)
+    - enemy_def_add: INT (default 5, additive defense per tier level)
+    - enemy_hp_add: INT (default 30, additive HP per tier level)
+    - description: TEXT (e.g., "Tier 1: Beginner enemies", "Tier 5: Elite threats")
+    - created_at: TIMESTAMP
+    - INDEX on (tier_num)
+    - NOTE: Enemy stats = base + offset + (tier_adds * (tier_num - 1)). Easier to balance than combat_level approach.
+
+    **ItemTypes** (seed data, ~26 items across 8 slots, F-03 Base Items & Equipment)
+    - id: UUID (PK)
+    - name: VARCHAR (Enormous Key, Umbrella, Halo, Cowboy Hat, Leather Jacket, Fuzzy Slippers, A Rose, Candle, Dog, Dragon, Robot, etc.)
+    - category: VARCHAR (weapon, offhand, head, armor, feet, accessory, pet - maps to EquipmentSlots.slot_name)
+    - base_stats_normalized: JSON {atkPower: 0.4, atkAccuracy: 0.2, defPower: 0.3, defAccuracy: 0.1} (sum = 1.0)
+    - rarity: rarity (FK to RarityDefinitions, determines stat multiplier and drop rate)
+    - description: TEXT (whimsical descriptions)
+    - appearance_data: JSON (sprite info, colors, animations)
+    - created_at: TIMESTAMP
+    - INDEX on (category, rarity)
+    - CHECK CONSTRAINT: (base_stats_normalized->>'atkPower')::numeric + (base_stats_normalized->>'atkAccuracy')::numeric + (base_stats_normalized->>'defPower')::numeric + (base_stats_normalized->>'defAccuracy')::numeric = 1.0
+
+    **Items** (player-owned instances, F-03/F-06)
+    - id: UUID (PK)
+    - user_id: UUID (FK to Users)
+    - item_type_id: UUID (FK to ItemTypes)
+    - level: INT (default 1, upgraded via F-06 gold-based system)
+    - is_styled: BOOLEAN (default false, set to true if ANY applied material has style_id != 'normal')
+    - current_stats: JSON (optional cache: base_stats * rarity_multiplier * level + material modifiers, maintained by trigger OR computed on-read)
+    - material_combo_hash: TEXT (nullable, deterministic hash of sorted material_ids + style flags for image lookup)
+    - generated_image_url: TEXT (nullable, R2 URL to composite image for this item+materials combo)
+    - image_generation_status: TEXT (nullable, CHECK IN ('pending','generating','complete','failed'))
+    - created_at: TIMESTAMP
+    - INDEX on (user_id, item_type_id)
+    - INDEX on (user_id, level DESC)
+    - INDEX on (material_combo_hash) WHERE material_combo_hash IS NOT NULL
+    - NOTE: is_styled is computed from ItemMaterials→MaterialInstances.style_id. Updated via trigger on material changes.
+
+    **Weapons** (extends Items where category=weapon, timing-based combat mechanics)
+    - item_id: UUID (PK, FK to Items where ItemTypes.category='weapon')
+    - pattern: weapon_pattern (NOT NULL, visual attack pattern: single_arc, dual_arcs, pulsing_arc, roulette, sawtooth)
+    - spin_deg_per_s: NUMERIC(7,3) (default 360.0, rotation speed in degrees/second, must be > 0)
+    - deg_injure: NUMERIC(6,2) (default 5.0, arc degrees for self-damage band)
+    - deg_miss: NUMERIC(6,2) (default 45.0, arc degrees for miss band)
+    - deg_graze: NUMERIC(6,2) (default 60.0, arc degrees for graze band, 60% damage)
+    - deg_normal: NUMERIC(6,2) (default 200.0, arc degrees for normal hit band, 100% damage)
+    - deg_crit: NUMERIC(6,2) (default 50.0, arc degrees for critical hit band, 160% damage)
+    - INDEX on (item_id)
+    - CHECK CONSTRAINT: spin_deg_per_s > 0
+    - CHECK CONSTRAINT: deg_injure >= 0 AND deg_miss >= 0 AND deg_graze >= 0 AND deg_normal >= 0 AND deg_crit >= 0
+    - CHECK CONSTRAINT: (deg_injure + deg_miss + deg_graze + deg_normal + deg_crit) <= 360.0
+    - FK item_id → Items.id ON DELETE CASCADE
+    - NOTE: Degree-based hit bands create skill-based timing gameplay. Player accuracy stat scales bands (see fn_weapon_bands_adjusted). Total degrees must not exceed 360° (full rotation).
+
+    **UserUnlockedItemTypes** (F-03, tracking what players can craft/receive)
+    - user_id: UUID (PK, FK to Users)
+    - item_type_id: UUID (PK, FK to ItemTypes)
+    - unlocked_at: TIMESTAMP
+    - unlock_source: VARCHAR (combat_drop, starter_item, special_event)
+    - UNIQUE (user_id, item_type_id)
+
+    **UserEquipment** (F-03, normalized equipment state - SINGLE SOURCE OF TRUTH)
+    - user_id: UUID (FK to Users, part of composite PK)
+    - slot_name: VARCHAR (FK to EquipmentSlots.slot_name, part of composite PK)
+    - item_id: UUID (nullable, FK to Items)
+    - equipped_at: TIMESTAMP (when item was equipped to this slot)
+    - PRIMARY KEY (user_id, slot_name)
+    - INDEX on (user_id, slot_name)
+    - INDEX on (item_id) WHERE item_id IS NOT NULL
+    - CHECK CONSTRAINT: item_id IS NULL OR item_id IN (SELECT id FROM Items WHERE user_id = UserEquipment.user_id)
+    - FK item_id → Items.id ON DELETE SET NULL
+    - FK user_id → Users.id ON DELETE CASCADE
+    - FK slot_name → EquipmentSlots.slot_name ON DELETE RESTRICT
+
+    **Loadouts** (F-09, saved equipment configurations)
+    - id: UUID (PK)
+    - user_id: UUID (FK to Users)
+    - name: VARCHAR (max 50 chars, player-defined name like "Boss Build", "Farming Build")
+    - is_active: BOOLEAN (default false, only ONE loadout can be active per user)
+    - created_at: TIMESTAMP
+    - updated_at: TIMESTAMP
+    - UNIQUE (user_id, name)
+    - UNIQUE (user_id, is_active) WHERE is_active = true (partial unique index)
+    - INDEX on (user_id, is_active)
+    - FK user_id → Users.id ON DELETE CASCADE
+
+    **LoadoutSlots** (F-09, items assigned to loadout slots)
+    - loadout_id: UUID (FK to Loadouts, part of composite PK)
+    - slot_name: VARCHAR (FK to EquipmentSlots.slot_name, part of composite PK)
+    - item_id: UUID (nullable, FK to Items)
+    - PRIMARY KEY (loadout_id, slot_name)
+    - INDEX on (loadout_id, slot_name)
+    - FK loadout_id → Loadouts.id ON DELETE CASCADE
+    - FK slot_name → EquipmentSlots.slot_name ON DELETE RESTRICT
+    - FK item_id → Items.id ON DELETE SET NULL
+
+    **Materials** (seed data, ~20 materials, F-04 Materials System)
+    - id: UUID (PK)
+    - name: VARCHAR (Coffee, Gum, Feather, Propeller, Rainbow, Bubble, Slime, Diamond, Sparkles, A Cloud, Lava, Colorful Ribbon, Button, Candle, Pizza)
+    - stat_modifiers: JSON {atkPower: -0.1, atkAccuracy: 0, defPower: +0.1, defAccuracy: 0} (sum = 0, zero-sum modifications)
+    - base_drop_weight: INT (default 100, relative drop weight in loot pools, higher = more common)
+    - description: TEXT
+    - created_at: TIMESTAMP
+    - CHECK CONSTRAINT: (stat_modifiers->>'atkPower')::numeric + (stat_modifiers->>'atkAccuracy')::numeric + (stat_modifiers->>'defPower')::numeric + (stat_modifiers->>'defAccuracy')::numeric = 0
+    - NOTE: Rarity removed - materials no longer have rarity, only items do. Drop frequency controlled by base_drop_weight.
+
+    **MaterialInstances** (individual material instances when applied to items, F-04/F-05)
+    - id: UUID (PK)
+    - user_id: UUID (FK to Users)
+    - material_id: UUID (FK to Materials)
+    - style_id: UUID (FK to StyleDefinitions, default 'normal' style UUID)
+    - created_at: TIMESTAMP
+    - INDEX on (user_id, material_id)
+    - INDEX on (user_id, style_id) for styled material queries
+    - FK user_id → Users.id ON DELETE CASCADE
+    - FK material_id → Materials.id ON DELETE RESTRICT
+    - FK style_id → StyleDefinitions.id ON DELETE RESTRICT
+    - NOTE: This table tracks individual material instances that are applied to items via ItemMaterials. Style is visual-only (no stat effect). For inventory stacking, see MaterialStacks.
+
+    **MaterialStacks** (stackable material inventory, F-04/F-05)
+    - user_id: UUID (part of composite PK, FK to Users)
+    - material_id: UUID (part of composite PK, FK to Materials)
+    - style_id: UUID (part of composite PK, FK to StyleDefinitions - styled/normal stack separately)
+    - quantity: INT NOT NULL CHECK (quantity >= 0) (how many of this material+style combo player owns)
+    - updated_at: TIMESTAMP (when stack was last modified)
+    - PRIMARY KEY (user_id, material_id, style_id)
+    - INDEX on (user_id, style_id) for styled material queries
+    - FK user_id → Users.id ON DELETE CASCADE
+    - FK material_id → Materials.id ON DELETE RESTRICT
+    - FK style_id → StyleDefinitions.id ON DELETE RESTRICT
+    - NOTE: When materials are looted, increment quantity. When applied to items, decrement stack and create MaterialInstance row.
+
+    **ItemMaterials** (F-04, junction table for materials applied to items - SINGLE SOURCE OF TRUTH)
+    - id: UUID (PK)
+    - item_id: UUID (FK to Items)
+    - material_instance_id: UUID (FK to MaterialInstances, UNIQUE - prevents using same material twice)
+    - slot_index: SMALLINT (0-2, which of the 3 material slots this occupies)
+    - applied_at: TIMESTAMP
+    - UNIQUE (item_id, slot_index) - prevents duplicate slot usage on same item
+    - UNIQUE (material_instance_id) - prevents using same material instance on multiple items
+    - INDEX on (item_id)
+    - INDEX on (material_instance_id)
+    - CHECK CONSTRAINT: slot_index BETWEEN 0 AND 2
+    - FK item_id → Items.id ON DELETE CASCADE
+    - FK material_instance_id → MaterialInstances.id ON DELETE CASCADE
+
+    **Pets** (extends Items where category=pet, F-11 Pet Personality System)
+    - item_id: UUID (PK, FK to Items where ItemTypes.category='pet')
+    - personality_id: UUID (nullable, FK to PetPersonalities)
+    - custom_name: VARCHAR (nullable, player-given name)
+    - chatter_history: JSONB (recent dialogue for context)
+    - INDEX on (item_id, personality_id)
+    - CHECK CONSTRAINT: item_id IN (SELECT id FROM Items WHERE item_type_id IN (SELECT id FROM ItemTypes WHERE category='pet'))
+    - FK item_id → Items.id ON DELETE CASCADE
+    - FK personality_id → PetPersonalities.id ON DELETE SET NULL
+
+    **ItemHistory** (audit trail for item lifecycle events)
+    - id: UUID (PK)
+    - item_id: UUID (FK to Items)
+    - user_id: UUID (FK to Users)
+    - event_type: VARCHAR (created, upgraded, material_applied, material_removed, equipped, unequipped, deleted)
+    - event_data: JSONB (flexible payload: {old_level, new_level, gold_spent, material_id, slot_name, etc.})
+    - created_at: TIMESTAMP
+    - INDEX on (item_id, created_at DESC)
+    - INDEX on (user_id, event_type, created_at DESC)
+    - FK item_id → Items.id ON DELETE CASCADE
+    - FK user_id → Users.id ON DELETE CASCADE
+
+    **ItemImageCache** (global cache for item+material combo images)
+    - id: UUID (PK)
+    - item_type_id: UUID (FK to ItemTypes)
+    - combo_hash: TEXT NOT NULL (deterministic hash: sorted material_ids + style_ids, order-insensitive)
+    - image_url: TEXT NOT NULL (R2 URL to generated composite image)
+    - craft_count: INT NOT NULL DEFAULT 1 (how many times this combo has been crafted across all users)
+    - provider: VARCHAR (nullable, AI provider used: gemini, seedream, etc.)
+    - created_at: TIMESTAMP (when first generated)
+    - UNIQUE (item_type_id, combo_hash)
+    - INDEX on (combo_hash)
+    - INDEX on (item_type_id, craft_count DESC) for "most popular combos" queries
+    - FK item_type_id → ItemTypes.id ON DELETE CASCADE
+    - NOTE: Global cache reused across all users. When materials applied, compute combo_hash and lookup here. If exists, reuse image_url and increment craft_count. If not, generate image (20s sync), upload to R2, create row.
+
+    **PetPersonalities** (seed data, F-11)
+    - id: UUID (PK)
+    - personality_type: VARCHAR (UNIQUE: sassy, encouraging, analytical, chaotic, stoic, trash_talker)
+    - display_name: VARCHAR (Sassy, Encouraging, Analytical, Chaotic, Stoic, Trash Talker)
+    - description: TEXT
+    - traits: JSON ARRAY (e.g., ['witty', 'sarcastic', 'confident'])
+    - base_dialogue_style: TEXT (AI prompt template)
+    - example_phrases: JSON ARRAY (fallback dialogue samples)
+    - verbosity: VARCHAR (terse, moderate, verbose)
+
+    **EnemyTypes** (seed data, F-12 Enemy AI Personality System)
+    - id: UUID (PK)
+    - name: VARCHAR (Spray Paint Goblin, Goopy Floating Eye, Ferral Unicorn, Bipedal Deer, Politician)
+    - tier_id: INT (NOT NULL, FK to Tiers, determines base stat scaling)
+    - style_id: UUID (NOT NULL, FK to StyleDefinitions, determines art style and spawn rate)
+    - base_atk: INT (default 10, baseline attack before tier additions)
+    - base_def: INT (default 10, baseline defense before tier additions)
+    - base_hp: INT (default 120, baseline health before tier additions)
+    - atk_offset: INT (default 0, individual enemy variation)
+    - def_offset: INT (default 0, individual enemy variation)
+    - hp_offset: INT (default 0, individual enemy variation)
+    - ai_personality_traits: JSON ARRAY (['arrogant', 'street-smart', 'artistic'])
+    - dialogue_tone: VARCHAR (aggressive, sarcastic, condescending, chaotic, political)
+    - base_dialogue_prompt: TEXT (AI system prompt template)
+    - example_taunts: JSON ARRAY (fallback phrases)
+    - verbosity: VARCHAR (terse, moderate, verbose)
+    - appearance_data: JSON (sprite info, animations)
+    - INDEX on (name)
+    - INDEX on (tier_id)
+    - INDEX on (style_id)
+    - FK tier_id → Tiers.id ON DELETE RESTRICT
+    - FK style_id → StyleDefinitions.id ON DELETE RESTRICT
+    - NOTE: Final stats = base + offset + (tier_adds * (tier_num - 1)). See v_enemy_realized_stats view. Styled enemies ALWAYS drop styled materials matching their style_id.
+
+    **PlayerCombatHistory** (F-12, tracks performance per location)
+    - user_id: UUID (PK, FK to Users)
+    - location_id: UUID (PK, FK to Locations)
+    - total_attempts: INT (total combat attempts at this location)
+    - victories: INT (total wins)
+    - defeats: INT (total losses)
+    - current_streak: INT (consecutive wins, reset on loss)
+    - longest_streak: INT (best streak ever at this location)
+    - last_attempt: TIMESTAMP
+    - UNIQUE (user_id, location_id)
+
+    **Locations** (spawn points for combat encounters)
+    - id: UUID (PK)
+    - name: VARCHAR (generated descriptive names for markers)
+    - lat: DECIMAL (latitude, 6 decimal places)
+    - lng: DECIMAL (longitude, 6 decimal places)
+    - location_type: VARCHAR (library, gym, park, coffee_shop, restaurant, school, etc.)
+    - state_code: VARCHAR (US state code: CA, NY, TX, etc.)
+    - country_code: VARCHAR (ISO country code: USA, CAN, etc.)
+    - created_at: TIMESTAMP
+    - INDEX on (lat, lng) via PostGIS for geospatial queries
+    - INDEX on (location_type)
+
+    **EnemyPools** (level-aware pool system for enemy spawn assignment)
+    - id: UUID (PK)
+    - name: VARCHAR (descriptive pool name: "Level 10 Library Enemies")
+    - combat_level: INT (required - pools are level-specific)
+    - filter_type: VARCHAR (universal | location_type | state | country | lat_range | lng_range)
+    - filter_value: VARCHAR (nullable - specific filter criteria)
+      Examples:
+      * universal: filter_value = null (applies everywhere)
+      * location_type: filter_value = "library" (matches locations.location_type)
+      * state: filter_value = "CA" (matches locations.state_code)
+      * country: filter_value = "USA" (matches locations.country_code)
+      * lat_range: filter_value = "30-40N" (latitude range matching)
+      * lng_range: filter_value = "120-130W" (longitude range matching)
+    - created_at: TIMESTAMP
+    - INDEX on (combat_level, filter_type)
+    - UNIQUE (name) to prevent duplicate pool definitions
+
+    **EnemyPoolMembers** (what enemies belong to each pool)
+    - id: UUID (PK)
+    - enemy_pool_id: UUID (FK to EnemyPools)
+    - enemy_type_id: UUID (FK to EnemyTypes)
+    - spawn_weight: INT (relative weight for random selection, default 100)
+    - created_at: TIMESTAMP
+    - INDEX on (enemy_pool_id)
+    - UNIQUE (enemy_pool_id, enemy_type_id) to prevent duplicates
+
+    **LootPools** (level-aware pool system for material/item drops)
+    - id: UUID (PK)
+    - name: VARCHAR (descriptive pool name: "Level 10 Library Loot")
+    - combat_level: INT (required - pools are level-specific)
+    - filter_type: VARCHAR (universal | location_type | state | country | lat_range | lng_range)
+    - filter_value: VARCHAR (nullable - specific filter criteria, same format as EnemyPools)
+    - created_at: TIMESTAMP
+    - INDEX on (combat_level, filter_type)
+    - UNIQUE (name) to prevent duplicate pool definitions
+
+    **LootPoolEntries** (what loot belongs to each pool)
+    - id: UUID (PK)
+    - loot_pool_id: UUID (FK to LootPools)
+    - lootable_type: VARCHAR (material | item_type)
+    - lootable_id: UUID (FK to Materials.id or ItemTypes.id based on lootable_type)
+    - drop_weight: INT (relative weight for random selection, default 100)
+    - created_at: TIMESTAMP
+    - INDEX on (loot_pool_id)
+    - INDEX on (lootable_type, lootable_id)
+    - NOTE: Style is inherited from enemy that dropped the loot. If enemy has style_id != 'normal', all material drops inherit that style_id.
+
+    **MaterialStrengthTiers** (derived tier definitions for material rarity system)
+    - tier_name: TEXT (PK: common, uncommon, rare, epic)
+    - min_abs_sum: NUMERIC (inclusive lower bound for absolute stat modifier sum)
+    - max_abs_sum: NUMERIC (exclusive upper bound for absolute stat modifier sum)
+    - display_name: VARCHAR (Common, Uncommon, Rare, Epic)
+    - created_at: TIMESTAMP
+    - CHECK CONSTRAINT: min_abs_sum >= 0 AND max_abs_sum > min_abs_sum
+    - NOTE: Tiers computed from Materials.stat_modifiers absolute value sum. No rarity column on Materials table. Default thresholds: common [0.00,0.12), uncommon [0.12,0.20), rare [0.20,0.28), epic [0.28,1.00).
+
+    **LootPoolTierWeights** (per-pool multipliers for each material tier)
+    - loot_pool_id: UUID (part of composite PK, FK to LootPools)
+    - tier_name: TEXT (part of composite PK, FK to MaterialStrengthTiers.tier_name)
+    - weight_multiplier: NUMERIC(6,3) (default 1.000, multiplier applied to base_drop_weight)
+    - created_at: TIMESTAMP
+    - PRIMARY KEY (loot_pool_id, tier_name)
+    - INDEX on (loot_pool_id)
+    - FK loot_pool_id → LootPools.id ON DELETE CASCADE
+    - FK tier_name → MaterialStrengthTiers.tier_name ON DELETE RESTRICT
+    - NOTE: Default multipliers: common 1.0, uncommon 0.7, rare 0.35, epic 0.15. Shapes drop distribution per pool without manual LootPoolEntries maintenance.
+
+    **CombatSessions** (F-02, stored in Redis with 15min TTL for active sessions)
+    - id: UUID (PK)
+    - user_id: UUID (FK to Users)
+    - location_id: UUID (FK to Locations)
+    - combat_level: INT (determined by player's avg_item_level)
+    - enemy_type_id: UUID (FK to EnemyTypes, selected from matching EnemyPools)
+    - applied_enemy_pools: JSON ARRAY (pool IDs that matched for enemy selection)
+    - applied_loot_pools: JSON ARRAY (pool IDs that will be used for loot drops)
+    - player_equipped_items_snapshot: JSON (stats at combat start)
+    - player_rating: NUMERIC (nullable, Elo-style combat rating at session start, computed via combat_rating())
+    - enemy_rating: NUMERIC (nullable, enemy combat rating, computed via combat_rating())
+    - win_prob_est: NUMERIC (nullable, estimated win probability from 0.0-1.0, based on rating difference)
+    - combat_log: JSON ARRAY (turn-by-turn actions and damage)
+    - outcome: combat_result (nullable: victory, defeat, escape, abandoned)
+    - rewards: JSON ARRAY (items/materials awarded on victory)
+    - created_at: TIMESTAMP
+    - updated_at: TIMESTAMP
+    - NOTE: Ratings enable Elo-based matchmaking and analytics. See combat_rating() function.
+
+  analytics_tables: |
+    **CombatChatterLog** (F-11 Pet Personality analytics)
+    - id: UUID (PK)
+    - session_id: UUID (FK to CombatSessions)
+    - pet_item_id: UUID (FK to Items)
+    - event_type: VARCHAR (player_attack, enemy_attack, critical_hit, victory, defeat)
+    - combat_context: JSON {turn_number, player_hp_pct, enemy_hp_pct, last_damage}
+    - generated_dialogue: TEXT
+    - personality_type: VARCHAR
+    - generation_time_ms: INT
+    - was_ai_generated: BOOLEAN
+    - timestamp: TIMESTAMP
+    - INDEX on (session_id, timestamp)
+    - INDEX on (personality_type, event_type)
+
+    **EnemyChatterLog** (F-12 Enemy AI analytics)
+    - id: UUID (PK)
+    - session_id: UUID (FK to CombatSessions)
+    - enemy_type_id: UUID (FK to EnemyTypes)
+    - event_type: VARCHAR (combat_start, player_hit, player_miss, enemy_hit, low_player_hp, near_victory, defeat, victory)
+    - combat_context: JSON {turn_number, player_hp_pct, enemy_hp_pct, last_action, damage}
+    - player_metadata: JSON {attempts, victories, defeats, current_streak}
+    - generated_dialogue: TEXT
+    - dialogue_tone: VARCHAR
+    - generation_time_ms: INT
+    - was_ai_generated: BOOLEAN
+    - timestamp: TIMESTAMP
+    - INDEX on (session_id, timestamp)
+    - INDEX on (enemy_type_id, event_type)
+
+    **AnalyticsEvents** (general event tracking)
+    - id: UUID (PK)
+    - user_id: UUID (FK to Users, nullable)
+    - event_name: VARCHAR
+    - properties: JSONB
+    - timestamp: TIMESTAMP
+    - INDEX on (event_name, timestamp)
+
+    **CombatLogEvents** (normalized turn-by-turn combat event log)
+    - id: UUID (PK)
+    - combat_id: UUID (FK to CombatSessions)
+    - seq: INT (turn sequence number, starts at 1)
+    - ts: TIMESTAMPTZ (event timestamp)
+    - actor: actor (enum: player, enemy, system)
+    - event_type: TEXT (attack, defend, critical_hit, miss, status_effect, etc.)
+    - value_i: INT (nullable, integer value like damage dealt)
+    - payload: JSONB (nullable, flexible event data: {weapon_used, hit_band, accuracy_modifier, etc.})
+    - PRIMARY KEY (combat_id, seq)
+    - INDEX on (combat_id, seq)
+    - INDEX on (actor, event_type)
+    - FK combat_id → CombatSessions.id ON DELETE CASCADE
+    - NOTE: Replaces CombatSessions.combat_log JSON ARRAY with normalized structure. Enables efficient queries for combat analytics (e.g., average damage per turn, hit rate by weapon).
+
+  combat_balance_functions: |
+    **PostgreSQL Functions for Combat Math (PlPgSQL/SQL):**
+
+    **effective_hp(hp NUMERIC, defense NUMERIC, def_k NUMERIC DEFAULT 75.0) → NUMERIC**
+    - Calculates effective HP accounting for diminishing returns on defense
+    - Formula: hp * (1.0 + defense / (defense + def_k))
+    - Higher defense increases survivability, but with diminishing returns (controlled by def_k constant)
+    - IMMUTABLE, SQL function
+
+    **combat_rating(atk NUMERIC, defense NUMERIC, hp NUMERIC, alpha_atk NUMERIC DEFAULT 0.55, alpha_ehp NUMERIC DEFAULT 0.45) → NUMERIC**
+    - Power-law combat power formula for Elo-style matchmaking
+    - Formula: atk^alpha_atk * effective_hp^alpha_ehp
+    - Weights attack (55%) slightly higher than survivability (45%)
+    - Used for both player and enemy ratings
+    - IMMUTABLE, SQL function
+
+    **fn_acc_scale(acc NUMERIC, k_acc NUMERIC DEFAULT 80, s_max NUMERIC DEFAULT 0.40) → NUMERIC**
+    - Accuracy scaling multiplier for weapon timing bands
+    - Formula: 1.0 + s_max * (acc / (acc + k_acc))
+    - Returns 1.0 at 0 accuracy, approaches 1.4 at high accuracy (40% boost)
+    - Diminishing returns controlled by k_acc constant
+    - IMMUTABLE, SQL function
+
+    **fn_weapon_bands_adjusted(w_id UUID, player_acc NUMERIC) → TABLE(deg_injure, deg_miss, deg_graze, deg_normal, deg_crit)**
+    - Adjusts weapon hit bands based on player accuracy stat
+    - Higher accuracy: shrinks injure/miss bands, expands graze/normal/crit bands
+    - Returns adjusted degree allocations that sum to <= 360°
+    - Ensures minimum 2° per band to prevent division errors
+    - IMMUTABLE, PlPgSQL function
+
+    **fn_expected_mul_quick(w_id UUID, player_acc NUMERIC, mul_injure DEFAULT -0.5, mul_miss DEFAULT 0.0, mul_graze DEFAULT 0.6, mul_normal DEFAULT 1.0, mul_crit DEFAULT 1.6) → NUMERIC**
+    - Calculates expected damage multiplier for weapon based on accuracy-adjusted bands
+    - Uses fn_weapon_bands_adjusted to get current band allocations
+    - Returns weighted average: Σ (band_degrees/360 * band_multiplier)
+    - Injure = -50% (self-damage), Miss = 0%, Graze = 60%, Normal = 100%, Crit = 160%
+    - IMMUTABLE, SQL function
+
+    **Tuning Constants:**
+    - def_k = 75.0 (defense diminishing returns, lower = stronger defense scaling)
+    - k_acc = 80 (accuracy diminishing returns, lower = stronger accuracy scaling)
+    - s_max = 0.40 (max accuracy boost, 40% improvement at infinite accuracy)
+    - alpha_atk = 0.55 (combat rating attack weight, favors damage slightly)
+    - alpha_ehp = 0.45 (combat rating survivability weight)
+
+  computed_views: |
+    **Database Views for Real-Time Stat Calculation:**
+
+    **v_item_total_stats**
+    - Computes final item stats with rarity multiplier applied
+    - SELECT: id, name, slot, rarity, level, drop_enabled, atk_total, def_total, hp_total, acc_total
+    - Formula: base_stat * RarityDefinitions.stat_multiplier
+    - Filters retired items (WHERE retired = FALSE)
+    - Used by: equipment queries, inventory displays, crafting previews
+
+    **v_player_equipped_stats**
+    - Aggregates all equipped item stats for each player
+    - SELECT: player_id, atk, def, hp, acc, combat_rating
+    - Joins: players → UserEquipment → v_item_total_stats → player_base_stats
+    - Formula: base_stats + SUM(equipped_item_stats)
+    - combat_rating computed via combat_rating(atk, def, hp)
+    - Used by: player profile API, combat initialization, leaderboards
+
+    **v_enemy_realized_stats**
+    - Computes final enemy stats with additive tier scaling
+    - SELECT: id, name, tier_num, atk, def, hp, combat_rating
+    - Joins: enemies → tiers
+    - Formula: base_stat + offset + (tier_adds * (tier_num - 1))
+    - Example: Tier 3 enemy with base_atk=10, atk_offset=2, tier_atk_add=6 → 10 + 2 + (6*2) = 24
+    - combat_rating computed via combat_rating(atk, def, hp)
+    - Used by: combat initialization, enemy pool selection, analytics
+
+    **v_player_powerlevel**
+    - Computes player power accounting for weapon timing effectiveness
+    - SELECT: player_id, atk, def, hp, acc, weapon_item_id, expected_mul, power_level
+    - Joins: v_player_equipped_stats → equipment_slots_map (weapon slot) → Weapons
+    - expected_mul: fn_expected_mul_quick(weapon_id, player_acc)
+    - power_level: combat_rating(atk * MAX(expected_mul, 0.2), def, hp)
+    - Weapon effectiveness capped at minimum 20% to prevent negative power
+    - Used by: matchmaking, combat balancing, skill-based difficulty adjustment
+
+    **v_material_tiers**
+    - Computes material tier classification from stat_modifiers absolute sum
+    - SELECT: material_id, abs_sum, tier_name
+    - Joins: Materials → MaterialStrengthTiers (ON abs_sum BETWEEN min_abs_sum AND max_abs_sum)
+    - Formula: abs_sum = ABS(atkPower) + ABS(atkAccuracy) + ABS(defPower) + ABS(defAccuracy)
+    - Tier mapping: [0.00,0.12)→common, [0.12,0.20)→uncommon, [0.20,0.28)→rare, [0.28,1.00)→epic
+    - Used by: v_loot_pool_material_weights, material classification queries
+
+    **v_loot_pool_material_weights**
+    - Computes final drop weights per material per pool (derived tiering + pool multipliers)
+    - SELECT: loot_pool_id, material_id, final_weight
+    - Joins: LootPools CROSS JOIN Materials → v_material_tiers → LootPoolTierWeights → LootPoolEntries (override)
+    - Formula: final_weight = COALESCE(override.drop_weight, GREATEST(ROUND(base_drop_weight * multiplier), 0))
+    - Multiplier from LootPoolTierWeights based on computed tier, defaults to 1.0 if not set
+    - LootPoolEntries overrides take precedence (explicit per-material weights, 0=exclude)
+    - Used by: loot drop system, pool-based material selection
+
+    **View Performance Notes:**
+    - All views are non-materialized (computed on SELECT)
+    - Queries use indexes on UserEquipment, ItemMaterials, Tiers
+    - Expected query time: 5-15ms for player stats, 1-5ms for enemy stats
+    - v_material_tiers: ~1-3ms for 200 materials (simple numeric computation)
+    - v_loot_pool_material_weights: ~5-10ms per pool (CROSS JOIN + tier lookup)
+    - Consider materialized views + triggers if serving >1000 req/sec
+
+  seed_data_notes: |
+    **ItemTypes Examples:**
+    - Weapons: Enormous Key, Gatling Gun, Sword, Umbrella (whimsical but recognizable)
+    - Armor: Halo (helmet), protective items with magical/mundane themes
+    - Accessories: Shiny Coin (amulet), A Rose (ring), Cupcake, Jar of Jelly
+    - Pets: Dog, Dragon, Unicorn, Lil Buddy, Robot (each with distinct personalities)
+
+    **Materials Examples:**
+    - Common: Coffee (+energy/-defense), Gum (sticky effects), Button (small modifier)
+    - Rare: Rainbow (balanced stats), Diamond (+defense/-speed), Lava (+attack/-accuracy)
+    - Legendary: A Cloud (ethereal effects), Colorful Ribbon (aesthetic + stats)
+
+    **Enemy Types Examples:**
+    - Spray Paint Goblin: Street-smart, artistic, sarcastic dialogue
+    - Goopy Floating Eye: All-seeing, ominous, condescending tone
+    - Ferral Unicorn: Wild, unpredictable, chaotic personality
+    - Bipedal Deer: Forest-wise, territorial, moderate aggression
+    - Politician: Manipulative, eloquent, verbose political speak
+
+    **Material Rarity System Examples (Option D - Derived Tiering):**
+
+    **MaterialStrengthTiers:**
+    - {tier_name: "common", min_abs_sum: 0.00, max_abs_sum: 0.12, display_name: "Common"}
+    - {tier_name: "uncommon", min_abs_sum: 0.12, max_abs_sum: 0.20, display_name: "Uncommon"}
+    - {tier_name: "rare", min_abs_sum: 0.20, max_abs_sum: 0.28, display_name: "Rare"}
+    - {tier_name: "epic", min_abs_sum: 0.28, max_abs_sum: 1.00, display_name: "Epic"}
+
+    **LootPoolTierWeights (default multipliers):**
+    - {loot_pool_id: universal_pool_10, tier_name: "common", weight_multiplier: 1.0}
+    - {loot_pool_id: universal_pool_10, tier_name: "uncommon", weight_multiplier: 0.7}
+    - {loot_pool_id: universal_pool_10, tier_name: "rare", weight_multiplier: 0.35}
+    - {loot_pool_id: universal_pool_10, tier_name: "epic", weight_multiplier: 0.15}
+    // Library pools might boost rare materials: rare=0.5, epic=0.25
+    // Coffee shop pools might boost common materials: common=1.5, uncommon=1.0
+
+    **Auto-Classification Examples:**
+    - Coffee material {atkPower: +0.05, defPower: -0.05} → abs_sum = 0.10 → "common" tier
+    - Diamond material {atkPower: +0.15, defPower: -0.15} → abs_sum = 0.30 → "epic" tier
+    - Rainbow material {atkPower: +0.12, atkAccuracy: +0.08, defPower: -0.20} → abs_sum = 0.40 → "epic" tier
+
+    **Pool System Examples:**
+
+    **EnemyPools:**
+    - {id: uuid-1, name: "Level 10 Universal Enemies", combat_level: 10, filter_type: "universal", filter_value: null}
+    - {id: uuid-2, name: "Level 10 Library Enemies", combat_level: 10, filter_type: "location_type", filter_value: "library"}
+    - {id: uuid-3, name: "Level 10 California Enemies", combat_level: 10, filter_type: "state", filter_value: "CA"}
+    - {id: uuid-4, name: "Level 10 USA Enemies", combat_level: 10, filter_type: "country", filter_value: "USA"}
+    - {id: uuid-5, name: "Level 15 Library Enemies", combat_level: 15, filter_type: "location_type", filter_value: "library"}
+    - {id: uuid-6, name: "Level 10 North America Lat", combat_level: 10, filter_type: "lat_range", filter_value: "30-50N"}
+
+    **EnemyPoolMembers:**
+    - {enemy_pool_id: uuid-1, enemy_type_id: spray_paint_goblin_id, spawn_weight: 100}
+    - {enemy_pool_id: uuid-1, enemy_type_id: goopy_floating_eye_id, spawn_weight: 80}
+    - {enemy_pool_id: uuid-2, enemy_type_id: politician_id, spawn_weight: 150} // Higher weight in libraries
+    - {enemy_pool_id: uuid-3, enemy_type_id: ferral_unicorn_id, spawn_weight: 120} // California-specific
+
+    **LootPools:**
+    - {id: uuid-10, name: "Level 10 Universal Loot", combat_level: 10, filter_type: "universal", filter_value: null}
+    - {id: uuid-11, name: "Level 10 Library Loot", combat_level: 10, filter_type: "location_type", filter_value: "library"}
+    - {id: uuid-12, name: "Level 10 California Loot", combat_level: 10, filter_type: "state", filter_value: "CA"}
+    - {id: uuid-13, name: "Level 10 Coffee Shop Loot", combat_level: 10, filter_type: "location_type", filter_value: "coffee_shop"}
+
+    **LootPoolEntries:**
+    - {loot_pool_id: uuid-10, lootable_type: "material", lootable_id: iron_material_id, drop_weight: 100}
+    - {loot_pool_id: uuid-11, lootable_type: "material", lootable_id: paper_material_id, drop_weight: 200} // Books/paper in libraries
+    - {loot_pool_id: uuid-11, lootable_type: "item_type", lootable_id: enormous_key_id, drop_weight: 50} // Rare book-themed items
+    - {loot_pool_id: uuid-13, lootable_type: "material", lootable_id: coffee_material_id, drop_weight: 300} // Style inherited from enemy
+
+    **Example Combat Query (Level 10 library in California):**
+    Location: {location_type: "library", state_code: "CA", country_code: "USA", lat: 37.7, lng: -122.4}
+    Combat Level: 10
+
+    Matching EnemyPools:
+    - uuid-1 (Universal Level 10)
+    - uuid-2 (Library Level 10)
+    - uuid-3 (California Level 10)
+    - uuid-4 (USA Level 10)
+    - uuid-6 (North America Lat Level 10, if 37.7 is in 30-50N range)
+
+    Combined Enemy Selection:
+    - spray_paint_goblin: weight 100 (from universal)
+    - goopy_floating_eye: weight 80 (from universal)
+    - politician: weight 150 (from library)
+    - ferral_unicorn: weight 120 (from California)
+    // Weighted random selection from this combined pool
+
+    Matching LootPools:
+    - uuid-10 (Universal Level 10)
+    - uuid-11 (Library Level 10)
+    - uuid-12 (California Level 10)
+    // Combined loot table for drops
+
+  data_relationships: |
+    **Core Ownership Chain:**
+    Users → Items (via user_id) → ItemTypes (via item_type_id)
+    Users → MaterialStacks (stackable material inventory)
+    Users → MaterialInstances (individual material instances for application)
+    MaterialStacks → Materials (via material_id)
+    MaterialInstances → Materials (via material_id)
+    Items ← ItemMaterials → MaterialInstances (junction table for materials applied to items)
+
+    **Equipment System (NEW - normalized):**
+    Users → UserEquipment → Items (8 slots: weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet)
+    Users → Loadouts (saved equipment configurations)
+    Loadouts → LoadoutSlots → Items (per-loadout slot assignments)
+    UserEquipment.slot_name → EquipmentSlots.slot_name (validates slot exists)
+    LoadoutSlots.slot_name → EquipmentSlots.slot_name (validates slot exists)
+
+    **Material Application (NEW - normalized):**
+    Items → ItemMaterials → MaterialInstances (max 3 per item, slot_index 0-2)
+    ItemMaterials enforces UNIQUE(material_instance_id) - prevents reusing same material
+    ItemMaterials enforces UNIQUE(item_id, slot_index) - prevents duplicate slot usage
+    MaterialStacks: When loot drops, increment quantity. When applying to item, decrement stack and create MaterialInstance.
+
+    **Image Generation Workflow:**
+    Items.material_combo_hash → ItemImageCache.combo_hash (lookup generated images)
+    ItemImageCache: Global cache across all users, keyed by (item_type_id, combo_hash)
+    On material application:
+      1. Compute combo_hash from sorted material_ids + style_ids (order-insensitive)
+      2. Lookup ItemImageCache by (item_type_id, combo_hash)
+      3. If exists: Reuse image_url, increment craft_count, update Items.generated_image_url
+      4. If not exists: Generate image (20s sync via scripts/generate-image.ts), upload to R2, insert ItemImageCache row
+      5. Update Items: material_combo_hash, generated_image_url, image_generation_status='complete', is_styled flag
+
+    **Weapon Timing & Combat Balance:**
+    Items (where category='weapon') → Weapons (timing mechanics: pattern, spin speed, hit bands)
+    Weapons.pattern → weapon_pattern enum (single_arc, dual_arcs, pulsing_arc, roulette, sawtooth)
+    Combat calculations use fn_weapon_bands_adjusted(weapon_id, player_acc) to adjust hit bands
+    Player accuracy stat scales bands: higher acc = smaller injure/miss, larger graze/normal/crit
+    Expected damage multiplier: fn_expected_mul_quick(weapon_id, player_acc)
+
+    **Rarity & Tier Systems:**
+    ItemTypes.rarity → RarityDefinitions (centralized stat_multiplier, base_drop_rate, display metadata)
+    EnemyTypes.tier_id → Tiers (additive stat scaling: base + offset + tier_adds * (tier_num - 1))
+    Final item stats: base_stats * RarityDefinitions.stat_multiplier (see v_item_total_stats view)
+    Final enemy stats: see v_enemy_realized_stats view
+
+    **Combat Rating System:**
+    Players: combat_rating(atk, def, hp) computed in v_player_equipped_stats
+    Players with weapon: power_level = combat_rating(atk * weapon_effectiveness, def, hp) in v_player_powerlevel
+    Enemies: combat_rating(atk, def, hp) computed in v_enemy_realized_stats
+    CombatSessions: player_rating, enemy_rating, win_prob_est stored for Elo-based matchmaking
+
+    **Location & Pool System:**
+    Locations → CombatSessions (spawn point selection)
+    EnemyPools → EnemyPoolMembers → EnemyTypes (pool-based enemy assignment)
+    LootPools → LootPoolEntries → Materials|ItemTypes (pool-based loot drops)
+    Locations.{location_type, state_code, country_code, lat, lng} → EnemyPools.{filter_type, filter_value} (pool matching logic)
+
+    **Material Rarity System (Option D - Derived Tiering):**
+    Materials.stat_modifiers → v_material_tiers (computed tier classification)
+    MaterialStrengthTiers (tier thresholds) → v_material_tiers (tier assignment)
+    LootPools → LootPoolTierWeights (per-pool tier multipliers)
+    v_loot_pool_material_weights (final computed drop weights combining base_drop_weight × tier_multiplier)
+    LootPoolEntries (optional per-material overrides, takes precedence over computed weights)
+
+    **Combat Flow:**
+    Users → CombatSessions → EnemyTypes (selected via EnemyPools)
+    Users → PlayerCombatHistory (per location performance tracking)
+    CombatSessions → CombatChatterLog (pet dialogue)
+    CombatSessions → EnemyChatterLog (enemy trash-talk)
+    CombatSessions.applied_enemy_pools → EnemyPools (which pools were used for enemy selection)
+    CombatSessions.applied_loot_pools → LootPools (which pools will be used for loot drops)
+
+    **Pet System:**
+    Items (where ItemTypes.category='pet') → Pets → PetPersonalities
+    Pets → CombatChatterLog (dialogue generation)
+    Pets.item_id constrained to Items with category='pet' via CHECK constraint
+
+    **Unlocks & Progression:**
+    Users → UserUnlockedItemTypes → ItemTypes (what can be obtained)
+    Items.level progression via F-06 Item Upgrade System (costs scale with level)
+    MaterialInstances.style_id determines visual style (inherited from enemy drops)
+    Items.is_styled flag set when ANY applied material has style_id != 'normal'
+
+    **Audit Trail:**
+    Items → ItemHistory (lifecycle events: created, upgraded, material_applied, equipped, etc.)
+
+    **Pool Query Logic:**
+    At combat initialization:
+    1. Get Location.{location_type, state_code, country_code, lat, lng}
+    2. Get player's combat_level from avg_item_level
+    3. Query EnemyPools WHERE:
+       - combat_level = player_combat_level AND
+       - (filter_type = 'universal' AND filter_value IS NULL) OR
+       - (filter_type = 'location_type' AND filter_value = Location.location_type) OR
+       - (filter_type = 'state' AND filter_value = Location.state_code) OR
+       - (filter_type = 'country' AND filter_value = Location.country_code) OR
+       - (filter_type = 'lat_range' AND Location.lat BETWEEN parsed_range) OR
+       - (filter_type = 'lng_range' AND Location.lng BETWEEN parsed_range)
+    4. UNION all matching EnemyPoolMembers, aggregate by enemy_type_id with SUM(spawn_weight)
+    5. Weighted random selection of enemy_type_id for combat
+    6. Repeat same logic for LootPools → LootPoolEntries for loot drop determination
+
+  constraints_and_indexes: |
+    **Primary Constraints:**
+    - Users.id matches Supabase Auth UUID (managed by Supabase)
+    - Materials.stat_modifiers sum = 0 (enforced via CHECK constraint)
+    - ItemTypes.base_stats_normalized sum = 1.0 (enforced via CHECK constraint)
+    - ItemMaterials.slot_index BETWEEN 0 AND 2 (enforced via CHECK constraint)
+    - Pets.item_id must reference Items with category='pet' (enforced via CHECK constraint)
+    - Weapons: spin_deg_per_s > 0, all deg_* >= 0, total degrees <= 360 (enforced via CHECK constraints)
+    - RarityDefinitions: stat_multiplier > 0, base_drop_rate BETWEEN 0 AND 1 (enforced via CHECK constraints)
+    - Tiers: tier_num >= 1 (enforced via CHECK constraint)
+    - MaterialStrengthTiers: min_abs_sum >= 0 AND max_abs_sum > min_abs_sum (enforced via CHECK constraint)
+    - CombatSessions Redis TTL = 15 minutes (ephemeral active combat)
+
+    **Unique Constraints (prevent data inconsistencies):**
+    - UserEquipment: UNIQUE(user_id, slot_name) - one item per slot
+    - ItemMaterials: UNIQUE(item_id, slot_index) - no duplicate material slots
+    - ItemMaterials: UNIQUE(material_instance_id) - material can only be applied to one item
+    - Loadouts: UNIQUE(user_id, name) - unique loadout names per user
+    - Loadouts: UNIQUE(user_id, is_active) WHERE is_active = true - only one active loadout per user
+    - LoadoutSlots: UNIQUE(loadout_id, slot_name) - one item per slot per loadout
+    - MaterialStacks: PRIMARY KEY (user_id, material_id, style_id) - one stack per material+style combo
+    - ItemImageCache: UNIQUE(item_type_id, combo_hash) - one cached image per item+material combo
+    - MaterialStrengthTiers: PRIMARY KEY (tier_name) - unique tier definitions
+    - LootPoolTierWeights: PRIMARY KEY (loot_pool_id, tier_name) - one multiplier per pool per tier
+
+    **Performance Indexes:**
+    - Items: (user_id, item_type_id) for duplicate detection
+    - Items: (user_id, level DESC) for inventory sorting
+    - Items: (material_combo_hash) WHERE material_combo_hash IS NOT NULL for image lookup
+    - Weapons: (item_id) for weapon timing queries
+    - RarityDefinitions: (rarity) PRIMARY KEY for fast rarity lookups
+    - Tiers: (tier_num) UNIQUE for tier queries
+    - Tiers: (id) PRIMARY KEY for foreign key joins
+    - EnemyTypes: (tier_id) for enemy pool filtering by tier
+    - UserEquipment: (user_id, slot_name) unique index for equipment queries
+    - UserEquipment: (item_id) WHERE item_id IS NOT NULL for reverse lookups
+    - Loadouts: (user_id, is_active) for active loadout queries
+    - LoadoutSlots: (loadout_id, slot_name) unique index
+    - ItemMaterials: (item_id) for material lookup by item
+    - ItemMaterials: (material_instance_id) for reverse material lookups
+    - MaterialInstances: (user_id, material_id) for material inventory
+    - MaterialInstances: (user_id, style_id) for style material queries
+    - MaterialStacks: PRIMARY KEY (user_id, material_id, style_id) for inventory queries
+    - MaterialStacks: (user_id, style_id) for style material inventory
+    - ItemImageCache: (combo_hash) for fast image lookup
+    - ItemImageCache: (item_type_id, combo_hash) UNIQUE for cache integrity
+    - ItemImageCache: (item_type_id, craft_count DESC) for popular combo queries
+    - ItemHistory: (item_id, created_at DESC) for audit trail
+    - ItemHistory: (user_id, event_type, created_at DESC) for user event history
+    - PlayerCombatHistory: (user_id, location_id) unique constraint
+    - CombatChatterLog: (session_id, timestamp) for combat dialogue timeline
+    - EnemyChatterLog: (session_id, timestamp) for enemy dialogue timeline
+    - AnalyticsEvents: (event_name, timestamp) for metrics queries
+    - Locations: (lat, lng) PostGIS spatial index for geospatial queries
+    - Locations: (location_type) for pool filtering
+    - EnemyPools: (combat_level, filter_type) for pool query optimization
+    - EnemyPoolMembers: (enemy_pool_id) for pool member lookup
+    - LootPools: (combat_level, filter_type) for pool query optimization
+    - LootPoolEntries: (loot_pool_id) for pool entry lookup
+    - LootPoolEntries: (lootable_type, lootable_id) for reverse lookups
+    - MaterialStrengthTiers: (tier_name) PRIMARY KEY for tier lookups
+    - LootPoolTierWeights: (loot_pool_id) for pool-based tier multiplier queries
+    - LootPoolTierWeights: (loot_pool_id, tier_name) PRIMARY KEY for specific multiplier lookups
+    - Pets: (item_id, personality_id) for pet personality queries
+    - CombatLogEvents: (combat_id, seq) composite PRIMARY KEY for ordered event retrieval
+    - CombatLogEvents: (actor, event_type) for combat analytics queries
+
+    **Foreign Key Relationships:**
+    - All user_id fields → Users.id (CASCADE DELETE for GDPR compliance)
+    - UserCurrencyBalances.user_id → Users.id (CASCADE DELETE)
+    - UserCurrencyBalances.currency_code → Currencies.code (RESTRICT, seed data)
+    - Items.item_type_id → ItemTypes.id (RESTRICT, seed data)
+    - ItemTypes.rarity → RarityDefinitions.rarity (RESTRICT, seed data)
+    - EnemyTypes.tier_id → Tiers.id (RESTRICT, seed data)
+    - EnemyTypes.style_id → StyleDefinitions.id (RESTRICT, seed data)
+    - MaterialInstances.style_id → StyleDefinitions.id (RESTRICT, seed data)
+    - MaterialStacks.style_id → StyleDefinitions.id (RESTRICT, seed data)
+    - Weapons.item_id → Items.id (CASCADE DELETE, weapon data deleted with item)
+    - UserEquipment.user_id → Users.id (CASCADE DELETE)
+    - UserEquipment.slot_name → EquipmentSlots.slot_name (RESTRICT)
+    - UserEquipment.item_id → Items.id (SET NULL on item deletion)
+    - Loadouts.user_id → Users.id (CASCADE DELETE)
+    - LoadoutSlots.loadout_id → Loadouts.id (CASCADE DELETE)
+    - LoadoutSlots.slot_name → EquipmentSlots.slot_name (RESTRICT)
+    - LoadoutSlots.item_id → Items.id (SET NULL on item deletion)
+    - MaterialStacks.user_id → Users.id (CASCADE DELETE)
+    - MaterialStacks.material_id → Materials.id (RESTRICT, seed data)
+    - MaterialInstances.user_id → Users.id (CASCADE DELETE)
+    - MaterialInstances.material_id → Materials.id (RESTRICT, seed data)
+    - ItemMaterials.item_id → Items.id (CASCADE DELETE)
+    - ItemMaterials.material_instance_id → MaterialInstances.id (CASCADE DELETE)
+    - ItemImageCache.item_type_id → ItemTypes.id (CASCADE DELETE)
+    - ItemHistory.item_id → Items.id (CASCADE DELETE)
+    - ItemHistory.user_id → Users.id (CASCADE DELETE)
+    - Pets.item_id → Items.id (CASCADE DELETE)
+    - Pets.personality_id → PetPersonalities.id (SET NULL, personality can be unassigned)
+    - CombatSessions.location_id → Locations.id (RESTRICT, locations are persistent)
+    - CombatSessions.enemy_type_id → EnemyTypes.id (RESTRICT, seed data)
+    - EnemyPoolMembers.enemy_pool_id → EnemyPools.id (CASCADE DELETE)
+    - EnemyPoolMembers.enemy_type_id → EnemyTypes.id (RESTRICT, seed data)
+    - LootPoolEntries.loot_pool_id → LootPools.id (CASCADE DELETE)
+    - LootPoolEntries.lootable_id → Materials.id|ItemTypes.id (RESTRICT, depends on lootable_type)
+    - LootPoolTierWeights.loot_pool_id → LootPools.id (CASCADE DELETE)
+    - LootPoolTierWeights.tier_name → MaterialStrengthTiers.tier_name (RESTRICT, seed data)
+    - PlayerCombatHistory.location_id → Locations.id (CASCADE DELETE if location removed)
+    - CombatLogEvents.combat_id → CombatSessions.id (CASCADE DELETE, events deleted with session)
+
+    **Database Triggers (for cache maintenance):**
+    - ON UserEquipment INSERT/UPDATE/DELETE → recalculate Users.vanity_level, Users.avg_item_level
+    - ON Items.level UPDATE → recalculate Users.vanity_level, Users.avg_item_level (if equipped)
+    - ON ItemMaterials INSERT/UPDATE/DELETE → recalculate Items.current_stats (if using cached stats)
+    - ON Items.level UPDATE → recalculate Items.current_stats (if using cached stats)
+    - ON ItemMaterials INSERT/UPDATE/DELETE → recompute Items.material_combo_hash (deterministic hash of sorted material_ids + style_ids), update Items.is_styled flag
+    - ON Items.material_combo_hash UPDATE (when changed) → set image_generation_status='pending', lookup ItemImageCache, queue image generation if not exists
+
+post_mvp_roadmap:
+  high_priority: |
+    **High Priority Features (Post-MVP):**
+
+    **Daily Quests System**
+    - DailyQuests (id, title, description, quest_type, target_count, reward_gold, reward_xp, reset_cadence)
+    - UserDailyQuests (user_id, quest_id, progress, target, completed_at, claimed_at)
+    - Quest types: complete_combats, upgrade_items, apply_materials, visit_locations, defeat_enemy_type
+    - Resets daily at UTC midnight
+    - Rewards: gold, XP, occasional styled materials
+
+    **Achievements System**
+    - Achievements (id, title, description, achievement_type, threshold, reward_gold, reward_xp, is_hidden)
+    - UserAchievements (user_id, achievement_id, progress, threshold, unlocked_at)
+    - Types: milestone-based (100 combats, level 50, etc.), collection (all materials, all items), exploration (visit 100 locations)
+    - Permanent unlocks, one-time rewards
+
+    **Login Streaks**
+    - LoginStreaks (user_id PK, current_streak, longest_streak, last_login_date)
+    - Rewards scale with streak length (day 7: bonus gold, day 30: rare styled material)
+    - Reset if missed day, grace period considerations
+
+    **Friends System**
+    - Friends (user_id, friend_user_id, status ENUM('pending', 'accepted', 'blocked'), created_at)
+    - UNIQUE (user_id, friend_user_id) bidirectional constraint
+    - Enables social features: friend leaderboards, gift materials, see friends on map
+
+    **Leaderboards**
+    - LeaderboardSnapshots (id, leaderboard_type, scope, period, computed_at, payload_jsonb)
+    - Types: combat_rating, player_level, vanity_level, total_combats_won
+    - Scopes: global, friends, region
+    - Periods: daily, weekly, monthly, all_time
+    - Precomputed weekly to avoid expensive queries
+
+    **Async Image Generation**
+    - ImageJobs (id, item_id, combo_hash, status ENUM('pending', 'processing', 'complete', 'failed'), attempts, last_error, created_at, completed_at)
+    - Move 20s sync image generation to background worker queue
+    - Client polls for completion or receives push notification
+    - Retry policy: 3 attempts with exponential backoff
+    - Fallback to placeholder image on failure
+
+  medium_priority: |
+    **Medium Priority Features (Future):**
+
+    **Feature Flags & Experiments**
+    - FeatureFlags (key UNIQUE, value, targeting_rules_jsonb, enabled, created_at)
+    - Experiments (id, key UNIQUE, variants_jsonb, start_at, end_at)
+    - Assignments (user_id, experiment_id, variant, assigned_at)
+    - Enables safe rollouts, A/B testing, remote config
+
+    **Anti-Cheat & Anomaly Detection**
+    - LocationTelemetry (id, user_id, lat, lng, speed_mps, accuracy_m, timestamp)
+    - SuspiciousActivity (id, user_id, activity_type, severity ENUM('low', 'medium', 'high'), details_jsonb, created_at)
+    - Detect GPS spoofing (impossible speeds, teleportation)
+    - Flag combat spam, economy anomalies
+    - Automated alerts for manual review
+
+    **Seasonal Content**
+    - SeasonalContent (id, name, starts_at, ends_at, loot_pool_overrides_jsonb, enemy_pool_overrides_jsonb)
+    - ContentVersions (scope, version, notes, activated_at)
+    - Enable limited-time events, holiday themes, seasonal enemies/materials
+
+    **Inventory Management**
+    - Add Users.max_inventory_slots (soft cap, expandable via IAP/progression)
+    - Inventory overflow policies (auto-dismantle lowest rarity, storage expansion)
+    - Stack consolidation for materials
+
+  low_priority: |
+    **Low Priority Features (Nice to Have):**
+
+    **Guilds/Clans**
+    - Guilds (id, name UNIQUE, description, emblem_url, leader_user_id, max_members, created_at)
+    - GuildMembers (guild_id, user_id, role ENUM('leader', 'officer', 'member'), joined_at)
+    - GuildChat (id, guild_id, user_id, message, created_at)
+    - Enables cooperative events, guild vs guild competitions
+
+    **Trading/Marketplace**
+    - Trades (id, initiator_user_id, recipient_user_id, status ENUM('pending', 'accepted', 'rejected', 'expired'))
+    - TradeItems (trade_id, user_id, item_id, material_instance_id, gold_amount)
+    - Escrow pattern: items locked until accepted, returned on rejection
+    - Anti-fraud: trade cooldowns, value limits
+
+    **Combat Replay & Tournaments**
+    - CombatReplays (id, combat_session_id, replay_data_compressed, created_at)
+    - Tournaments (id, name, starts_at, ends_at, entry_fee, prize_pool_gold)
+    - TournamentParticipants (tournament_id, user_id, bracket_position, eliminations, prizes_won)
+
+  migration_considerations: |
+    **5-Phase Migration Strategy:**
+
+    **Phase 1 - Foundation (additive, non-breaking):**
+    - Create EquipmentSlots seed table (8 slots: weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet)
+    - Create UserEquipment, ItemMaterials, ItemHistory junction tables
+    - Backfill UserEquipment from existing Items.equipped/equipped_slot if present
+    - Backfill ItemMaterials from Items.applied_material_slots JSON if present
+    - Add UNIQUE constraints on new tables
+    - Keep old fields temporarily for backward compatibility
+
+    **Phase 2 - Slot Model Alignment:**
+    - Standardize to 8-slot model across all docs (data-plan, api-contracts, F-03)
+    - Update ItemTypes.category to include: weapon, offhand, head, armor, feet, accessory, pet
+    - Update seed-data-items.json to use standardized slot names
+    - Extend GET /equipment API response to return 8 slots
+    - Update frontend UI to support 8 equipment slots
+
+    **Phase 3 - Loadouts System:**
+    - Create Loadouts and LoadoutSlots tables
+    - Add Loadout API endpoints: GET/POST /loadouts, PUT /loadouts/{id}/activate
+    - Implement loadout switching logic (copy LoadoutSlots → UserEquipment on activate)
+    - Add loadout UI in frontend
+
+    **Phase 4 - Deprecations (breaking changes):**
+    - Deprecate Items.equipped and Items.equipped_slot columns
+    - Deprecate Items.applied_material_slots JSON column
+    - Migrate all client code to use UserEquipment and ItemMaterials
+    - Drop deprecated columns after migration grace period
+
+    **Phase 5 - Triggers and Optimization:**
+    - Add database triggers for Users.vanity_level and Users.avg_item_level maintenance
+    - Add trigger for Items.current_stats recalculation (if using cached stats)
+    - Add CHECK constraints for stat sums (Materials, ItemTypes)
+    - Add CHECK constraint for Pets.item_id category validation
+    - Add analytics table partitioning by month for time-series data (CombatChatterLog, EnemyChatterLog)
+
+    **Schema Evolution Roadmap:**
+    - MVP Phase 1: Users, EquipmentSlots, RarityDefinitions, StyleDefinitions, Tiers, ItemTypes, Items, Weapons, UserEquipment, Materials, MaterialStacks, MaterialInstances, ItemMaterials, ItemImageCache, Currencies, UserCurrencyBalances
+    - MVP Phase 2: Locations, EnemyTypes (with tier_id), EnemyPools, EnemyPoolMembers, LootPools, LootPoolEntries when geolocation (F-01) implemented
+    - MVP Phase 3: CombatSessions (with ratings), CombatLogEvents (normalized event log), PlayerCombatHistory when combat (F-02) implemented
+    - Post-MVP: Loadouts, LoadoutSlots, ItemHistory, PetPersonalities, Pets when F-11 implemented
+    - Analytics: Add CombatChatterLog, EnemyChatterLog, AnalyticsEvents incrementally as events are defined
+
+    **Data Seeding Priority:**
+    1. Enums (rarity, combat_result, actor, weapon_pattern, hit_band - PostgreSQL types)
+    2. EquipmentSlots (8 slots - required first)
+    3. Currencies (GOLD active, GEMS reserved for future IAP)
+    4. UserCurrencyBalances (initialized with 500 GOLD per user)
+    5. RarityDefinitions (5 rarities: common → legendary, with multipliers and drop rates)
+    6. StyleDefinitions (5-10 art styles: normal, pixel_art, watercolor, neon, sketch - with spawn rates)
+    7. Tiers (5-10 tier definitions for enemy scaling)
+    8. ItemTypes (26 items across 8 slots, with rarity FK)
+    9. Materials (20 materials with stat modifiers, NO rarity FK)
+    10. Locations (spawn points for combat)
+    11. EnemyTypes (combat enemies with AI personalities, with tier_id + style_id FKs)
+    12. EnemyPools + EnemyPoolMembers (level-aware enemy spawning)
+    13. MaterialStrengthTiers (tier threshold definitions for derived material rarity)
+    14. LootPools + LootPoolEntries (location-specific loot drops)
+    15. LootPoolTierWeights (per-pool tier multipliers for material drop balancing)
+    16. PetPersonalities (F-11 personality types)
+    17. Combat balance functions (effective_hp, combat_rating, fn_acc_scale, fn_weapon_bands_adjusted, fn_expected_mul_quick)
+    18. Computed views (v_item_total_stats, v_player_equipped_stats, v_enemy_realized_stats, v_player_powerlevel, v_material_tiers, v_loot_pool_material_weights)
+    19. EconomyTransactions, PlayerProgression, DeviceTokens (critical MVP tables)
+    20. Tutorial/funnel events (analytics foundation)
+    21. Post-MVP: DailyQuests, Achievements, LoginStreaks, Friends, LeaderboardSnapshots (as features launch)
+
+    **Performance Considerations:**
+    - Items table will be largest (thousands per user, 10K-100K rows)
+    - MaterialStacks reduces rows compared to individual MaterialInstances (stackable inventory, ~20-100 rows per user)
+    - MaterialInstances only created on material application (moderate insert frequency, 1K-10K rows)
+    - UserEquipment normalized queries faster than JSON parsing (8 rows per user vs JSON field)
+    - ItemMaterials normalized queries faster than JSON parsing (3 rows per item vs JSON field)
+    - ItemImageCache global reuse reduces R2 API calls (one image per unique combo, ~5K-50K combos total)
+    - Image generation is sync (20s) but cached globally, so most combos will be instant lookups
+    - CombatSessions in Redis avoids PostgreSQL load during active combat (ephemeral)
+    - Locations table optimized with PostGIS spatial indexes (sub-50ms geospatial queries)
+    - Pool query logic optimized with composite indexes (combat_level, filter_type)
+    - Analytics tables will need partitioning by month after 1M+ rows (time-series optimization)
+    - Trigger overhead on UserEquipment changes: ~1-2ms for vanity_level recalculation (acceptable)
+    - Trigger overhead on ItemMaterials changes: ~2-3ms for combo_hash recalculation + image lookup (acceptable)
+    - Combat balance functions are IMMUTABLE: PostgreSQL can cache results, ~0.1-0.5ms execution
+    - Computed views (non-materialized): 5-15ms for player stats, 1-5ms for enemy stats
+    - Weapon timing queries via Weapons table: <1ms with item_id index
+    - RarityDefinitions lookups: <0.5ms (small lookup table, 5 rows)
+    - StyleDefinitions lookups: <0.5ms (small lookup table, 5-10 rows)
+    - Tier calculations via v_enemy_realized_stats: 1-3ms (additive formula is simple)
+
+    **Rollback Strategy:**
+    - Phase 1-3 are additive: can roll back by ignoring new tables
+    - Phase 4 requires migration rollback: restore Items.equipped/applied_material_slots from UserEquipment/ItemMaterials
+    - Phase 5 triggers can be dropped without data loss (revert to on-read computation)
+
+progression_formulas:
+  item_upgrade_costs: |
+    **Gold Cost to Upgrade Items (F-06):**
+
+    Formula: cost = base_cost * level_multiplier^(target_level - 1) * rarity_cost_multiplier
+
+    **Constants:**
+    - base_cost: 100 gold (cost to upgrade from level 1 → 2)
+    - level_multiplier: 1.5 (exponential scaling factor)
+    - rarity_cost_multiplier:
+      * common: 1.0
+      * uncommon: 1.3
+      * rare: 1.6
+      * epic: 2.0
+      * legendary: 2.5
+
+    **Examples:**
+    - Common sword level 1 → 2: 100 * 1.5^0 * 1.0 = 100 gold
+    - Common sword level 2 → 3: 100 * 1.5^1 * 1.0 = 150 gold
+    - Common sword level 3 → 4: 100 * 1.5^2 * 1.0 = 225 gold
+    - Rare sword level 1 → 2: 100 * 1.5^0 * 1.6 = 160 gold
+    - Legendary sword level 5 → 6: 100 * 1.5^4 * 2.5 = 1,266 gold
+
+    **Design Goals:**
+    - Early levels cheap (100-300 gold)
+    - Mid levels moderate (500-2000 gold)
+    - High levels expensive (5000+ gold for level 15+)
+    - Rarer items cost more to upgrade (incentivizes diverse builds)
+
+  stat_scaling: |
+    **Item Stat Scaling Per Level:**
+
+    Formula: final_stats = base_stats_normalized * rarity_multiplier * level * base_stat_value + material_modifiers
+
+    **Constants:**
+    - base_stat_value: 10 (baseline stat point at level 1)
+    - rarity_multiplier (from RarityDefinitions):
+      * common: 1.00
+      * uncommon: 1.25
+      * rare: 1.50
+      * epic: 1.75
+      * legendary: 2.00
+
+    **Example: Common Sword (base_stats_normalized = {atkPower: 0.5, atkAccuracy: 0.2, defPower: 0.2, defAccuracy: 0.1})**
+
+    Level 1 (common):
+    - atkPower: 0.5 * 1.00 * 1 * 10 = 5
+    - atkAccuracy: 0.2 * 1.00 * 1 * 10 = 2
+    - defPower: 0.2 * 1.00 * 1 * 10 = 2
+    - defAccuracy: 0.1 * 1.00 * 1 * 10 = 1
+    - Total: 10 stat points
+
+    Level 5 (common):
+    - atkPower: 0.5 * 1.00 * 5 * 10 = 25
+    - atkAccuracy: 0.2 * 1.00 * 5 * 10 = 10
+    - defPower: 0.2 * 1.00 * 5 * 10 = 10
+    - defAccuracy: 0.1 * 1.00 * 5 * 10 = 5
+    - Total: 50 stat points
+
+    Level 5 (legendary):
+    - atkPower: 0.5 * 2.00 * 5 * 10 = 50
+    - atkAccuracy: 0.2 * 2.00 * 5 * 10 = 20
+    - defPower: 0.2 * 2.00 * 5 * 10 = 20
+    - defAccuracy: 0.1 * 2.00 * 5 * 10 = 10
+    - Total: 100 stat points (2x more powerful than common at same level)
+
+    **Material Modifiers:**
+    - Applied additively after base calculation
+    - Materials.stat_modifiers are zero-sum (e.g., {atkPower: +0.1, defPower: -0.1})
+    - Applied as percentage shifts: final_stat = base_stat * (1 + material_modifier_sum)
+    - Example: 3 materials with {atkPower: +0.1} each = +0.3 = 30% boost to atkPower
+
+    **Design Goals:**
+    - Linear scaling per level (level 10 is 2x level 5)
+    - Rarity provides flat multiplier (legendary is 2x common at same level)
+    - Materials provide strategic rebalancing (shift stat distribution)
+    - Total power = rarity * level (encourages both progression paths)
+
+  material_replacement_costs: |
+    **Gold Cost to Replace Material (F-05):**
+
+    Formula: cost = base_replacement_cost * item_level * rarity_multiplier
+
+    **Constants:**
+    - base_replacement_cost: 50 gold
+    - rarity_multiplier (same as upgrade costs):
+      * common: 1.0
+      * uncommon: 1.3
+      * rare: 1.6
+      * epic: 2.0
+      * legendary: 2.5
+
+    **Examples:**
+    - Common level 1 item: 50 * 1 * 1.0 = 50 gold
+    - Common level 5 item: 50 * 5 * 1.0 = 250 gold
+    - Legendary level 10 item: 50 * 10 * 2.5 = 1,250 gold
+
+    **Design Goals:**
+    - Early experimentation cheap (50-100 gold)
+    - High-level items expensive to respec (1000+ gold)
+    - Prevents constant material swapping without cost
+
+data_storage:
+
+  retention_policy: |
+    - User accounts: Retain indefinitely unless user requests deletion (GDPR)
+    - Player items: Retain as long as user account exists
+    - Player materials: Retain as long as user account exists
+    - Combat sessions (Redis): Expire after 15 minutes (ephemeral)
+    - Analytics events: Retain for 2 years, then archive or delete
+    - Logs: Retain for 90 days (Railway default)

@@ -1,0 +1,74 @@
+title: Technical Specification - User Authentication
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-01
+status: in-progress
+
+summary: "Implement secure user authentication with email/password and OAuth2 support"
+
+functional_overview:
+  core_logic: "JWT-based authentication with refresh tokens, session management, and role-based access control"
+  data_schema: "Users table with encrypted passwords, sessions table, oauth_connections table"
+  api_endpoints:
+    - POST /api/auth/register
+    - POST /api/auth/login
+    - POST /api/auth/refresh
+    - POST /api/auth/logout
+    - GET /api/auth/me
+  integration_points:
+    - OAuth2 providers (Google, GitHub)
+    - Email service for verification
+    - Redis for session storage
+
+detailed_design:
+  data_structures:
+    - name: users
+      columns:
+        - id (uuid, primary key)
+        - email (string, unique)
+        - password_hash (string)
+        - email_verified (boolean)
+        - created_at (timestamp)
+    - name: sessions
+      columns:
+        - id (uuid, primary key)
+        - user_id (uuid, foreign key)
+        - refresh_token (string)
+        - expires_at (timestamp)
+  apis:
+    - method: POST
+      endpoint: /api/auth/register
+      request: '{ "email": "string", "password": "string" }'
+      response: '{ "user": User, "access_token": "string", "refresh_token": "string" }'
+      errors:
+        - 400 - Invalid email or weak password
+        - 409 - Email already exists
+    - method: POST
+      endpoint: /api/auth/login
+      request: '{ "email": "string", "password": "string" }'
+      response: '{ "user": User, "access_token": "string", "refresh_token": "string" }'
+      errors:
+        - 401 - Invalid credentials
+        - 429 - Too many login attempts
+  diagrams: ""
+
+dependencies:
+  libraries: "bcrypt, jsonwebtoken, passport"
+  services: "Redis, SMTP server"
+  data_sources: "PostgreSQL"
+
+implementation_status:
+  progress: 65
+  completed_components:
+    - User registration API
+    - Password hashing and validation
+    - JWT token generation
+    - Database schema and migrations
+  in_progress_components:
+    - OAuth2 integration (Google provider)
+    - Email verification flow
+  blocked_items:
+    - GitHub OAuth pending API credentials approval
+  notes:
+    - Using bcrypt with cost factor 12 for password hashing
+    - Access tokens expire after 15 minutes, refresh tokens after 7 days
+    - Implemented rate limiting on login endpoint (5 attempts per 15 minutes)

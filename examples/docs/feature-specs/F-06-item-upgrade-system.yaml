@@ -1,0 +1,163 @@
+title: Technical Specification - Item Upgrade System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-06
+status: planned
+last_updated: 2025-10-20
+
+summary: "Spend gold to increase item level. Each level increases all item stats proportionally while maintaining normalized ratios. Gold cost increases exponentially with level and scales by item rarity. Upgrading contributes to vanity level progression."
+
+functional_overview:
+  core_logic: "Player selects item and spends gold to level it up. Item level increments by 1. All stats scale by new level and rarity (base_stats × rarity_multiplier × level). Gold cost formula: base_cost × level_multiplier^(level-1) × rarity_multiplier. Vanity level increases based on total item levels across all items."
+  data_schema: "player_items.level incremented, player.gold decremented, player.vanity_level recalculated"
+  api_endpoints:
+    - "POST /items/:item_id/upgrade"
+    - "GET /items/:item_id/upgrade-cost"
+  integration_points:
+    - "Base items (F-03) receive level multiplier"
+    - "Styled materials (F-04) are visual variants with normal stat effectiveness"
+    - "Combat drops (F-05) provide gold for upgrades"
+
+detailed_design:
+  data_structures:
+    - name: "player_items (add level column)"
+      columns:
+        - "level: INT (default 1, min 1, no max for now)"
+
+    - name: "users (add vanity_level)"
+      columns:
+        - "vanity_level: INT (derived from sum of all item levels)"
+        - "gold: INT (currency balance)"
+
+  apis:
+    - method: "GET"
+      endpoint: "/items/:item_id/upgrade-cost"
+      request: "Path param: item_id (UUID)"
+      response: "{current_level: 5, next_level: 6, gold_cost: 506, rarity: 'common', rarity_multiplier: 1.0, player_gold: 1200, can_afford: true}"
+      errors:
+        - "404: Item not found or not owned"
+
+    - method: "POST"
+      endpoint: "/items/:item_id/upgrade"
+      request: "{item_id: UUID}"
+      response: |
+        {
+          success: true,
+          item: {
+            id: uuid,
+            base_type: 'sword',
+            level: 6, // incremented
+            applied_materials: ['iron', 'flame'],
+            computed_stats: {atkPower: 30, atkAccuracy: 12, defPower: 12, defAccuracy: 6}, // level 6 common with rarity scaling
+            rarity: 'common',
+            rarity_multiplier: 1.00
+          },
+          gold_spent: 506,
+          new_gold_balance: 694,
+          new_vanity_level: 42 // recalculated
+        }
+      errors:
+        - "400: Insufficient gold"
+        - "404: Item not found or not owned"
+
+  diagrams: |
+    Upgrade Flow:
+    1. Player views item detail screen
+    2. Client requests GET /items/:id/upgrade-cost
+    3. Server calculates cost: base_cost × level_multiplier^(level-1) × rarity_multiplier
+    4. Server checks player.gold >= cost
+    5. Client displays "Upgrade to Level X" button with cost
+    6. Player taps upgrade button
+    7. Client sends POST /items/:id/upgrade
+    8. Server validates gold, decrements gold, increments item.level
+    9. Server recalculates item stats: base_stats × rarity_multiplier × new_level × base_value + material_mods
+    10. Server recalculates vanity_level: sum(all_item_levels) / 6 (or custom formula)
+    11. Server returns updated item, gold, vanity_level
+    12. Client displays success animation and updated stats
+
+    Gold Cost Formula (Updated with Rarity Scaling):
+    Formula: cost = base_cost × level_multiplier^(target_level - 1) × rarity_cost_multiplier
+
+    Constants:
+    - base_cost = 100 gold (cost to upgrade from level 1 → 2)
+    - level_multiplier = 1.5 (exponential scaling factor)
+    - rarity_cost_multiplier:
+      * common: 1.0
+      * uncommon: 1.3
+      * rare: 1.6
+      * epic: 2.0
+      * legendary: 2.5
+
+    Examples (Common Items):
+    Level 1 → 2: 100 × 1.5^0 × 1.0 = 100 gold
+    Level 2 → 3: 100 × 1.5^1 × 1.0 = 150 gold
+    Level 3 → 4: 100 × 1.5^2 × 1.0 = 225 gold
+    Level 5 → 6: 100 × 1.5^4 × 1.0 = 506 gold
+    Level 10 → 11: 100 × 1.5^9 × 1.0 = 3,834 gold
+
+    Examples (Rarity Scaling):
+    Rare level 1 → 2: 100 × 1.5^0 × 1.6 = 160 gold
+    Epic level 3 → 4: 100 × 1.5^2 × 2.0 = 450 gold
+    Legendary level 5 → 6: 100 × 1.5^4 × 2.5 = 1,266 gold
+
+    Vanity Level Calculation:
+    Simple formula (MVP1):
+    vanity_level = floor(sum_of_all_item_levels / 6)
+
+    Example:
+    6 items at level 5 each → sum = 30 → vanity = 5
+    6 items at levels [10, 8, 7, 6, 5, 4] → sum = 40 → vanity = 6
+
+    Alternative (post-MVP):
+    vanity_level = floor(sqrt(sum_of_all_item_levels))
+    Grows slower, more meaningful progression
+
+    Stat Scaling Formula (Updated with Rarity):
+    final_stats = base_stats_normalized × rarity_multiplier × level × base_stat_value + material_modifiers
+
+    Constants:
+    - base_stat_value = 10 (baseline stat point at level 1)
+    - rarity_multiplier:
+      * common: 1.00
+      * uncommon: 1.25
+      * rare: 1.50
+      * epic: 1.75
+      * legendary: 2.00
+
+    Example: Common Sword (base_stats_normalized = {atkPower: 0.5, atkAccuracy: 0.2, defPower: 0.2, defAccuracy: 0.1})
+
+    Level 1 (common): atkPower = 0.5 × 1.00 × 1 × 10 = 5, total = 10 stat points
+    Level 5 (common): atkPower = 0.5 × 1.00 × 5 × 10 = 25, total = 50 stat points
+    Level 5 (legendary): atkPower = 0.5 × 2.00 × 5 × 10 = 50, total = 100 stat points
+
+    Material Modifiers (Applied Additively):
+    - Normal materials: base effectiveness
+    - Styled materials: visual variants with normal stat effectiveness
+    - Materials provide zero-sum stat shifts: {atkPower: +0.1, defPower: -0.1}
+    - Applied as percentage: final_stat = base_stat × (1 + material_modifier_sum)
+
+    Example with styled iron (+0.1 defPower, -0.1 atkPower at normal effectiveness):
+    Styled iron modifier: +0.12 defPower, -0.12 atkPower
+    Level 5 common sword: atkPower = 25 × (1 - 0.12) = 22, defPower = 10 × (1 + 0.12) = 11.2
+
+dependencies:
+  libraries: "None"
+  services: "Backend upgrade service, stat calculation service, economy balance service"
+  data_sources: "player_items table, users.gold, users.vanity_level"
+
+implementation_status:
+  notes:
+    - "Light MVP: Hardcoded upgrade cost = 100 gold flat, simple level increment, no vanity level"
+    - "Full MVP: Dynamic cost formula (level^1.5), vanity level calculation, gold validation"
+    - "Finished: Upgrade animations, bulk upgrade (level up multiple times at once), upgrade preview, auto-upgrade suggestions"
+
+balancing_parameters:
+  base_upgrade_cost: "100 gold (configurable)"
+  level_multiplier: "1.5 (exponential scaling factor)"
+  rarity_cost_scaling: "common 1.0x → legendary 2.5x (encourages diverse builds)"
+  styled_material_bonus: "visual variants with normal stat effectiveness"
+  gold_per_combat: "500-1000 at level 5 (allows 1-2 common upgrades, fewer for rare items)"
+  vanity_level_formula: "sum(item_levels) / 6 for MVP1 (simple average)"
+
+user_stories:
+  - US-306 (new: Upgrade Item with Gold)
+  - US-307 (new: View Vanity Level Progress)

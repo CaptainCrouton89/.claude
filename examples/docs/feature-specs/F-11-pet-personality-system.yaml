@@ -1,0 +1,224 @@
+title: Technical Specification - Pet Personality System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-11
+status: planned
+last_updated: 2025-10-20
+
+summary: "AI-powered dynamic pet personalities that generate contextual trash-talk and commentary during combat. Each pet has personality traits that influence their dialogue style. The AI observes combat events (attacks, defenses, critical hits, misses) and generates personality-appropriate chatter in real-time."
+
+functional_overview:
+  core_logic: "Each pet has a personality profile (traits, tone, behavior tendencies). During combat, the system tracks combat events and feeds them to an AI service along with the pet's personality profile. The AI generates contextual dialogue that appears in the combat UI as speech bubbles or text overlays. Personality traits influence dialogue style (e.g., sassy vs. encouraging, verbose vs. terse)."
+  data_schema: "pet_personalities table with personality_type, traits JSON array, base_dialogue_style. combat_chatter_log table stores generated dialogue for analytics."
+  api_endpoints:
+    - "POST /combat/pet-chatter (generates dialogue based on combat event)"
+    - "GET /pets/personalities (lists available personality types)"
+    - "PUT /pets/{pet_id}/personality (assigns personality to player's pet)"
+  integration_points:
+    - "Combat system (F-02) triggers chatter generation on combat events"
+    - "Base Items & Equipment (F-03) for pet slot and pet data"
+    - "AI Generation Service for dialogue creation"
+    - "Combat session state (Redis) for event context"
+
+detailed_design:
+  data_structures:
+    - name: "pet_personalities (seed data)"
+      columns:
+        - "personality_type: VARCHAR (PK: sassy, encouraging, analytical, chaotic, stoic, trash_talker)"
+        - "display_name: VARCHAR (Sassy, Encouraging, Analytical, Chaotic, Stoic, Trash Talker)"
+        - "traits: JSON ARRAY ['witty', 'sarcastic', 'confident'] - affects dialogue tone"
+        - "base_dialogue_style: TEXT (prompt template for AI: 'You are a sassy dragon who loves to mock enemies...')"
+        - "example_phrases: JSON ARRAY (sample dialogue for this personality)"
+        - "verbosity: VARCHAR (terse, moderate, verbose)"
+
+    - name: "player_pet_personalities"
+      columns:
+        - "item_id: UUID (FK to player_items where base_type = 'pet')"
+        - "personality_type: VARCHAR (FK to pet_personalities.personality_type)"
+        - "custom_name: VARCHAR (nullable, player-given pet name)"
+        - "created_at: TIMESTAMP"
+
+    - name: "combat_chatter_log (analytics)"
+      columns:
+        - "id: UUID (PK)"
+        - "session_id: UUID (FK to combat_sessions)"
+        - "pet_item_id: UUID (FK to player_items)"
+        - "event_type: VARCHAR (player_attack, player_defense, enemy_attack, enemy_defense, critical_hit, miss, victory, defeat)"
+        - "combat_context: JSON {turn_number, player_hp_pct, enemy_hp_pct, last_damage, event_details}"
+        - "generated_dialogue: TEXT (AI-generated chatter)"
+        - "personality_type: VARCHAR"
+        - "generation_time_ms: INT (latency tracking)"
+        - "timestamp: TIMESTAMP"
+        - "INDEX on (session_id, timestamp)"
+
+  apis:
+    - method: "POST"
+      endpoint: "/combat/pet-chatter"
+      request: |
+        {
+          "session_id": "UUID",
+          "event_type": "player_attack | enemy_attack | player_defense | enemy_defense | critical_hit | miss | victory | defeat",
+          "event_details": {
+            "damage": 150,
+            "accuracy": 0.85,
+            "is_critical": true,
+            "turn_number": 3
+          }
+        }
+      response: |
+        {
+          "dialogue": "Ha! Nice hit, but the Spray Paint Goblin is still uglier than my morning breath!",
+          "personality_type": "sassy",
+          "generation_time_ms": 450
+        }
+      errors:
+        - "400: Invalid event_type"
+        - "404: Combat session not found"
+        - "404: No pet equipped"
+        - "503: AI service unavailable (fallback to canned phrases)"
+
+    - method: "GET"
+      endpoint: "/pets/personalities"
+      request: "None (public endpoint)"
+      response: |
+        {
+          "personalities": [
+            {
+              "personality_type": "sassy",
+              "display_name": "Sassy",
+              "description": "Witty and sarcastic, loves to mock enemies and crack jokes",
+              "traits": ["witty", "sarcastic", "confident"],
+              "example_phrases": [
+                "Is that the best you got? My grandma hits harder!",
+                "Ooh, scary! ...said no one ever.",
+                "Wake me up when this gets interesting."
+              ]
+            },
+            {
+              "personality_type": "encouraging",
+              "display_name": "Encouraging",
+              "description": "Supportive and positive, cheers you on and celebrates victories",
+              "traits": ["supportive", "optimistic", "enthusiastic"],
+              "example_phrases": [
+                "Great job! You're doing amazing!",
+                "Keep it up! We've got this!",
+                "That's the spirit! One more hit!"
+              ]
+            },
+            {
+              "personality_type": "analytical",
+              "display_name": "Analytical",
+              "description": "Strategic and observant, provides tactical commentary",
+              "traits": ["observant", "strategic", "calm"],
+              "example_phrases": [
+                "Enemy defense is weak. Exploit their left flank.",
+                "Pattern detected: they attack every other turn.",
+                "Probability of victory: 73.4%. Acceptable odds."
+              ]
+            },
+            {
+              "personality_type": "chaotic",
+              "display_name": "Chaotic",
+              "description": "Unpredictable and zany, says random and absurd things",
+              "traits": ["random", "energetic", "absurd"],
+              "example_phrases": [
+                "BANANA TORNADO INCOMING!",
+                "Did you know unicorns are just horses with stabby foreheads?",
+                "I can taste the color purple. It tastes like Tuesday."
+              ]
+            },
+            {
+              "personality_type": "stoic",
+              "display_name": "Stoic",
+              "description": "Calm and composed, rarely speaks but impactful when they do",
+              "traits": ["calm", "terse", "wise"],
+              "example_phrases": [
+                "...adequate.",
+                "Focus.",
+                "Victory was inevitable."
+              ]
+            },
+            {
+              "personality_type": "trash_talker",
+              "display_name": "Trash Talker",
+              "description": "Aggressive and competitive, relentlessly mocks opponents",
+              "traits": ["aggressive", "competitive", "bold"],
+              "example_phrases": [
+                "You call that an attack? I've seen kittens with more bite!",
+                "This Goopy Floating Eye is DONE! Stick a fork in it!",
+                "Sit DOWN, Politician! No one wants to hear your lies!"
+              ]
+            }
+          ]
+        }
+      errors: []
+
+    - method: "PUT"
+      endpoint: "/pets/{pet_id}/personality"
+      request: |
+        {
+          "personality_type": "trash_talker",
+          "custom_name": "Lil Buddy" (optional)
+        }
+      response: |
+        {
+          "success": true,
+          "pet_id": "UUID",
+          "personality_type": "trash_talker",
+          "custom_name": "Lil Buddy"
+        }
+      errors:
+        - "404: Pet not found or not owned by player"
+        - "400: Invalid personality_type"
+
+  diagrams: |
+    **Combat Chatter Flow:**
+    1. Player taps attack dial during combat (F-02)
+    2. Combat system calculates damage and determines outcome (hit, miss, critical)
+    3. Combat system emits event: POST /combat/pet-chatter with event_type and details
+    4. Backend retrieves:
+       - Pet personality from player_pet_personalities (joined on equipped pet)
+       - Combat session context from Redis (HP %, turn count, previous events)
+       - Base dialogue style from pet_personalities seed data
+    5. Backend constructs AI prompt:
+       - System: "You are a {personality_type} {pet_type} with traits: {traits}. {base_dialogue_style}"
+       - Context: "Combat turn {turn_number}. Player HP: {player_hp_pct}%, Enemy HP: {enemy_hp_pct}%"
+       - Event: "Player just {event_type} for {damage} damage (accuracy: {accuracy})"
+       - Instruction: "Generate a 1-2 sentence reaction in character. Be {verbosity}."
+    6. AI generates dialogue (OpenAI/Anthropic with 1-2s timeout)
+    7. Backend logs to combat_chatter_log for analytics
+    8. Response sent to client: {dialogue, personality_type}
+    9. Client displays dialogue in speech bubble above pet sprite (2-3s duration)
+
+    **Fallback Strategy (AI Unavailable):**
+    - If AI service timeout or error, use canned example_phrases from pet_personalities
+    - Randomly select phrase matching event_type context (attack_success, attack_fail, defense, victory, defeat)
+    - Ensures dialogue always appears even if AI is down
+
+    **Personality Examples:**
+    - **Dog (Encouraging):** "You're such a good fighter! Yes you are! Let's get 'em!"
+    - **Dragon (Sassy):** "Pfft, this Ferral Unicorn couldn't scare a mouse. Watch me roast it."
+    - **Unicorn (Analytical):** "Enemy attack pattern suggests 60% offense bias. Adjust accordingly."
+    - **Lil Buddy (Trash Talker):** "GET REKT, Bipedal Deer! I've seen scarecrows with better posture!"
+    - **Robot (Stoic):** "...processing. Victory probability: high. Continue."
+
+    **Enemy Examples (for dialogue context):**
+    - Spray Paint Goblin
+    - Goopy Floating Eye
+    - Ferral Unicorn
+    - Bipedal Deer
+    - Politician
+
+dependencies:
+  libraries: "OpenAI SDK or Anthropic SDK (Node.js)"
+  services: "AI Generation Service (shared with item generation), Combat Service (F-02), Redis for combat session context"
+  data_sources: "pet_personalities seed data (6 base personalities), player_pet_personalities table, combat_sessions (Redis)"
+
+implementation_status:
+  notes:
+    - "Light MVP: Hardcode 2-3 personalities with canned phrases only (no AI), triggered on specific combat events"
+    - "Full MVP: AI integration with OpenAI/Anthropic, 6 personality types, player can assign personality to pet, dialogue logs for analytics"
+    - "Finished: Custom pet names, personality unlock system (rare personalities from special pets), A/B test dialogue frequency, multilingual support"
+
+user_stories:
+  - "US-TBD: Create user stories for pet personality assignment and combat chatter viewing"
+  - "Related to US-201 (Initiate Combat) and US-202 (Execute Attack) for combat integration"

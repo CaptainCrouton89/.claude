@@ -1,0 +1,122 @@
+title: Core Gameplay Loop
+template: ~/.claude/file-templates/init-project/user-flows/user-flow-title.yaml
+status: draft
+last_updated: 2025-10-20
+
+key_personas:
+  - "Mobile RPG Player - Enjoys progression systems and combat strategy"
+  - "Location Explorer - Motivated by real-world discovery and collection"
+  - "Collector - Seeks rare variants and complete sets"
+
+primary_flows:
+  - name: "Exploration & Combat Flow"
+    trigger: "Player opens app and wants to discover new items/pets"
+    steps:
+      - "Player views map showing nearby location markers"
+      - "Player selects destination with desired item/enemy type"
+      - "Player navigates to physical location using map guidance"
+      - "Player arrives at location, location icon becomes active"
+      - "Player taps active location to initiate encounter"
+      - "Enemy appears with stats and type displayed"
+      - "Combat screen loads with player stats (items + pet equipped)"
+      - "Player taps timing dial to set attack multiplier"
+      - "Damage calculated and applied to enemy"
+      - "Enemy attacks back, damage applied to player"
+      - "Combat continues until player wins or loses"
+      - "On victory: defeated enemy added to inventory as item/pet"
+      - "Player returns to map view or inventory"
+    outcome: "Player collects new item/pet for their inventory"
+    edge_cases: |
+      - Player leaves location before tapping: encounter expires
+      - Player loses combat: no item collected, can retry
+      - Inventory full: prompt to discard item or manage inventory
+      - GPS signal lost: pause encounter until signal restored
+
+  - name: "Material Application Flow"
+    trigger: "Player has items and materials to apply"
+    steps:
+      - "Player opens inventory screen"
+      - "Player navigates to crafting section"
+      - "Player selects item to enhance"
+      - "System shows available materials (stackable in inventory)"
+      - "Player selects 1-3 materials to apply"
+      - "System displays preview: enhanced stats, appearance changes"
+      - "Player confirms material application"
+      - "Selected materials consumed (removed from inventory)"
+      - "AI image generation starts (~20 seconds synchronous)"
+      - "Item is updated in-place with new materials"
+      - "Player can equip or apply more materials"
+    outcome: "Player creates customized item with material-based enhancements"
+    edge_cases: |
+      - No materials available: crafting section shows "collect materials" message
+      - Applying to already-enhanced item: shows current materials, allows additional
+      - Image generation fails: retry option or fallback to base item appearance
+      - Insufficient materials: selection disabled until requirements met
+
+  - name: "Equipment Management Flow"
+    trigger: "Player wants to optimize stats before combat"
+    steps:
+      - "Player opens inventory screen"
+      - "Player views current equipped items (helmet, armor, weapon, etc.)"
+      - "Player views total stats (ATK/DEF/HP) from equipped items + pet"
+      - "Player taps equipment slot to change"
+      - "System shows available items of that type"
+      - "Player selects new item to equip"
+      - "Stats update in real-time"
+      - "Player repeats for other slots as needed"
+      - "Player selects active pet"
+      - "Final stats displayed"
+    outcome: "Player has optimized loadout for upcoming combat"
+    edge_cases: |
+      - No items of a type: slot shows empty/default
+      - Unequipping item: stats decrease accordingly
+      - Comparing items: show stat differences before equipping
+
+secondary_flows:
+  - name: "First-Time User Onboarding"
+    trigger: "New user launches app for first time"
+    steps:
+      - "Player creates account or signs in"
+      - "Tutorial overlay explains map navigation"
+      - "Player guided to nearby starter location"
+      - "Simplified first combat with tutorial prompts"
+      - "Player wins, receives first item/pet"
+      - "Tutorial explains inventory and equipping"
+      - "Player equips first item"
+      - "Tutorial explains crafting basics"
+      - "Free access to full game"
+    outcome: "Player understands core mechanics and has starter equipment"
+    edge_cases: |
+      - Player skips tutorial: can access from settings later
+      - No nearby locations: tutorial uses virtual location
+
+  - name: "Style Discovery Flow"
+    trigger: "Player encounters enemy with distinct visual style (based on enemy type)"
+    steps:
+      - "Player initiates normal encounter"
+      - "Style animation/effect plays (pixel_art sparkles, watercolor drips, neon glow, sketch lines)"
+      - "Enemy displayed with styled visual variant"
+      - "Combat proceeds normally"
+      - "On victory: styled item/pet added to inventory"
+      - "Special notification: '[Style] [Name] collected!' (e.g., 'Pixel Art Wolf collected!')"
+      - "Style badge/marker visible in inventory showing style type"
+    outcome: "Player collects styled variant with unique visual appearance"
+    edge_cases: |
+      - Player loses styled combat: styled variant is lost, cannot retry
+      - Style determined by enemy type, not random chance
+      - Multiple style types available: pixel_art, watercolor, neon, sketch
+
+  - name: "Premium Item Discovery Flow"
+    trigger: "Player visits special premium item location"
+    steps:
+      - "Player sees premium item marker on map (distinct icon)"
+      - "Player navigates to single-location premium spawn"
+      - "Player taps location"
+      - "System checks premium currency balance"
+      - "Player spends premium currency to unlock encounter"
+      - "Combat proceeds with premium enemy"
+      - "On victory: premium item (overrides city stats) collected"
+    outcome: "Player obtains exclusive premium item with unique stats"
+    edge_cases: |
+      - Insufficient premium currency: prompt to purchase
+      - Premium location only spawns once per day/week

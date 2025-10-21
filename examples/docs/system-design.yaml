@@ -1,0 +1,308 @@
+# System Design
+# Architecture, components, data flow, and technical decisions.
+
+status: draft
+last_updated: 2025-01-27
+
+overview:
+  goal: "Build a location-based mobile RPG with real-time GPS tracking, combat mechanics, and crafting progression. System must handle location queries, combat sessions, AI item generation, and persistent user data. Designed for thousands of concurrent mobile clients with low latency (<500ms API response)."
+  architecture_diagram: |
+    ```mermaid
+    graph TB
+        subgraph "iOS/macOS Client"
+            A[SwiftUI App] --> B[CoreLocation GPS]
+            A --> C[SwiftData Cache]
+            A --> D[Google Maps SDK]
+        end
+
+        subgraph "Backend API (Express.js)"
+            E[API Gateway] --> F[Auth Middleware]
+            F --> G[Location Service]
+            F --> H[Combat Service]
+            F --> I[Inventory Service]
+            F --> J[Crafting Service]
+            F --> K[AI Generation Service]
+        end
+
+        subgraph "Data Layer"
+            L[Supabase PostgreSQL]
+            M[Supabase Auth]
+            N[Redis Cache]
+        end
+
+        subgraph "Style System"
+            O[StyleDefinitions]
+            P[Style Inheritance Logic]
+        end
+
+        subgraph "External Services"
+            Q[Google Maps API]
+            R[AI Provider (OpenAI/Anthropic)]
+        end
+
+        A -->|HTTPS/JSON| E
+        B -->|Coordinates| A
+        D -->|Map Tiles| Q
+        G --> L
+        H --> L
+        H --> N
+        I --> L
+        J --> L
+        J --> O
+        K --> R
+        K --> L
+        F --> M
+    ```
+
+core_components:
+  - component: "iOS/macOS Client (SwiftUI)"
+    description: "Native mobile app for iOS 17+ and macOS 14+. Handles UI rendering, GPS tracking, map display, combat animations, and local data caching with SwiftData. Communicates with backend via REST APIs."
+    dependencies:
+      - "Google Maps SDK for iOS"
+      - "CoreLocation framework"
+      - "SwiftData for offline caching"
+      - "Supabase Swift SDK for auth"
+
+  - component: "API Gateway (Express.js)"
+    description: "RESTful API backend serving all client requests. Routes to service modules, enforces authentication via JWT middleware, handles error responses. Deployed on Railway with auto-scaling."
+    dependencies:
+      - "Express.js 4.16.x"
+      - "Supabase Auth for JWT validation"
+      - "CORS middleware for client requests"
+
+  - component: "Location Service"
+    description: "Manages spawn locations and level-aware pool system for enemy/loot assignments. Handles /locations/nearby queries with geospatial distance calculations. Implements tag/filter-based pool system where pools are level-specific and apply based on location attributes (location_type, state, country, coordinates). Returns locations within radius sorted by distance with dynamically assigned enemies from matching pools."
+    dependencies:
+      - "PostgreSQL PostGIS extension for geo queries"
+      - "Locations table with location_type, state_code, country_code metadata"
+      - "EnemyPools and LootPools with filter-based matching logic"
+      - "Pool member tables for weighted random selection"
+
+  - component: "Combat Service"
+    description: "Manages combat sessions in-memory (Redis) with TTL expiration. Calculates damage based on player stats, enemy stats, and timing multiplier. Awards items/pets on victory. Uses level-aware pool system to dynamically select enemies and loot drops based on player level and location attributes. Enemies with style_id drop materials with matching style_id for visual consistency."
+    dependencies:
+      - "Redis for session storage (TTL: 15 min)"
+      - "Items and enemies tables"
+      - "EnemyPools and LootPools for dynamic assignment"
+      - "StyleDefinitions table for enemy style inheritance"
+      - "Stat calculation logic"
+
+  - component: "Inventory Service"
+    description: "Manages player-owned items and pets. Handles equipping/unequipping via UserEquipment table, stat aggregation from ItemMaterials and UserEquipment joins. Validates item ownership before mutations."
+    dependencies:
+      - "Items table (user_id FK)"
+      - "UserEquipment table for equipped state"
+      - "ItemMaterials table for material assignments"
+      - "Users table for ownership validation"
+
+  - component: "Material Application Service"
+    description: "Handles applying up to 3 materials to items (F-04). Manages material stacking (MaterialStacks keyed by user_id, material_id, style_id), creates MaterialInstances when applied, updates ItemMaterials junction table. Computes deterministic combo_hash including style_ids for image lookup. Sets item.is_styled=true if ANY applied material has style_id != 'normal'. If image not cached in ItemImageCache, synchronously generates unique composite image (20s via AI) showing item + materials with style effects, uploads to R2, caches globally for reuse."
+    dependencies:
+      - "MaterialStacks table (inventory with style_id key)"
+      - "MaterialInstances table (applied materials with style_id)"
+      - "ItemMaterials table (junction)"
+      - "StyleDefinitions table for style inheritance logic"
+      - "ItemImageCache table (global cache with style-aware hashing)"
+      - "AI Image Generation Service (R2 + Replicate)"
+      - "R2 storage for generated images"
+
+  - component: "AI Generation Service"
+    description: "Generates unique item descriptions and stat distributions via AI (OpenAI/Anthropic). Also generates pet personality dialogue (F-11) and enemy trash-talk (F-12) during combat. Validates stat distributions sum to 1.0. Caches generated items to avoid regeneration. For pet chatter (F-11), uses personality prompts and combat context to generate supportive dialogue. For enemy chatter (F-12), uses enemy type traits and player history to generate antagonistic trash-talk."
+    dependencies:
+      - "OpenAI or Anthropic API (gpt-4.1-nano or gpt-4.1-mini recommended)"
+      - "Item_templates table for caching"
+      - "Pet_personalities seed data for dialogue generation (F-11)"
+      - "Enemy_types seed data for trash-talk generation (F-12)"
+      - "Player_combat_history for enemy AI context (F-12)"
+      - "Combat session context from Redis (F-11, F-12)"
+
+  - component: "Style System (StyleDefinitions)"
+    description: "Manages visual style variants for items and materials (F-05). StyleDefinitions table defines available styles with spawn_rate, style_name, and visual_modifier. Enemies with style_id drop materials with matching style_id. Items inherit styled status (is_styled=true) when ANY applied material has style_id != 'normal'. MaterialStacks keyed by (user_id, material_id, style_id) to separate inventory by style. Style inheritance ensures visual consistency across combat→materials→items."
+    dependencies:
+      - "StyleDefinitions table with spawn rates and visual modifiers"
+      - "EnemyTypes.style_id for determining material drops"
+      - "MaterialStacks with style_id composite key"
+      - "MaterialInstances.style_id for applied materials"
+      - "Items.is_styled computed from applied materials"
+      - "Image generation system for style-aware combo_hash"
+
+  - component: "Supabase PostgreSQL"
+    description: "Primary database for all persistent data including core entities (Users, Items, ItemTypes, Materials, MaterialInstances), normalized equipment (UserEquipment, Loadouts, LoadoutSlots), materials system (ItemMaterials), style system (StyleDefinitions, MaterialStacks with style_id), pet system (Pets, PetPersonalities), enemy AI (EnemyTypes with style_id, PlayerCombatHistory), and analytics (CombatChatterLog, EnemyChatterLog). Full schema documented in data-plan.yaml including style inheritance architecture. Provides geospatial queries via PostGIS, ACID transactions, and row-level security."
+    dependencies:
+      - "Supabase hosted PostgreSQL"
+      - "PostGIS extension for location queries"
+      - "StyleDefinitions table for visual style system"
+      - "Comprehensive schema design in data-plan.yaml"
+
+  - component: "Supabase Auth"
+    description: "Manages user authentication, password hashing, email verification, and JWT token issuance. Integrates with backend via JWT validation middleware."
+    dependencies:
+      - "Supabase Auth service"
+      - "Email provider for verification emails"
+
+  - component: "Redis Cache"
+    description: "In-memory cache for combat sessions, active location markers, and frequently accessed data. Reduces database load and improves API response time."
+    dependencies:
+      - "Redis Cloud or Railway Redis addon"
+
+data_flow: |
+  **User Registration Flow:**
+  1. Client → Supabase Auth: signUp({email, password})
+  2. Supabase Auth → Client: {access_token, refresh_token}
+  3. Client → Backend API: POST /profile/init (with token)
+  4. Backend → PostgreSQL: INSERT user record
+  5. Client → Map Screen
+
+  **Location Discovery Flow:**
+  1. Client CoreLocation → GPS coordinates (lat, lng)
+  2. Client → Backend API: GET /locations/nearby?lat={lat}&lng={lng}&radius=5000
+  3. Backend → PostgreSQL: SELECT locations WHERE distance(lat, lng) < 5000
+  4. Backend → Client: {locations: [{id, lat, lng, enemy_type, distance}]}
+  5. Client → Google Maps: Display markers
+
+  **Combat Flow:**
+  1. Client → Backend API: POST /combat/start {location_id}
+  2. Backend → PostgreSQL: SELECT location metadata (location_type, state_code, country_code, lat, lng)
+  3. Backend → PostgreSQL: Calculate player combat level from avg equipped item level
+  4. Backend → PostgreSQL: Query matching EnemyPools based on combat level and location filters
+  5. Backend → PostgreSQL: Aggregate EnemyPoolMembers, select enemy via weighted random
+  6. Backend → PostgreSQL: Query matching LootPools for later drop calculation
+  7. Backend → PostgreSQL: SELECT Items JOIN UserEquipment WHERE user_id = {player_id} AND UserEquipment.item_id IS NOT NULL
+  8. Backend → Redis: Store combat session {player_hp, enemy_hp, stats, applied_pools}
+  9. Backend → Client: {session_id, enemy, player_stats}
+  10. Client → Backend API: POST /combat/attack {session_id, tap_accuracy}
+  11. Backend → Redis: GET session, calculate damage, update HPs
+  12. Backend → Client: {damage_dealt, enemy_damage, player_hp, enemy_hp, status}
+  13. Repeat until victory/defeat
+  14. Client → Backend API: POST /combat/complete {session_id, result}
+  15. Backend → PostgreSQL: Use stored LootPools to calculate drops (if victory)
+  15a. Backend → PostgreSQL: SELECT enemy style_id from combat session
+  15b. Backend → PostgreSQL: INSERT materials with matching style_id (if victory)
+  16. Backend → PostgreSQL: INSERT items (if victory)
+  17. Backend → Client: {reward: {items, materials_with_styles}}
+
+  **Material Application Flow (F-04, with Image Generation):**
+  1. Client → Backend API: POST /items/{item_id}/materials/apply {material_instance_id, slot_index}
+  2. Backend → PostgreSQL: BEGIN TRANSACTION
+  3. Backend → PostgreSQL: Validate material ownership, slot availability (max 3)
+  4. Backend → PostgreSQL: INSERT ItemMaterials {item_id, material_instance_id, slot_index}
+  5. Backend → PostgreSQL: Compute material_combo_hash (sorted material_ids + style_ids)
+  6. Backend → PostgreSQL: SELECT ItemImageCache WHERE item_type_id={type} AND combo_hash={hash}
+  7a. If cached: Backend → PostgreSQL: UPDATE ItemImageCache.craft_count++, UPDATE Items.generated_image_url
+  7b. If not cached: Backend → AI Image Service: Generate image (item + materials, 20s sync)
+  8. (If 7b) Backend → R2: Upload generated image to R2 bucket
+  9. (If 7b) Backend → PostgreSQL: INSERT ItemImageCache {item_type_id, combo_hash, image_url, craft_count=1}
+  10a. Backend → PostgreSQL: Check if ANY applied material has style_id != 'normal'
+  10b. Backend → PostgreSQL: UPDATE Items {material_combo_hash, generated_image_url, is_styled, image_generation_status='complete'}
+  11. Backend → PostgreSQL: COMMIT
+  12. Backend → Client: {item, stats, image_url, is_first_craft: boolean, total_crafts: int}
+
+  **Pet Chatter Flow (F-11):**
+  1. Player equips pet → Client → Backend API: PUT /pets/{pet_id}/personality {personality_type}
+  2. Backend → PostgreSQL: INSERT/UPDATE player_pet_personalities
+  3. During combat: Player taps attack dial → Combat system calculates outcome
+  4. Client → Backend API: POST /combat/pet-chatter {session_id, event_type, event_details}
+  5. Backend → PostgreSQL: JOIN player_pet_personalities → get personality_type
+  6. Backend → PostgreSQL: SELECT pet_personalities WHERE personality_type = {type}
+  7. Backend → Redis: GET combat session context {player_hp, enemy_hp, turn_count}
+  8. Backend → AI Service: Construct prompt with personality + combat context + event
+     - System prompt: base_dialogue_style from pet_personalities
+     - Context: "Turn {turn}, Player HP: {hp}%, Enemy HP: {hp}%"
+     - Event: "Player attacked for {damage} damage (accuracy: {accuracy})"
+     - Instruction: "Generate 1-2 sentence reaction. Be {verbosity}."
+  9. AI Service → Backend: Generated dialogue (with 1-2s timeout)
+  10. Backend → PostgreSQL: INSERT combat_chatter_log (for analytics)
+  11. Backend → Client: {dialogue, personality_type, generation_time_ms}
+  12. Client: Display dialogue in speech bubble above pet sprite (2-3s duration)
+  13. If AI timeout/error → Fallback: select random example_phrase from pet_personalities
+
+  **Enemy Chatter Flow (F-12):**
+  1. Combat starts: Client → Backend API: POST /combat/start {location_id}
+  2. Backend → PostgreSQL: SELECT enemy type for location
+  3. Backend → PostgreSQL: SELECT/INSERT player_combat_history {player_id, location_id} (initialize if first attempt)
+  4. During combat: Combat event occurs (player hits, enemy hits, HP threshold, etc.)
+  5. Client → Backend API: POST /combat/enemy-chatter {session_id, event_type, event_details}
+  6. Backend → Redis: GET combat_session {enemy_type, player_id, location_id, combat_state}
+  7. Backend → PostgreSQL: SELECT enemy_types WHERE type = {enemy_type}
+  8. Backend → PostgreSQL: SELECT player_combat_history WHERE player_id + location_id
+  9. Backend → AI Service: Construct prompt with enemy personality + combat context + player history
+     - System prompt: base_dialogue_prompt from enemy_types (tone, traits)
+     - Context: "Turn {turn}, Enemy HP: {hp}%, Player HP: {hp}%"
+     - Player History: "Player has attempted {attempts} times ({victories}W/{defeats}L), current streak: {streak}"
+     - Event: "Player just {action} for {damage} damage (accuracy: {accuracy})"
+     - Instruction: "Generate 1-2 sentence trash-talk. Be {verbosity}. Tone: {dialogue_tone}."
+  10. AI Service → Backend: Generated dialogue (with 2s timeout)
+  11. Backend → PostgreSQL: INSERT enemy_chatter_log (for analytics)
+  12. Backend → Client: {dialogue, enemy_type, dialogue_tone, generation_time_ms, player_context_used}
+  13. Client: Display dialogue in speech bubble above enemy sprite (2-3s duration)
+  14. If AI timeout/error → Fallback: select random example_taunt from enemy_types.example_taunts
+  15. On combat end: Backend → PostgreSQL: UPDATE player_combat_history (increment attempts, victories/defeats, update streak)
+
+  **Style Inheritance Flow (F-05):**
+  1. Enemy spawns with style_id from EnemyTypes table
+  2. Combat victory → Backend determines material drops with enemy's style_id
+  3. Backend → PostgreSQL: INSERT MaterialStacks {user_id, material_id, style_id, quantity}
+  4. Player applies styled material → Material Application Service checks style_id
+  5. Backend → PostgreSQL: INSERT MaterialInstances {material_id, style_id, applied_to_item_id}
+  6. Backend → PostgreSQL: Check if ANY MaterialInstances for item have style_id != 'normal'
+  7. Backend → PostgreSQL: UPDATE Items.is_styled = (ANY applied material is styled)
+  8. Image generation → Include all style_ids in combo_hash for visual consistency
+  9. Generated item displays combined visual effects from all applied styled materials
+
+tech_stack:
+  frontend: "SwiftUI (native iOS/macOS), SwiftData (local persistence), CoreLocation (GPS), Google Maps SDK (map rendering)"
+  backend: "Express.js 4.16.x (Node.js), Supabase SDK (auth + database), Redis (session cache), OpenAI/Anthropic SDK (AI generation)"
+  database: "Supabase PostgreSQL with PostGIS (geospatial queries), Redis (in-memory cache for sessions)"
+  infrastructure: "Railway (backend hosting with auto-deploy), Supabase Cloud (database + auth), Redis Cloud (cache), Google Cloud (Maps API), OpenAI/Anthropic (AI API)"
+
+scalability_reliability:
+  load_expectations: |
+    - Light MVP (3 days): 10 concurrent users, local testing only
+    - Full MVP (2 weeks): 100 concurrent users, beta testers
+    - Finished Product (2 months): 1,000+ concurrent users, public launch
+    - API response time target: <500ms for location/inventory queries, <200ms for combat actions
+    - Database: ~10k locations globally, ~100k items/pets, ~1k active combat sessions at peak
+
+  redundancy: |
+    - Database: Supabase provides automated backups (daily snapshots, point-in-time recovery)
+    - Backend: Railway auto-restarts on failure (max 10 retries per policy)
+    - Redis: Ephemeral data (combat sessions) can be reconstructed, acceptable to lose on crash
+    - Client: SwiftData caches critical data (inventory, equipped items) for offline resilience
+
+  observability: |
+    - Logging: Express.js Morgan middleware for request logging, sent to Railway logs
+    - Monitoring: Railway dashboard for uptime, response time, error rate
+    - Alerts: Configure Railway alerts for 5xx errors, response time > 2s, crash events
+    - Analytics: Track key metrics (combat win rate, crafting frequency, location visits) via custom events to backend
+    - Error Tracking: Sentry integration for client and backend error reporting (post-MVP)
+
+security:
+  authentication: "Supabase Auth with JWT tokens (1hr expiry), refresh tokens (30 days), secure Keychain storage on client"
+  authorization: "Row-level security (RLS) in Supabase ensures players can only access their own items/inventory"
+  api_security: "HTTPS only (enforced by Railway), CORS restricted to mobile app origins, rate limiting (100 req/min per IP)"
+  data_privacy: "Email/password hashed by Supabase (bcrypt), no PII stored beyond email, GDPR-compliant account deletion endpoint"
+
+performance_optimizations:
+  client: |
+    - SwiftData caches inventory, equipment locally (reduces API calls)
+    - Map markers clustered when zoomed out (reduces rendering load)
+    - Lazy loading for inventory lists (paginate 50 items at a time)
+    - Combat animations at 60fps (hardware-accelerated SwiftUI)
+
+  backend: |
+    - Redis caches active combat sessions (avoid DB queries per attack)
+    - Location queries use PostGIS spatial index (O(log n) lookups)
+    - AI-generated items cached in item_templates (avoid redundant API calls)
+    - Database connection pooling (max 20 connections via Supabase)
+
+  database: |
+    - Indexes on: owner_id, location_id, is_equipped, session_id
+    - Geospatial index on locations (lat, lng) via PostGIS
+
+future_considerations:
+  - Real-time multiplayer: WebSocket server for live co-op battles (Phase 2)
+  - Trading system: Item marketplace with escrow transactions (Phase 2)
+  - Leaderboards: Global/regional rankings by total stats or rare items collected
+  - Push notifications: Daily quests, event notifications, crafting completion
+  - Offline mode: Allow combat with cached enemies, sync on reconnect
+  - Analytics dashboard: Admin panel to monitor game balance, player retention, economy health

@@ -1,0 +1,103 @@
+title: Technical Specification - User Authentication
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-07
+status: planned
+last_updated: 2025-10-19
+
+summary: "Secure user registration, login, and session management via Supabase Auth. Supports email/password authentication with email verification, password reset, and persistent sessions."
+
+functional_overview:
+  core_logic: "Supabase Auth handles user accounts, password hashing, email verification, and JWT token generation. Client stores session token securely. On app launch, check for valid session and auto-login. All API requests include Authorization header with JWT token."
+  data_schema: "Supabase auth.users table (managed by Supabase), custom users table for game profile"
+  api_endpoints:
+    - "Supabase: supabase.auth.signUp()"
+    - "Supabase: supabase.auth.signInWithPassword()"
+    - "Supabase: supabase.auth.signOut()"
+    - "Custom: GET /profile"
+  integration_points:
+    - "Supabase Auth service"
+    - "All backend APIs require auth"
+
+detailed_design:
+  data_structures:
+    - name: "users (custom game profile)"
+      columns:
+        - "id: UUID (PK, matches Supabase auth.users.id)"
+        - "email: VARCHAR (from Supabase)"
+        - "username: VARCHAR (optional, unique)"
+        - "level: INT (default 1)"
+        - "total_atk: INT (from equipped items)"
+        - "total_def: INT"
+        - "total_hp: INT"
+        - "created_at: TIMESTAMP"
+        - "last_login: TIMESTAMP"
+
+  apis:
+    - method: "POST"
+      endpoint: "Supabase Auth: signUp"
+      request: "{email, password}"
+      response: "{user: {id, email}, session: {access_token, refresh_token}}"
+      errors:
+        - "400: Invalid email or weak password"
+        - "422: Email already registered"
+
+    - method: "POST"
+      endpoint: "Supabase Auth: signInWithPassword"
+      request: "{email, password}"
+      response: "{user: {id, email}, session: {access_token, refresh_token}}"
+      errors:
+        - "400: Invalid credentials"
+
+    - method: "GET"
+      endpoint: "/profile"
+      request: "Header: Authorization Bearer {access_token}"
+      response: "{id, email, username, level, total_atk, total_def, total_hp, created_at}"
+      errors:
+        - "401: Unauthorized (invalid or expired token)"
+
+    - method: "POST"
+      endpoint: "Supabase Auth: signOut"
+      request: "Header: Authorization Bearer {access_token}"
+      response: "{success: true}"
+      errors: []
+
+  diagrams: |
+    Registration Flow:
+    1. Player enters email/password → Client validates format
+    2. Client: supabase.auth.signUp({email, password})
+    3. Supabase: Create user in auth.users, send verification email
+    4. Supabase: Return session tokens (access_token, refresh_token)
+    5. Client: Store tokens in Keychain (secure)
+    6. Client: Create game profile via POST /profile/init
+    7. Backend: Create user record in users table
+    8. Client: Redirect to onboarding/map
+
+    Login Flow:
+    1. Player enters email/password
+    2. Client: supabase.auth.signInWithPassword({email, password})
+    3. Supabase: Validate credentials, return session tokens
+    4. Client: Store tokens in Keychain
+    5. Client: GET /profile to load player data
+    6. Client: Redirect to map
+
+    Session Management:
+    - Access token expires after 1 hour
+    - Refresh token used to get new access token
+    - On app launch: Check for valid session → Auto-login
+    - On API 401 error: Refresh token → Retry request
+    - On refresh failure: Redirect to login
+
+dependencies:
+  libraries: "Supabase Swift SDK (pod 'Supabase'), Keychain for token storage"
+  services: "Supabase Auth service, backend profile API"
+  data_sources: "Supabase auth.users (managed), custom users table"
+
+implementation_status:
+  notes:
+    - "Light MVP: Skip auth (local-only, hardcoded user)"
+    - "Full MVP: Supabase Auth integration, registration, login, session management"
+    - "Finished: Email verification enforcement, password reset, OAuth providers (Google/Apple), account deletion"
+
+user_stories:
+  - US-601
+  - US-602

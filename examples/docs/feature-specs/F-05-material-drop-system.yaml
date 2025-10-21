@@ -1,0 +1,151 @@
+title: Technical Specification - Material Drop System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-05
+status: planned
+last_updated: 2025-10-20
+
+summary: "Enemies drop gold (100% chance) and materials (60% chance). Material drops use tier-based rarity system with derived strength classification. Drop weights calculated as base_drop_weight × tier_multiplier from LootPoolTierWeights. Enemy level equals player's average equipped item level."
+
+functional_overview:
+  core_logic: "On combat victory, roll for material drop (60% chance). If success, select weighted random material from location-specific LootPool using tier-based system. Materials auto-classified into tiers (common/uncommon/rare/epic) based on stat modifier magnitude. Drop weights = base_drop_weight × tier_multiplier. Always award gold (random amount in enemy's level-scaled range)."
+  data_schema: "LootPools (location-specific), LootPoolTierWeights (tier distribution), MaterialStrengthTiers (classification thresholds), v_loot_pool_material_weights (computed view)"
+  api_endpoints:
+    - "POST /combat/complete (returns rewards)"
+  integration_points:
+    - "Combat system (F-02) triggers on victory"
+    - "Materials system (F-04) receives dropped materials and provides base_drop_weight"
+    - "Base items (F-03) determine enemy level"
+    - "Tier-based system: MaterialStrengthTiers + LootPoolTierWeights control distribution"
+
+detailed_design:
+  data_structures:
+    - name: "MaterialStrengthTiers (tier classification)"
+      columns:
+        - "tier_name: TEXT (PK, 'common'/'uncommon'/'rare'/'epic')"
+        - "min_abs_sum: NUMERIC (inclusive threshold, e.g., 0.00 for common)"
+        - "max_abs_sum: NUMERIC (exclusive upper bound, e.g., 0.12 for common)"
+        - "NOTE: Materials auto-classified by sum of absolute stat modifier values"
+
+    - name: "LootPoolTierWeights (per-pool tier distribution)"
+      columns:
+        - "loot_pool_id: UUID (FK to LootPools)"
+        - "tier_name: TEXT (FK to MaterialStrengthTiers)"
+        - "weight_multiplier: NUMERIC(6,3) (default 1.0, e.g., rare=0.35, epic=0.15)"
+        - "PRIMARY KEY (loot_pool_id, tier_name)"
+        - "NOTE: Controls how common each tier is in specific pools"
+
+    - name: "v_loot_pool_material_weights (computed view)"
+      columns:
+        - "loot_pool_id: UUID"
+        - "material_id: UUID"
+        - "final_weight: INT (base_drop_weight × tier_multiplier, or LootPoolEntries override)"
+        - "NOTE: Materializes final drop weights per pool per material for selection"
+
+    - name: "combat_rewards (returned from API, not stored)"
+      columns:
+        - "gold_amount: INT"
+        - "material_dropped: {material_id, style_id} (null if no drop)"
+
+  apis:
+    - method: "POST"
+      endpoint: "/combat/complete"
+      request: "{session_id: UUID, result: 'victory' | 'defeat'}"
+      response: |
+        {
+          result: 'victory',
+          rewards: {
+            gold: 350,
+            material: {
+              material_id: 'flame',
+              name: 'Flame',
+              style_id: 'normal'
+            } // null if no drop
+          },
+          updated_balance: {
+            gold: 1850,
+            materials: [{material_id: 'flame', style_id: 'normal', quantity: 3}] // updated after adding drop
+          }
+        }
+      errors:
+        - "404: Combat session not found"
+        - "400: Combat not complete (enemy still alive)"
+
+  diagrams: |
+    Tier-Based Drop Calculation Flow (Server-Side):
+    1. Validate combat victory (enemy HP = 0)
+    2. Get enemy level from combat session
+    3. Roll for material drop: random(0, 1) < 0.6 ?
+    4. If material drop success:
+       a. Query v_loot_pool_material_weights for location's LootPool
+       b. Use weighted random selection based on final_weight values
+       c. Selected material inherits style from enemy: material.style_id = enemy.style_id
+       d. Create material reward: {material_id, style_id}
+    5. Calculate gold drop: random(enemy.gold_min, enemy.gold_max)
+    6. Update player inventory:
+       - player.gold += gold_drop
+       - MaterialStacks: increment quantity (or create new row if not owned)
+    7. Return rewards to client
+
+    Material Tier Classification (Runtime Computation):
+    1. Compute material strength score: ABS(atkPower) + ABS(atkAccuracy) + ABS(defPower) + ABS(defAccuracy)
+    2. Query MaterialStrengthTiers to find matching tier:
+       - Common: [0.00, 0.12) → Hello Kitty (abs_sum = 0.10)
+       - Uncommon: [0.12, 0.20) → Coffee (abs_sum = 0.15)
+       - Rare: [0.20, 0.28) → Cocaine (abs_sum = 0.25)
+       - Epic: [0.28, 1.00) → Diamond (abs_sum = 0.30)
+    3. Material tier determines drop frequency via LootPoolTierWeights
+
+    Drop Weight Calculation (Per Pool Per Material):
+    1. Base weight = Materials.base_drop_weight (default 100)
+    2. Tier multiplier = LootPoolTierWeights.weight_multiplier for pool + tier
+    3. Final weight = base_weight × tier_multiplier
+    4. Override: If LootPoolEntries exists for specific material, use drop_weight directly (0 = exclude)
+
+    Level-Gating Example (Hello Kitty Material):
+    - Hello Kitty: Uncommon tier (abs_sum = 0.10), inappropriate for early levels
+    - Level 1-8 pools: LootPoolEntries override with weight=0 (excluded)
+    - Level 9+ pools: Uses default uncommon multiplier 0.7 (reduced but present)
+    - Result: Hello Kitty only drops from level 9+ locations
+
+    Example Combat Victory with Tier System:
+    Player avg item level: 5
+    Enemy level: 5
+    Location: "Level 5 Coffee Shop" LootPool
+    Tier weights: Common=1.0, Uncommon=0.7, Rare=0.35, Epic=0.15
+
+    Available materials with final weights:
+    - Coffee (Uncommon): 100 × 0.7 = 70
+    - Gum (Common): 100 × 1.0 = 100
+    - Diamond (Epic): 100 × 0.15 = 15
+    Total weight pool: 185
+
+    Roll material drop: 0.57 < 0.6 → SUCCESS
+    Weighted selection: random(0, 185) = 120 → Gum selected (common tier)
+    Inherit style: enemy.style_id = 'caffeinated' → material.style_id = 'caffeinated'
+    Gold amount: random(500, 1000) → 743
+
+    Rewards: {gold: 743, material: {material_id: 'gum', style_id: 'caffeinated'}}
+
+dependencies:
+  libraries: "None (server-side random number generation)"
+  services: "Combat service, inventory service, RNG service"
+  data_sources: "enemies table, player_materials table, player gold balance"
+
+implementation_status:
+  notes:
+    - "Light MVP: Hardcoded enemy level = 3, fixed gold = 200, material drop = 100% for testing"
+    - "Full MVP: Tier-based drop system with MaterialStrengthTiers and LootPoolTierWeights, 60% material drop rate, level-scaled gold"
+    - "Material Tier System: Common [0.00,0.12), Uncommon [0.12,0.20), Rare [0.20,0.28), Epic [0.28,1.00) thresholds"
+    - "Drop Weight Examples: Level 1-8 pools exclude uncommon+ materials (weight=0), Level 9+ pools use default tier multipliers (common=1.0, uncommon=0.7, rare=0.35, epic=0.15)"
+    - "Auto-Integration: New materials instantly classified into tiers, appear in all pools with default multipliers, can be level-gated via LootPoolEntries overrides"
+    - "Finished: Location-specific drop pools, rare material drops, daily bonus drops, streak bonuses"
+
+balancing_parameters:
+  material_drop_rate: "60% (ensures steady material income without flooding inventory)"
+  style_inheritance: "Materials inherit enemy style_id (styled enemies drop styled materials, normal enemies drop normal materials)"
+  gold_scaling: "100-200 × enemy_level (allows ~5 upgrades per combat at same level)"
+  enemy_level_formula: "floor(avg_player_item_level) (enemies scale to player, always fair challenge)"
+
+user_stories:
+  - US-203 (updated: Complete Combat and Receive Drops)
+  - US-305 (new: View Combat Rewards)

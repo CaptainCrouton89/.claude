@@ -1,0 +1,27 @@
+title: Generate Items with AI
+story_id: US-501
+feature_id: F-05
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-19
+
+user_story:
+  as_a: "Backend System"
+  i_want: "to generate unique items with balanced stats using AI"
+  so_that: "each location and crafting result has distinct items stored in the database"
+
+acceptance_criteria:
+  - "[ ] Given new item needed, when generation triggered, then call AI with type, level, and generation"
+  - "[ ] Given AI response, when received, then validate stat distribution sums to 1.0 (ATK + DEF + HP)"
+  - "[ ] Given validated stats, when processed, then convert distribution to absolute values based on level"
+  - "[ ] Given item created, when saved, then store in database with description, type, stats, generation"
+  - "[ ] Given item already generated for location, when requested, then return existing item (not regenerate)"
+
+context:
+  why: "AI ensures unique item variety without manual design. Items generated once and reused to maintain consistency."
+  related: "Links to US-401 (Crafting), F-03 (Items)"
+
+technical_notes:
+  apis: "POST /ai/generate-item with schema: {type, level, generation}. Returns {description, stat_distribution}"
+  data: "Item types: head, armor, feet, accessory, weapon, offhand, pet. Stats: ATK/DEF/HP (0-1, sum=1). Level scales absolute values."
+  dependencies: "AI provider (OpenAI/Anthropic), database schema for items, caching to avoid regeneration"

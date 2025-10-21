@@ -1,0 +1,478 @@
+title: Technical Specification - Inventory Management System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-09
+status: planned
+last_updated: 2025-01-27
+
+summary: "Comprehensive inventory management system with item viewing, organizing, filtering, equipment management across 8 slots, and saved loadouts. Players can view all owned items, sort/filter by type/rarity/level, equip/unequip items to appropriate slots, and save/load equipment configurations for quick switching."
+
+functional_overview:
+  core_logic: "Players accumulate items through combat rewards and can organize them in a comprehensive inventory system. Items can be filtered by equipment slot (weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet), sorted by level/rarity/acquisition date, and equipped to 8 equipment slots. Post-MVP adds saved loadouts for quick equipment configuration switching. UserEquipment table is single source of truth for equipped state."
+  data_schema: "Items table with user ownership, UserEquipment table for current equipment state (8 slots), Loadouts/LoadoutSlots tables for saved configurations, ItemHistory for audit trail"
+  api_endpoints:
+    - "GET /inventory?filter_slot=weapon&sort_by=level&sort_order=desc"
+    - "GET /equipment (returns 8-slot equipment state)"
+    - "PUT /equipment/{slot_name} (equip item to slot)"
+    - "DELETE /equipment/{slot_name} (unequip slot)"
+    - "GET /loadouts, POST /loadouts, PUT /loadouts/{id}/activate (post-MVP)"
+  integration_points:
+    - "F-03 Base Items & Equipment (defines 8 equipment slots and item categories)"
+    - "F-04 Materials System (items show applied materials in inventory)"
+    - "F-06 Item Upgrade System (upgrade actions accessible from inventory)"
+    - "F-02 Combat System (equipped items determine player combat stats)"
+
+detailed_design:
+  data_structures:
+    - name: "user_equipment (single source of truth for equipment state)"
+      columns:
+        - "user_id: UUID (FK to Users, part of composite PK)"
+        - "slot_name: VARCHAR (FK to EquipmentSlots.slot_name, part of composite PK: weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet)"
+        - "item_id: UUID (nullable, FK to Items)"
+        - "equipped_at: TIMESTAMP (when item was equipped to this slot)"
+        - "PRIMARY KEY (user_id, slot_name)"
+        - "INDEX on (user_id, slot_name)"
+        - "INDEX on (item_id) WHERE item_id IS NOT NULL"
+
+    - name: "loadouts (saved equipment configurations - post-MVP)"
+      columns:
+        - "id: UUID (PK)"
+        - "user_id: UUID (FK to Users)"
+        - "name: VARCHAR (max 50 chars, player-defined name like 'Boss Build', 'Farming Build')"
+        - "is_active: BOOLEAN (default false, only ONE loadout can be active per user)"
+        - "created_at: TIMESTAMP"
+        - "updated_at: TIMESTAMP"
+        - "UNIQUE (user_id, name)"
+        - "UNIQUE (user_id, is_active) WHERE is_active = true (partial unique index)"
+
+    - name: "loadout_slots (items assigned to loadout slots - post-MVP)"
+      columns:
+        - "loadout_id: UUID (FK to Loadouts, part of composite PK)"
+        - "slot_name: VARCHAR (FK to EquipmentSlots.slot_name, part of composite PK)"
+        - "item_id: UUID (nullable, FK to Items)"
+        - "PRIMARY KEY (loadout_id, slot_name)"
+
+    - name: "item_history (audit trail for item lifecycle events)"
+      columns:
+        - "id: UUID (PK)"
+        - "item_id: UUID (FK to Items)"
+        - "user_id: UUID (FK to Users)"
+        - "event_type: VARCHAR (created, upgraded, material_applied, material_removed, equipped, unequipped, deleted)"
+        - "event_data: JSONB (flexible payload: {old_level, new_level, gold_spent, material_id, slot_name, etc.})"
+        - "created_at: TIMESTAMP"
+
+  apis:
+    - method: "GET"
+      endpoint: "/inventory"
+      request: "Header: Authorization Bearer token"
+      query_params:
+        - "slot_type: VARCHAR (optional filter: weapon, offhand, head, armor, feet, accessory, pet)"
+        - "sort_by: VARCHAR (level, rarity, created_at, name)"
+        - "sort_order: VARCHAR (asc, desc)"
+        - "limit: INT (pagination, default 50)"
+        - "offset: INT (pagination, default 0)"
+      response: "{items: [{id, name, item_type_id, category, level, rarity, applied_materials: [], is_styled, current_stats, is_equipped, equipped_slot, generated_image_url}], total_count, has_more}"
+      errors:
+        - "401: Unauthorized"
+
+    - method: "GET"
+      endpoint: "/equipment"
+      request: "Header: Authorization Bearer token"
+      response: "{equipment: {weapon: item_obj | null, offhand: item_obj | null, head: item_obj | null, armor: item_obj | null, feet: item_obj | null, accessory_1: item_obj | null, accessory_2: item_obj | null, pet: item_obj | null}, total_stats: {atkPower, atkAccuracy, defPower, defAccuracy, hp}, vanity_level, avg_item_level}"
+      note: "Queries UserEquipment table joined with Items, calculates total stats from all equipped items"
+      errors:
+        - "401: Unauthorized"
+
+    - method: "PUT"
+      endpoint: "/equipment/{slot_name}"
+      request: "{item_id: UUID}"
+      response: "{success: true, equipped_item: item_obj, previous_item: item_obj | null, total_stats: {atkPower, atkAccuracy, defPower, defAccuracy, hp}}"
+      note: "Replaces existing item in slot (if any). Updates UserEquipment table, recalculates Users.vanity_level and avg_item_level via trigger"
+      validation:
+        - "Item must belong to user (404 if not found)"
+        - "Slot type must match item category (400 if weapon equipped to head slot)"
+        - "Item cannot be equipped to multiple slots simultaneously"
+      side_effects:
+        - "Updates UserEquipment.item_id and equipped_at"
+        - "Database trigger recalculates Users.vanity_level (sum of equipped item levels)"
+        - "Database trigger recalculates Users.avg_item_level (average of equipped items for enemy scaling)"
+        - "Creates ItemHistory record with event_type='equipped'"
+      errors:
+        - "400: Item category does not match slot type"
+        - "400: Item already equipped in another slot"
+        - "404: Item not found or not owned by user"
+
+    - method: "DELETE"
+      endpoint: "/equipment/{slot_name}"
+      request: "Header: Authorization Bearer token"
+      response: "{success: true, unequipped_item: item_obj, total_stats: {atkPower, atkAccuracy, defPower, defAccuracy, hp}}"
+      note: "Sets UserEquipment.item_id to null for specified slot"
+      side_effects:
+        - "Sets UserEquipment.item_id = null"
+        - "Database trigger recalculates Users.vanity_level and avg_item_level"
+        - "Creates ItemHistory record with event_type='unequipped'"
+      errors:
+        - "400: Slot already empty"
+        - "404: Invalid slot name"
+
+    - method: "GET"
+      endpoint: "/loadouts"
+      request: "Header: Authorization Bearer token"
+      response: "{loadouts: [{id, name, is_active, equipment: {weapon: item_obj | null, ...}, created_at, updated_at}]}"
+      note: "Post-MVP feature. Returns all saved loadouts for user with full equipment details"
+      errors:
+        - "401: Unauthorized"
+
+    - method: "POST"
+      endpoint: "/loadouts"
+      request: "{name: string}"
+      response: "{success: true, loadout: {id, name, is_active: false, equipment: {}, created_at}}"
+      note: "Post-MVP feature. Saves current equipment configuration as new loadout"
+      validation:
+        - "Name max 50 characters"
+        - "Name must be unique per user"
+        - "User can have max 5 loadouts"
+      side_effects:
+        - "Creates Loadouts record"
+        - "Copies current UserEquipment state to LoadoutSlots for all 8 slots"
+      errors:
+        - "400: Name already exists or too long"
+        - "400: Maximum 5 loadouts per user"
+
+    - method: "PUT"
+      endpoint: "/loadouts/{id}/activate"
+      request: "Header: Authorization Bearer token"
+      response: "{success: true, activated_loadout: loadout_obj, total_stats: {atkPower, atkAccuracy, defPower, defAccuracy, hp}}"
+      note: "Post-MVP feature. Switches to saved loadout configuration"
+      side_effects:
+        - "Sets previous active loadout is_active = false"
+        - "Sets target loadout is_active = true"
+        - "Copies LoadoutSlots → UserEquipment for all 8 slots"
+        - "Database trigger recalculates Users.vanity_level and avg_item_level"
+        - "Creates ItemHistory records for each slot change"
+      validation:
+        - "Loadout must belong to user"
+        - "Skip slots where LoadoutSlots.item_id references non-existent items (items deleted since loadout saved)"
+      errors:
+        - "404: Loadout not found or not owned by user"
+
+    - method: "PATCH"
+      endpoint: "/loadouts/{id}"
+      request: "{name: string}"
+      response: "{success: true, loadout: loadout_obj}"
+      note: "Post-MVP feature. Rename loadout"
+      validation:
+        - "Name max 50 characters"
+        - "Name must be unique per user"
+      errors:
+        - "400: Name already exists or too long"
+        - "404: Loadout not found"
+
+    - method: "DELETE"
+      endpoint: "/loadouts/{id}"
+      request: "Header: Authorization Bearer token"
+      response: "{success: true}"
+      note: "Post-MVP feature. Delete saved loadout"
+      validation:
+        - "Cannot delete active loadout (must switch to different loadout first)"
+      side_effects:
+        - "Cascades delete to LoadoutSlots"
+      errors:
+        - "400: Cannot delete active loadout"
+        - "404: Loadout not found"
+
+  diagrams: |
+    Inventory Management Flow:
+    1. Player opens inventory → GET /inventory with optional filters
+    2. Items displayed with:
+       - Icon (from ItemTypes.appearance_data or Items.generated_image_url)
+       - Name, level, rarity indicator
+       - Equipped status and slot
+       - Applied materials (visual indicators)
+    3. Player filters by slot type → re-query with slot_type parameter
+    4. Player sorts by level/rarity → re-query with sort parameters
+
+    Equipment Management Flow:
+    1. Player opens equipment screen → GET /equipment
+    2. Display 8 slots with current items (or empty states)
+    3. Player equips item:
+       a. From inventory: tap item → show "Equip" button → PUT /equipment/{slot}
+       b. Drag and drop from inventory to slot → PUT /equipment/{slot}
+    4. Equipment API validates item category matches slot type
+    5. Database updates UserEquipment table
+    6. Triggers recalculate vanity_level and avg_item_level
+    7. UI updates with new total stats
+
+    Loadout System Flow (Post-MVP):
+    1. Player configures desired equipment setup
+    2. Save loadout → POST /loadouts with name
+    3. System copies current UserEquipment → LoadoutSlots
+    4. Switch loadouts → PUT /loadouts/{id}/activate
+    5. System copies LoadoutSlots → UserEquipment for all slots
+    6. UI updates with new equipment and stats
+
+    Equipment Slot Validation:
+    - weapon category → weapon slot only
+    - offhand category → offhand slot only
+    - head category → head slot only
+    - armor category → armor slot only
+    - feet category → feet slot only
+    - accessory category → accessory_1 OR accessory_2 slot
+    - pet category → pet slot only
+
+    Stat Calculation (real-time):
+    Total Player Stats = SUM(all equipped items' current_stats)
+    - Each equipped item contributes: base_stats * rarity_multiplier * level + material_modifiers
+    - Vanity Level = SUM(all equipped items' levels)
+    - Avg Item Level = AVG(all equipped items' levels) - used for enemy scaling
+
+dependencies:
+  libraries: "None (SwiftUI for UI, standard HTTP for API calls)"
+  services: "Backend inventory and equipment services, database triggers for stat calculation"
+  data_sources: "PostgreSQL UserEquipment table (equipment state), Items table (item instances), Loadouts/LoadoutSlots tables (saved configurations), ItemHistory table (audit trail)"
+
+implementation_status:
+  notes:
+    - "MVP Phase 1: Basic inventory viewing with GET /inventory (filtering, sorting, pagination)"
+    - "MVP Phase 2: Equipment management with GET /equipment, PUT /equipment/{slot}, DELETE /equipment/{slot}"
+    - "MVP Phase 3: Equipment UI with 8-slot visualization, drag-and-drop or tap-to-equip"
+    - "Post-MVP Phase 1: Loadouts backend with Loadouts/LoadoutSlots tables and APIs"
+    - "Post-MVP Phase 2: Loadouts UI with save/load/rename/delete functionality"
+    - "Database triggers implemented for real-time stat calculation on equipment changes"
+
+user_stories:
+  - US-302
+
+acceptance_criteria:
+  mvp_inventory_viewing:
+    - "AC-09-01: User can view list of all owned items with icon, name, level, rarity, equipped status"
+    - "AC-09-02: Items display applied materials visually (material icons or style effects)"
+    - "AC-09-03: User can filter items by equipment slot type (weapon, head, armor, etc.)"
+    - "AC-09-04: User can sort items by level (high to low), rarity (legendary to common), or acquisition date (newest first)"
+    - "AC-09-05: Inventory supports pagination for users with many items (50 items per page)"
+    - "AC-09-06: Equipped items show visual indicator and which slot they occupy"
+
+  mvp_equipment_management:
+    - "AC-09-07: User can view currently equipped items across all 8 slots (weapon, offhand, head, armor, feet, accessory_1, accessory_2, pet)"
+    - "AC-09-08: User can equip item to appropriate slot with 1-click/tap action"
+    - "AC-09-09: System prevents equipping item to wrong slot type (weapon to head slot shows error)"
+    - "AC-09-10: User can unequip item from any slot, returning it to inventory"
+    - "AC-09-11: Equipping item to occupied slot replaces previous item (previous item returns to inventory)"
+    - "AC-09-12: User sees warning when replacing equipped item ('Replace equipped sword with axe?')"
+    - "AC-09-13: Equipment changes update character total stats immediately (visible stat numbers)"
+    - "AC-09-14: Vanity level and avg item level update in real-time on equipment changes"
+
+  post_mvp_loadouts:
+    - "AC-09-15: User can save current equipment configuration as named loadout (max 50 char name)"
+    - "AC-09-16: User can have up to 5 saved loadouts"
+    - "AC-09-17: User can switch to saved loadout with 1-click action"
+    - "AC-09-18: Only one loadout can be active at a time"
+    - "AC-09-19: User can rename saved loadouts"
+    - "AC-09-20: User can delete saved loadouts (except active loadout)"
+    - "AC-09-21: Loadout switching handles missing items gracefully (item deleted since save)"
+    - "AC-09-22: Loadout switching shows preview of stat changes before confirmation"
+
+ui_ux_requirements:
+  inventory_screen:
+    layout: "Grid or list view of item cards with icons, names, level badges, rarity borders"
+    filters: "Top bar with slot filter buttons (All, Weapons, Armor, Accessories, Pets)"
+    sorting: "Sort dropdown with options: Level (High-Low), Rarity (Legendary-Common), Newest, Name A-Z"
+    pagination: "Load more button or infinite scroll for large inventories"
+    search: "Text search by item name (future enhancement)"
+
+  equipment_screen:
+    layout: "Visual representation of 8 equipment slots arranged around character silhouette or in organized grid"
+    slots: "Each slot shows equipped item icon/name or empty state placeholder"
+    drag_drop: "Drag items from inventory to appropriate slots (with visual feedback)"
+    tap_equip: "Tap item in inventory → show 'Equip to {slot}' button → confirmation"
+    stats_panel: "Real-time total stats display (ATK/DEF/HP/ACC) that updates on equipment changes"
+    warnings: "Modal confirmation when replacing equipped item"
+
+  item_detail_view:
+    display: "Full item stats, applied materials, level, rarity, description"
+    actions: "Equip/Unequip buttons, Upgrade button (links to F-06), Apply Materials button (links to F-04)"
+    materials: "Visual display of 3 material slots with applied materials or empty states"
+    stats_comparison: "Show stat changes if equipped ('ATK: 25 → 30 (+5)')"
+
+  loadout_manager_screen:
+    layout: "List of saved loadouts with names, active indicator, preview stats"
+    actions: "Save Current, Activate, Rename, Delete buttons for each loadout"
+    preview: "Hover/tap loadout shows equipment preview and stat comparison"
+    create_new: "Save current equipment configuration with name input dialog"
+
+business_rules:
+  equipment_constraints:
+    - "Each equipment slot can hold 0 or 1 item"
+    - "Items can only be equipped to matching category slots (weapon → weapon slot)"
+    - "Accessory category items can be equipped to either accessory_1 OR accessory_2 slot"
+    - "Pet category items can only be equipped to pet slot"
+    - "Players start with empty equipment slots (tutorial provides first items)"
+    - "Unequipping item returns it to inventory immediately"
+
+  inventory_limits:
+    - "No inventory size limit for MVP (unlimited item storage)"
+    - "Future enhancement: soft cap with expansion options"
+    - "Items are never auto-deleted (manual deletion only in future)"
+
+  loadout_constraints:
+    - "Maximum 5 saved loadouts per user"
+    - "Loadout names must be unique per user"
+    - "Only one loadout can be active at a time"
+    - "Cannot delete currently active loadout (must switch first)"
+    - "Loadouts save snapshot of equipment at creation time"
+    - "Missing items (deleted since loadout saved) are skipped during activation"
+
+  stat_calculation:
+    - "Total player stats = sum of all 8 equipped items' current_stats"
+    - "Vanity level = sum of all equipped items' levels"
+    - "Avg item level = average of equipped items' levels (used for enemy scaling)"
+    - "Stat changes are immediate on equip/unequip (no confirmation step)"
+    - "Empty slots contribute 0 to all calculations"
+
+edge_cases:
+  equipment_management:
+    - "What if user tries to equip item already equipped elsewhere? → Auto-unequip from current slot, equip to new slot"
+    - "What if user deletes item that's currently equipped? → Item removed from equipment slot via CASCADE trigger"
+    - "What if user tries to equip item they don't own? → 404 error, no state change"
+    - "What if user has no items to equip? → Empty equipment slots shown, total stats are base player stats only"
+
+  loadout_system:
+    - "What if loadout contains items user no longer owns? → Skip those slots during activation, warn user"
+    - "What if user tries to delete active loadout? → Error message, require switching to different loadout first"
+    - "What if user reaches 5 loadout limit? → Disable 'Save New' button, require deletion before creating new"
+    - "What if loadout activation would exceed slot limits? → Should not happen (loadouts save valid 8-slot configuration)"
+
+  inventory_display:
+    - "What if user has thousands of items? → Pagination prevents performance issues, 50 items per page"
+    - "What if item image generation failed? → Show placeholder icon or default item type icon"
+    - "What if user filters for slot type with 0 items? → Show empty state with message 'No weapons found'"
+
+implementation_notes:
+  database_design:
+    complexity: "Medium - normalized equipment state and audit trail"
+    estimated_effort: "2-3 weeks for MVP (inventory + equipment), +1 week for loadouts"
+    performance_considerations:
+      - "UserEquipment table has 8 rows per user (one per slot) - fast queries"
+      - "Items table will be largest (thousands per user) - needs pagination and indexes"
+      - "Database triggers maintain vanity_level and avg_item_level automatically"
+      - "ItemHistory grows over time - consider partitioning after 1M+ rows"
+
+  api_design:
+    authentication: "All endpoints require Bearer token authentication"
+    error_handling: "Consistent JSON error responses with error codes and messages"
+    validation: "Input validation on all endpoints (item ownership, slot types, etc.)"
+    caching: "Equipment state can be cached client-side, invalidated on changes"
+
+  ui_implementation:
+    platform_considerations:
+      - "SwiftUI for iOS with drag-and-drop support"
+      - "Real-time stat updates using @State and data binding"
+      - "Image loading with caching for item icons"
+      - "Responsive grid layouts for different screen sizes"
+
+phases:
+  mvp:
+    - "Implement Items and UserEquipment table queries"
+    - "Build GET /inventory with filtering, sorting, pagination"
+    - "Build GET /equipment and PUT/DELETE /equipment/{slot} APIs"
+    - "Create inventory list/grid UI with filters and sorting"
+    - "Create equipment screen with 8-slot visualization"
+    - "Add equip/unequip actions with real-time stat updates"
+    - "Implement database triggers for vanity_level calculation"
+
+  post_mvp:
+    - "Implement Loadouts and LoadoutSlots tables"
+    - "Build loadout CRUD APIs (GET/POST/PUT/DELETE /loadouts)"
+    - "Create loadout manager UI with save/load/rename/delete"
+    - "Add loadout activation with equipment preview"
+    - "Implement loadout stat comparison features"
+
+related_features:
+  - "F-03: Base Items & Equipment (defines 8 equipment slots and item categories)"
+  - "F-04: Materials System (items display applied materials in inventory)"
+  - "F-06: Item Upgrade System (upgrade actions accessible from inventory)"
+  - "F-02: Combat System (equipped items determine player combat stats)"
+
+events_to_track:
+  - event_name: "inventory_viewed"
+    trigger: "User opens inventory screen"
+    properties:
+      - "user_id: UUID"
+      - "filter_applied: string (nullable: weapon, head, armor, etc.)"
+      - "sort_by: string (level, rarity, created_at)"
+      - "item_count: int (total items user owns)"
+      - "timestamp: datetime"
+
+  - event_name: "item_equipped"
+    trigger: "User equips item to slot"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "item_type: string"
+      - "item_level: int"
+      - "slot_name: string"
+      - "replaced_item_id: UUID (nullable, if slot was occupied)"
+      - "new_total_stats: object {atkPower, atkAccuracy, defPower, defAccuracy, hp}"
+      - "new_vanity_level: int"
+      - "timestamp: datetime"
+
+  - event_name: "item_unequipped"
+    trigger: "User removes item from slot"
+    properties:
+      - "user_id: UUID"
+      - "item_id: UUID"
+      - "slot_name: string"
+      - "new_total_stats: object"
+      - "new_vanity_level: int"
+      - "timestamp: datetime"
+
+  - event_name: "loadout_created"
+    trigger: "User saves new loadout (post-MVP)"
+    properties:
+      - "user_id: UUID"
+      - "loadout_id: UUID"
+      - "loadout_name: string"
+      - "equipment_snapshot: object (8 slots with item_ids)"
+      - "timestamp: datetime"
+
+  - event_name: "loadout_activated"
+    trigger: "User switches to different loadout (post-MVP)"
+    properties:
+      - "user_id: UUID"
+      - "loadout_id: UUID"
+      - "previous_loadout_id: UUID (nullable)"
+      - "equipment_changes: int (number of slots that changed)"
+      - "new_total_stats: object"
+      - "timestamp: datetime"
+
+  - event_name: "equipment_screen_viewed"
+    trigger: "User opens equipment/gear screen"
+    properties:
+      - "user_id: UUID"
+      - "equipped_slots_count: int (how many of 8 slots have items)"
+      - "vanity_level: int"
+      - "avg_item_level: decimal"
+      - "timestamp: datetime"
+
+data_requirements:
+  existing_tables_used:
+    - "Items (player-owned item instances)"
+    - "ItemTypes (base item templates with categories)"
+    - "UserEquipment (current equipment state - single source of truth)"
+    - "EquipmentSlots (seed data defining 8 slots)"
+
+  new_tables_required:
+    - "Loadouts (saved equipment configurations - post-MVP)"
+    - "LoadoutSlots (items assigned to each loadout - post-MVP)"
+    - "ItemHistory (audit trail for equipment changes)"
+
+  database_triggers:
+    - "UserEquipment changes → recalculate Users.vanity_level and avg_item_level"
+    - "Items.level changes → recalculate user stats if item is equipped"
+    - "Equipment changes → create ItemHistory audit records"
+
+  indexes_required:
+    - "Items: (user_id, level DESC) for inventory sorting"
+    - "Items: (user_id, item_type_id) for item lookups"
+    - "UserEquipment: (user_id, slot_name) for equipment queries"
+    - "ItemHistory: (item_id, created_at DESC) for audit trail"
+    - "Loadouts: (user_id, is_active) for active loadout queries"

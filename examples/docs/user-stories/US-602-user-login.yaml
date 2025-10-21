@@ -1,0 +1,27 @@
+title: User Login
+story_id: US-602
+feature_id: F-07
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-10-19
+
+user_story:
+  as_a: "Returning Player"
+  i_want: "to log in with my email and password"
+  so_that: "I can access my saved progress and continue playing"
+
+acceptance_criteria:
+  - "[ ] Given launch screen, when player taps 'Log In', then display login form"
+  - "[ ] Given login form, when player enters credentials and submits, then authenticate via Supabase Auth"
+  - "[ ] Given valid credentials, when authenticated, then load player profile, inventory, and equipment from backend"
+  - "[ ] Given successful login, when complete, then redirect to map screen with player data loaded"
+  - "[ ] Given invalid credentials, when authentication fails, then show error and option to reset password"
+
+context:
+  why: "Login restores player state across sessions and devices. Must be fast and reliable."
+  related: "Links to US-601 (Registration), F-07 (Authentication)"
+
+technical_notes:
+  apis: "Supabase Auth: supabase.auth.signInWithPassword({email, password}). Then GET /profile, GET /inventory"
+  data: "Player profile: id, email, level, stats. Inventory: all owned items/pets. Equipment: current loadout."
+  dependencies: "Supabase session management, local caching with SwiftData for offline access"

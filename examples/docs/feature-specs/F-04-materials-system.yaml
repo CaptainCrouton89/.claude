@@ -1,0 +1,211 @@
+title: Technical Specification - Materials System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-04
+status: planned
+last_updated: 2025-10-20
+
+summary: "Collectible materials that modify item stats with zero-sum trade-offs. Materials stack in inventory (MaterialStacks), convert to unique instances when applied (MaterialInstances). Max 3 materials per item (hard limit). Styled materials are visual variants with normal stat effectiveness. Image generation creates combo-specific visuals cached globally with craft count tracking (20s sync for MVP, async with crafting times in later MVP)."
+
+functional_overview:
+  core_logic: "Materials stack in player inventory (MaterialStacks table). Applying material decrements stack, creates MaterialInstance, links via ItemMaterials. Triggers image generation on first application of new combo (20s sync). Global ItemImageCache stores combo images with craft_count. Material removal costs gold (100 × item level) and returns material to stack. To replace material: remove old (costs gold, returns to stack) then apply new (consumes from stack)."
+  data_schema: "Materials (seed data), MaterialStacks (inventory), MaterialInstances (applied materials), ItemMaterials (junction), ItemImageCache (combo images)"
+  api_endpoints:
+    - "GET /materials"
+    - "GET /materials/inventory"
+    - "POST /items/{item_id}/materials/apply"
+    - "POST /items/{item_id}/materials/remove"
+  integration_points:
+    - "Base items (F-03) receive material modifications"
+    - "Drop system (F-05) awards materials from combat"
+    - "Combat stat calculation uses materialed items"
+
+detailed_design:
+  data_structures:
+    - name: "materials (seed data, 50 materials)"
+      columns:
+        - "id: VARCHAR (PK, e.g., 'coffee', 'cocaine', 'diamond', 'lube')"
+        - "name: VARCHAR ('Coffee', 'Cocaine', 'Diamond', 'Lube')"
+        - "description: TEXT ('Jittery energy increases attack but reduces accuracy')"
+        - "stat_modifiers: JSON {atkPower: +0.10, atkAccuracy: -0.05, defPower: -0.05, defAccuracy: 0} (must sum to 0)"
+        - "theme: VARCHAR (defensive, offensive, balanced, precision, chaotic)"
+
+    - name: "material_stacks (inventory stacking)"
+      columns:
+        - "user_id: UUID (part of composite PK, FK to users)"
+        - "material_id: UUID (part of composite PK, FK to materials)"
+        - "style_id: UUID (part of composite PK, FK to StyleDefinitions - styles stack separately)"
+        - "quantity: INT NOT NULL CHECK (quantity >= 0)"
+        - "updated_at: TIMESTAMP"
+        - "PRIMARY KEY (user_id, material_id, style_id)"
+        - "NOTE: When materials looted, increment quantity. When applied to items, decrement stack and create MaterialInstance."
+
+    - name: "material_instances (applied materials)"
+      columns:
+        - "id: UUID (PK)"
+        - "user_id: UUID (FK to users)"
+        - "material_id: UUID (FK to materials)"
+        - "style_id: UUID (FK to StyleDefinitions, visual variant with normal stat effectiveness)"
+        - "created_at: TIMESTAMP"
+        - "NOTE: Individual instances created when materials applied from MaterialStacks to items via ItemMaterials."
+
+    - name: "item_materials (junction table)"
+      columns:
+        - "id: UUID (PK)"
+        - "item_id: UUID (FK to items)"
+        - "material_instance_id: UUID (FK to material_instances, UNIQUE)"
+        - "slot_index: SMALLINT (0-2, which of 3 material slots)"
+        - "applied_at: TIMESTAMP"
+        - "UNIQUE (item_id, slot_index) - prevents duplicate slots"
+        - "UNIQUE (material_instance_id) - prevents reusing material"
+
+    - name: "item_image_cache (global combo cache)"
+      columns:
+        - "id: UUID (PK)"
+        - "item_type_id: UUID (FK to ItemTypes)"
+        - "combo_hash: TEXT NOT NULL (deterministic hash: sorted material_ids + style flags)"
+        - "image_url: TEXT NOT NULL (R2 URL to generated composite image)"
+        - "craft_count: INT NOT NULL DEFAULT 1 (how many times this combo crafted across all users)"
+        - "provider: VARCHAR (AI provider: gemini, seedream, etc.)"
+        - "created_at: TIMESTAMP"
+        - "UNIQUE (item_type_id, combo_hash)"
+        - "NOTE: Global cache reused across all users. On first combo application, generate image (20s sync), upload to R2, create row."
+
+  apis:
+    - method: "GET"
+      endpoint: "/materials"
+      request: "No auth required (library of all materials)"
+      response: "{materials: [{id, name, description, stat_modifiers, theme}]}"
+      errors: []
+
+    - method: "GET"
+      endpoint: "/materials/inventory"
+      request: "Header: Authorization Bearer token"
+      response: "{materials: [{material_id, name, style_id, quantity}]}"
+      note: "Returns MaterialStacks table directly - quantity available for application"
+      errors:
+        - "401: Unauthorized"
+
+    - method: "POST"
+      endpoint: "/items/{item_id}/materials/apply"
+      request: "{material_id: UUID, style_id: UUID, slot_index: INT (0-2)}"
+      note: "Decrements MaterialStacks.quantity, creates MaterialInstance, links via ItemMaterials. Triggers image generation if new combo."
+      response: "{success: true, item: {id, base_type, level, applied_materials, computed_stats}, is_first_craft: BOOLEAN, craft_count: INT}"
+      errors:
+        - "400: Item already has 3 materials (max reached)"
+        - "404: Item or material not found"
+        - "400: Material not owned or quantity = 0"
+        - "423: Image generation in progress (20s), try again"
+
+    - method: "POST"
+      endpoint: "/items/{item_id}/materials/remove"
+      request: "{material_index: INT (0-2), gold_cost: INT}"
+      note: "Deletes ItemMaterials row, deletes MaterialInstance, increments MaterialStacks (returns material to stack). Recomputes combo_hash and triggers image generation if new combo."
+      response: "{success: true, gold_spent: INT, item: {updated item with removed material}, is_first_craft: BOOLEAN, craft_count: INT}"
+      errors:
+        - "400: Insufficient gold"
+        - "400: Invalid material index or slot empty"
+        - "404: Item not found"
+        - "423: Image generation in progress (20s), try again"
+
+  diagrams: |
+    Material Application Flow (MaterialStacks → MaterialInstances):
+    1. Player views item detail screen
+    2. Player taps "Apply Material" button
+    3. System shows MaterialStacks (material_id, style_id, quantity) filtered for materials not already on item
+    4. Player selects material from stack
+    5. System validates: item.applied_materials.length < 3 AND MaterialStacks.quantity >= 1
+    6. System decrements MaterialStacks.quantity by 1
+    7. System creates MaterialInstance row (user_id, material_id, style_id)
+    8. System creates ItemMaterials row linking item_id + material_instance_id + slot_index
+    9. System computes combo_hash from sorted material_ids + style flags (order-independent)
+    10. System checks ItemImageCache for existing combo image
+    11a. If cache hit: use existing image_url, increment craft_count
+    11b. If cache miss: trigger 20s sync image generation, upload to R2, create ItemImageCache row with craft_count=1
+    12. System recalculates item stats (base + all material modifiers × level)
+    13. Client displays updated item stats, image, and "X players have crafted this combo" if craft_count > 1
+
+    Material Removal Flow (Returns to Stack):
+    1. Player views item with materials applied
+    2. Player taps "Remove Material" button on specific material slot
+    3. System displays gold cost (100 × item level)
+    4. Player confirms removal
+    5. System validates sufficient gold
+    6. System deletes ItemMaterials row for that slot
+    7. System deletes MaterialInstance
+    8. System increments MaterialStacks.quantity (returns material to stack)
+    9. System recomputes combo_hash and triggers image generation workflow (steps 10-11 above)
+    10. System recalculates item stats
+    11. Client displays updated item, image, and gold balance
+
+    Note: To replace a material, player must remove old material (returns to stack), then apply new material (consumes from stack). Two separate operations.
+
+    Image Generation Workflow (20s Sync on First Craft):
+    1. System computes combo_hash: SHA256(sorted[material_ids] + style_flags)
+    2. System queries ItemImageCache WHERE item_type_id AND combo_hash
+    3a. Cache HIT: return image_url, increment craft_count, notify if is_first_craft=false
+    3b. Cache MISS: proceed to generation
+    4. System calls generate-image.ts with item_type + materials + style flags
+    5. AI pipeline checks R2 for item/material reference images (generates missing ones)
+    6. AI generates composite image using R2 references (Gemini/Seedream, ~20s)
+    7. System uploads final image to R2 at items-crafted/{item_type_slug}/{combo_hash}.png
+    8. System creates ItemImageCache row (item_type_id, combo_hash, image_url, craft_count=1)
+    9. System returns image_url to client with is_first_craft=true notification
+
+    Stat Modifier Combination:
+    Base item: {atkPower: 0.4, atkAccuracy: 0.2, defPower: 0.3, defAccuracy: 0.1}
+    Material 1: {atkPower: -0.1, atkAccuracy: 0, defPower: +0.1, defAccuracy: 0}
+    Material 2: {atkPower: +0.2, atkAccuracy: -0.1, defPower: -0.1, defAccuracy: 0}
+    Material 3: {atkPower: 0, atkAccuracy: +0.1, defPower: 0, defAccuracy: 0}
+
+    Combined = base + sum(material modifiers)
+    {atkPower: 0.4-0.1+0.2+0 = 0.5, atkAccuracy: 0.2+0-0.1+0.1 = 0.2, defPower: 0.3+0.1-0.1+0 = 0.3, defAccuracy: 0.1}
+
+    Note: Styled materials have normal stat effectiveness (same modifiers as non-styled variants). Style only affects visual appearance.
+
+dependencies:
+  libraries: "AWS S3 SDK (for R2 operations), crypto (for combo_hash generation)"
+  services: "Backend materials API, stat calculation service, AI image generation pipeline (generate-image.ts), Cloudflare R2 storage, Replicate/OpenAI APIs"
+  data_sources: "Materials seed data (JSON file), MaterialStacks table, MaterialInstances table, ItemMaterials table, ItemImageCache table"
+
+implementation_status:
+  notes:
+    - "Light MVP: MaterialStacks table, hardcode 10 common materials, local stat calculation, simple apply (no replace), no image generation"
+    - "Full MVP: Backend API, 50 materials seed data, MaterialStacks ↔ MaterialInstances flow, material removal (100 × item level gold cost), styled materials (visual variants with normal stat effectiveness), ItemImageCache with combo_hash, 20s sync image generation, craft_count tracking"
+    - "Later MVP: Async image generation with crafting times, push notifications on completion, placeholder images during generation"
+    - "Finished: Visual effects for styled materials, material preview before apply, undo last material (grace period), material trading/gifting, 'X players crafted this combo' notifications, is_first_craft celebrations"
+    - "Note: Material removal + apply = replacement flow. Two separate operations for clarity."
+    - "Materials range from tame (Coffee, Gum, Paper) to edgy (Cocaine, Lube) to extreme (Diamond, Plasma, Lightning)"
+    - "Image generation: On-demand combo images cached globally, deterministic combo_hash for cache hits, R2 storage at items-crafted/{item_type_slug}/{combo_hash}.png"
+    - "Material Rarity: Auto-classified into strength tiers (common/uncommon/rare/epic) based on stat modifier magnitude. Tiers are derived at runtime using MaterialStrengthTiers thresholds - not stored as material property."
+    - "Drop Rate Control: base_drop_weight serves as per-material baseline for drop calculations. Final drop weights computed as base_drop_weight × tier_multiplier from LootPoolTierWeights system."
+
+seed_data_example: |
+  Full seed data available in: docs/seed-data-materials.json
+
+  50 materials organized by theme:
+
+  COMMON (20 materials) - Small modifiers (±0.05 to ±0.10):
+  Coffee, Gum, Feather, Button, Candle, Pizza, Mushroom, Cactus, Sea Shell, Coral,
+  Wood, Paper, Fabric, Rubber, Plastic, Glass, Sand, Foam, Cotton, Dirt
+
+  UNCOMMON (15 materials) - Moderate modifiers (±0.08 to ±0.15):
+  Matcha Powder, Bubble, Slime, Propeller, Magnet, Colorful Ribbon, Sparkles, Comet,
+  Star, Flame, Denim, Chrome, Latex, Ice, A Cloud
+
+  RARE (10 materials) - Large modifiers (±0.15 to ±0.25), includes edgy content:
+  Rainbow, Lava, Ghost, Shadow, Goo, Cocaine, Lube, Void, Glitter, Neon Sign
+
+  EPIC (5 materials) - Extreme modifiers (±0.20 to ±0.30), highly unbalanced:
+  Diamond, Lightning, Laser Beam, Stardust, Plasma
+
+  Examples:
+  - Cocaine (Rare): {atkPower: +0.20, atkAccuracy: +0.15, defPower: -0.25, defAccuracy: -0.10} (extreme offense, severe defense penalty)
+  - Diamond (Epic): {atkPower: -0.25, atkAccuracy: -0.05, defPower: +0.25, defAccuracy: +0.05} (ultimate defense tank)
+  - Plasma (Epic): {atkPower: +0.28, atkAccuracy: +0.15, defPower: -0.30, defAccuracy: -0.13} (glass cannon offensive)
+  - Lube (Rare): {atkPower: -0.20, atkAccuracy: +0.05, defPower: -0.05, defAccuracy: +0.20} (evasion specialist)
+
+  All modifiers sum to 0 (zero-sum trade-offs)
+
+user_stories:
+  - US-303 (new: Apply Material to Item)
+  - US-304 (new: Remove Material from Item)

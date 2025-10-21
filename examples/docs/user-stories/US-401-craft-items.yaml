@@ -1,0 +1,29 @@
+title: Apply Materials to Items
+story_id: US-401
+feature_id: F-06
+template: ~/.claude/file-templates/init-project/user-stories/story-title.yaml
+status: planned
+last_updated: 2025-01-17
+
+user_story:
+  as_a: "Mobile RPG Player"
+  i_want: "to apply materials to my items to create enhanced variants"
+  so_that: "I can customize my equipment and improve my stats"
+
+acceptance_criteria:
+  - "[ ] Given inventory, when player enters crafting mode, then show all items available for material application"
+  - "[ ] Given crafting mode, when player selects an item, then show available materials (up to 3 per item)"
+  - "[ ] Given materials selected, when player previews, then show item stats changes and new appearance preview"
+  - "[ ] Given preview shown, when player confirms craft, then consume selected materials from inventory"
+  - "[ ] Given craft confirmed, when processing, then generate new item image synchronously (~20 seconds)"
+  - "[ ] Given image generated, when complete, then add enhanced item to inventory and remove base item"
+  - "[ ] Given materials already applied, when viewing item, then show applied materials and allow further customization"
+
+context:
+  why: "Material application is the primary item customization system. Players enhance items by applying 1-3 materials to change appearance and stats."
+  related: "Links to US-301 (Inventory), F-05 (AI Generation), F-04 (Materials), F-03 (Items)"
+
+technical_notes:
+  apis: "POST /crafting/apply-materials with item_id and material_ids. Returns enhanced item with new image URL."
+  data: "Materials are stackable. Items can have 0-3 materials applied. Each combination generates unique image/stats."
+  dependencies: "AI image generation for material combinations, material stat bonuses, inventory management"

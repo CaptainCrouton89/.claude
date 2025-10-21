@@ -1,0 +1,85 @@
+title: Account & Profile Management
+template: ~/.claude/file-templates/init-project/user-flows/user-flow-title.yaml
+status: draft
+last_updated: 2025-10-19
+
+key_personas:
+  - "New Player - Creating account for first time"
+  - "Returning Player - Logging back into existing account"
+
+primary_flows:
+  - name: "Registration Flow"
+    trigger: "New user wants to create account"
+    steps:
+      - "Player taps 'Sign Up' on launch screen"
+      - "Player enters email address"
+      - "Player enters password (with strength indicator)"
+      - "Player confirms password"
+      - "System validates email format and password strength"
+      - "Player submits registration"
+      - "System creates account via Supabase Auth"
+      - "Confirmation email sent"
+      - "Player auto-logged in or prompted to verify email"
+      - "Player redirected to onboarding tutorial"
+    outcome: "Player has account and can start playing"
+    edge_cases: |
+      - Email already registered: show error, link to login
+      - Weak password: prevent submission until strong enough
+      - Email verification required: player can play but features limited until verified
+
+  - name: "Login Flow"
+    trigger: "Returning player wants to access account"
+    steps:
+      - "Player taps 'Log In' on launch screen"
+      - "Player enters email and password"
+      - "Player taps 'Log In' button"
+      - "System authenticates via Supabase"
+      - "Player profile and inventory loaded from backend"
+      - "Player redirected to map screen"
+    outcome: "Player logged in with saved progress restored"
+    edge_cases: |
+      - Invalid credentials: show error, option to reset password
+      - Account locked: show message, contact support
+      - Network error: show retry option, offline mode limited
+
+secondary_flows:
+  - name: "Password Reset Flow"
+    trigger: "Player forgot password"
+    steps:
+      - "Player taps 'Forgot Password' on login screen"
+      - "Player enters email address"
+      - "System sends password reset email via Supabase"
+      - "Player opens email and taps reset link"
+      - "Player enters new password"
+      - "Player confirms new password"
+      - "System updates password"
+      - "Player redirected to login"
+    outcome: "Player can log in with new password"
+    edge_cases: |
+      - Email not found: show generic message for security
+      - Reset link expired: prompt to request new one
+
+  - name: "Profile Viewing Flow"
+    trigger: "Player wants to view stats and achievements"
+    steps:
+      - "Player taps profile icon from main menu"
+      - "System displays player name, level, total stats"
+      - "System shows collection stats (items collected, styled variants, etc.)"
+      - "System shows combat stats (battles won, locations visited)"
+      - "Player can view equipped loadout summary"
+    outcome: "Player sees their progress and achievements"
+    edge_cases: |
+      - Empty profile (new player): show starter message
+
+  - name: "Logout Flow"
+    trigger: "Player wants to log out"
+    steps:
+      - "Player opens settings menu"
+      - "Player taps 'Log Out'"
+      - "System confirms: 'Are you sure?'"
+      - "Player confirms"
+      - "System clears local session"
+      - "Player redirected to login screen"
+    outcome: "Player logged out, can switch accounts"
+    edge_cases: |
+      - Unsaved progress: warn before logout (though auto-save should prevent)

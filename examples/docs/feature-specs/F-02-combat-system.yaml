@@ -1,0 +1,160 @@
+title: Technical Specification - Combat System
+template: ~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
+feature_id: F-02
+status: planned
+last_updated: 2025-10-20
+
+summary: "Turn-based combat with weapon-specific timing dial mechanics. Different weapons have different dial patterns (single_arc, dual_arcs, pulsing_arc, roulette, sawtooth). Player taps moving dial with zone-based outcomes (miss/graze/normal/crit). Player accuracy stat scales zone sizes. Stats calculated from equipped items + pet. Enemy counterattacks after player turn. Combat ends when either HP reaches 0."
+
+functional_overview:
+  core_logic: "Initiate combat when player taps active location. Load enemy data and player's equipped weapon. Display weapon-specific dial pattern (single_arc/dual_arcs/pulsing_arc/roulette/sawtooth) with zone-based hit bands. Player accuracy stat adjusts zone sizes via fn_weapon_bands_adjusted(). On tap, determine hit zone (injure/miss/graze/normal/crit). Apply zone multipliers: injure=-50%, miss=0%, graze=60%, normal=100%, crit=160%+RNG. RNG adds 0-100% bonus multiplier on crit hits. Enemy counterattacks after player turn. Victory rewards materials matching enemy's style_id."
+  data_schema: "Combat sessions (in-memory cache, not persistent), EnemyTypes table, Weapons table (dial patterns + hit bands), player stats (from v_player_equipped_stats view)"
+  api_endpoints:
+    - "POST /combat/start"
+    - "POST /combat/attack"
+    - "POST /combat/complete"
+  integration_points:
+    - "Items system (F-03) for player stats"
+    - "Pets system (F-04) for pet bonus"
+    - "Location system (F-01) for enemy spawn"
+    - "Pool System: Enemy selection via EnemyPools based on combat level and location attributes"
+    - "Style System: Enemy styles determine reward material styles (styled enemies always drop styled materials)"
+
+detailed_design:
+  data_structures:
+    - name: "EnemyTypes (seed data, see data-plan.yaml)"
+      columns:
+        - "id: UUID (PK)"
+        - "name: VARCHAR (Spray Paint Goblin, Goopy Floating Eye, etc.)"
+        - "base_atk: INT (baseline attack)"
+        - "base_def: INT (baseline defense)"
+        - "base_hp: INT (baseline HP)"
+        - "tier_id: INT (FK to Tiers, determines difficulty scaling)"
+        - "style_id: UUID (FK to StyleDefinitions, default normal)"
+        - "NOTE: Enemy stats scale with tier: final_stats = base + offset + (tier_adds × (tier_num - 1)). Tiers can scale 1-20+. See data-plan.yaml for Tiers table and v_enemy_realized_stats view."
+
+    - name: "Weapons (per-item timing mechanics, see data-plan.yaml)"
+      columns:
+        - "item_id: UUID (PK, FK to Items where category='weapon')"
+        - "pattern: weapon_pattern ENUM (single_arc, dual_arcs, pulsing_arc, roulette, sawtooth)"
+        - "spin_deg_per_s: NUMERIC (rotation speed in degrees/second)"
+        - "deg_injure: NUMERIC (self-damage zone size in degrees)"
+        - "deg_miss: NUMERIC (miss zone size in degrees)"
+        - "deg_graze: NUMERIC (partial hit zone size in degrees)"
+        - "deg_normal: NUMERIC (normal hit zone size in degrees)"
+        - "deg_crit: NUMERIC (critical hit zone size in degrees)"
+        - "NOTE: Total degrees must not exceed 360. Player accuracy scales these via fn_weapon_bands_adjusted()"
+
+    - name: "combat_sessions (in-memory cache, NOT persistent database)"
+      storage: "In-memory cache or Redis (15min TTL) for active combat state"
+      columns:
+        - "session_id: UUID (PK)"
+        - "player_id: UUID"
+        - "enemy_type_id: UUID"
+        - "weapon_id: UUID (player's equipped weapon)"
+        - "player_hp: INT (current)"
+        - "enemy_hp: INT (current)"
+        - "turn_count: INT"
+        - "created_at: TIMESTAMP"
+        - "NOTE: Ephemeral session data, cleared after combat ends or 15min timeout"
+
+  apis:
+    - method: "POST"
+      endpoint: "/combat/start"
+      request: "{location_id: UUID}"
+      response: "{session_id, enemy: {id, type, atk, def, hp, style_id}, player_stats: {atk, def, hp}}"
+      errors:
+        - "404: Location not found or no enemy at location"
+        - "401: Unauthorized"
+
+    - method: "POST"
+      endpoint: "/combat/attack"
+      request: "{session_id: UUID, tap_position_degrees: FLOAT (0-360)}"
+      response: "{hit_zone: 'injure|miss|graze|normal|crit', base_multiplier: FLOAT, crit_bonus_multiplier: FLOAT (0-1.0, only if crit), damage_dealt: INT, player_hp_remaining: INT, enemy_hp_remaining: INT, enemy_damage: INT, combat_status: 'ongoing|victory|defeat'}"
+      note: "Server uses fn_weapon_bands_adjusted() to determine which zone was hit based on tap_position_degrees and player accuracy"
+      errors:
+        - "404: Session not found or expired"
+        - "400: Invalid tap_position_degrees (must be 0-360)"
+
+    - method: "POST"
+      endpoint: "/combat/complete"
+      request: "{session_id: UUID, result: 'victory|defeat'}"
+      response: "{reward: {item_id, type, stats, style_id}} (null if defeat)"
+      errors:
+        - "404: Session not found"
+
+  diagrams: |
+    Combat Flow (Weapon-Specific Dial Mechanics):
+    1. Player taps active location
+    2. Client: POST /combat/start → Get enemy + player stats + weapon dial config
+    3. Server: Load player's equipped weapon from Items → Weapons table
+    4. Server: Calculate accuracy-adjusted hit bands using fn_weapon_bands_adjusted(weapon_id, player_accuracy)
+    5. Server: Return enemy data (with tier-scaled stats), player stats, weapon pattern, adjusted hit bands
+    6. Client: Display combat UI with enemy image, stats, HP bars (styled based on enemy style_id)
+    7. Player's turn: Render weapon-specific dial pattern (single_arc/dual_arcs/pulsing_arc/roulette/sawtooth)
+    8. Client: Animate dial rotation at weapon's spin_deg_per_s speed
+    9. Client: Display color-coded zones based on adjusted hit bands:
+       - Red zone (injure): deg_injure (self-damage, -50% multiplier)
+       - Gray zone (miss): deg_miss (0% multiplier)
+       - Yellow zone (graze): deg_graze (60% multiplier)
+       - White zone (normal): deg_normal (100% multiplier)
+       - Green zone (crit): deg_crit (160% base + 0-100% RNG bonus)
+    10. Player taps → Calculate tap_position_degrees (0-360)
+    11. Client: POST /combat/attack with tap_position_degrees
+    12. Server: Determine hit_zone by checking tap_position against adjusted band ranges
+    13. Server: Apply zone multiplier to base damage
+    14. Server: If hit_zone = 'crit', roll RNG bonus multiplier (0.0-1.0) and add to base 1.6x
+    15. Server: Calculate damage = (player_ATK * total_multiplier) - enemy_DEF (min 1)
+    16. Server: If hit_zone = 'injure', apply negative multiplier (player takes damage)
+    17. Server: Calculate enemy counterattack = enemy_ATK - player_DEF (min 1)
+    18. Server: Update HPs, return {hit_zone, base_multiplier, crit_bonus_multiplier, damage_dealt, enemy_damage, status}
+    19. Client: Display hit zone feedback (color flash, haptics, damage numbers)
+    20. Client: Update HP bars
+    21. If ongoing: Repeat from step 7
+    22. If victory/defeat: POST /combat/complete
+    23. Server: Generate reward material with enemy's style_id (styled enemies always drop styled materials)
+    24. Client: Display result screen with styled reward (if victory)
+
+    Weapon Pattern Types:
+    - single_arc: Standard arc with 5 color-coded bands (most common)
+    - dual_arcs: Two parallel arcs, player can tap either for same bands
+    - pulsing_arc: Arc that dynamically expands/contracts, changing effective zone sizes
+    - roulette: Circular wheel divided into wedge-shaped zones
+    - sawtooth: Jagged pattern with irregular zone sizes for advanced players
+
+    Zone Outcome Multipliers (from data-plan):
+    - injure: -0.5x (self-damage, player loses HP instead of enemy)
+    - miss: 0.0x (no damage)
+    - graze: 0.6x (partial hit)
+    - normal: 1.0x (full hit)
+    - crit: 1.6x base + (0.0 to 1.0) RNG bonus = total 1.6x to 2.6x
+
+    Accuracy Scaling (fn_weapon_bands_adjusted):
+    - Low accuracy (e.g., 5): Large injure/miss zones, small crit zone
+    - Medium accuracy (e.g., 15): Balanced zones
+    - High accuracy (e.g., 30+): Small injure/miss zones, large crit zone
+    - Formula uses diminishing returns: accuracy scales bands but not linearly
+
+    UI Requirements:
+    - Dial color coding: injure=#FF4444 (red), miss=#666666 (gray), graze=#FFAA44 (yellow), normal=#FFFFFF (white), crit=#44FF44 (green)
+    - Haptic feedback: Heavy impact on crit, light impact on normal, no haptic on miss
+    - Animation: Screen flash on crit hit, damage number glow effect
+    - Visual indicator: Moving pointer/needle shows current tap position on dial
+    - Zone size visualization: Clearly delineate band boundaries with gradients or lines
+
+dependencies:
+  libraries: "SwiftUI for animations, Haptic feedback (UIImpactFeedbackGenerator)"
+  services: "Backend combat logic, fn_weapon_bands_adjusted() and fn_expected_mul_quick() PostgreSQL functions, stat calculation via v_player_equipped_stats and v_enemy_realized_stats views"
+  data_sources: "Player equipment from F-03 via v_player_equipped_stats, Weapons table for dial patterns, EnemyTypes with tier scaling, Tiers table (1-20+ tiers)"
+
+implementation_status:
+  notes:
+    - "Light MVP: Single weapon pattern (single_arc only), hardcoded 5 zones (no accuracy scaling), local damage calculation, 3 tiers max"
+    - "Full MVP: All 5 weapon patterns implemented, fn_weapon_bands_adjusted() for accuracy scaling, backend combat sessions (in-memory cache), tier-scaled enemies (1-10 tiers), zone-based hit detection, RNG crit bonuses"
+    - "Finished: Polished dial animations for all patterns, weapon-specific haptics, balanced zone sizing across accuracy ranges, 20+ enemy tiers, combat analytics, visual effects for each hit zone"
+    - "Critical: Weapon patterns must feel distinct (dual_arcs easier, sawtooth harder). Accuracy scaling should be noticeable (5 acc vs 30 acc feels very different)."
+
+user_stories:
+  - US-201
+  - US-202
+  - US-203
