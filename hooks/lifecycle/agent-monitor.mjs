@@ -89,25 +89,28 @@ function isPidActive(pid) {
   }
 }
 
-function extractUpdateContent(content, previousContent) {
-  // Get new lines added since last check
-  const currentLines = content.split('\n');
-  const previousLines = previousContent ? previousContent.split('\n') : [];
-
-  // Find lines with [UPDATE] marker that are new
+function extractUpdateContent(content, lastNotifiedLine = -1) {
+  // Only scan lines after the last notified update
+  const lines = content.split('\n');
   const updateLines = [];
-  for (let i = 0; i < currentLines.length; i++) {
-    const line = currentLines[i];
-    if (line.includes('[UPDATE]') && (i >= previousLines.length || previousLines[i] !== line)) {
+  let highestUpdateLine = lastNotifiedLine;
+
+  for (let i = lastNotifiedLine + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.includes('[UPDATE]')) {
       // Extract content after the marker
       const contentAfter = line.substring(line.indexOf('[UPDATE]') + 8).trim();
       if (contentAfter) {
         updateLines.push(contentAfter);
+        highestUpdateLine = i;
       }
     }
   }
 
-  return updateLines.join('\n');
+  return {
+    text: updateLines.join('\n'),
+    lastLine: highestUpdateLine
+  };
 }
 
 function getRelativePath(cwd, filePath) {
@@ -262,9 +265,10 @@ async function main() {
           }
 
           // File was updated but not completed - extract update content
-          const updateContent = extractUpdateContent(fileInfo.content, previousState.content);
-          if (updateContent) {
-            updates.push(`${agentId} update: ${updateContent}`);
+          const result = extractUpdateContent(fileInfo.content, previousState.lastUpdateLine ?? -1);
+          if (result.text) {
+            updates.push(`${agentId} update: ${result.text}`);
+            fileInfo.lastUpdateLine = result.lastLine;
           }
         }
       }
@@ -275,7 +279,8 @@ async function main() {
         status: fileInfo.status,
         size: fileInfo.size,
         content: fileInfo.content,
-        notified: fileInfo.notified
+        notified: fileInfo.notified,
+        lastUpdateLine: fileInfo.lastUpdateLine ?? previousState?.lastUpdateLine ?? -1
       };
     }
   }

@@ -117,6 +117,7 @@ process.on('unhandledRejection', (reason) => {
 let assistantContentWritten = false;
 let processExited = false;
 let lastAssistantText = '';
+let accumulatedDelta = '';
 
 let child;
 try {
@@ -179,8 +180,15 @@ stdoutRl.on('line', (line) => {
       if (deltaChunks.length > 0) {
         const deltaText = deltaChunks.join('');
         if (deltaText) {
-          appendFileSync(agentLogPath, deltaText, 'utf-8');
-          lastAssistantText += deltaText;
+          // Add newline before [UPDATE] if not already at line start
+          let textToAppend = deltaText;
+          if (deltaText.startsWith('[UPDATE]') && accumulatedDelta && !accumulatedDelta.endsWith('\n')) {
+            textToAppend = '\n' + deltaText;
+          }
+
+          appendFileSync(agentLogPath, textToAppend, 'utf-8');
+          accumulatedDelta += textToAppend;
+          lastAssistantText = accumulatedDelta;
           assistantContentWritten = true;
         }
       }
@@ -194,17 +202,17 @@ stdoutRl.on('line', (line) => {
 
       if (messageChunks.length > 0) {
         const messageText = messageChunks.join('');
-        if (messageText) {
+        if (messageText && messageText !== accumulatedDelta) {
+          // Only append if message differs from accumulated deltas
           let textToAppend = '';
 
-          if (!lastAssistantText) {
+          if (!accumulatedDelta) {
             textToAppend = messageText;
-          } else if (messageText === lastAssistantText) {
-            textToAppend = '';
-          } else if (messageText.startsWith(lastAssistantText)) {
-            textToAppend = messageText.slice(lastAssistantText.length);
+          } else if (messageText.startsWith(accumulatedDelta)) {
+            textToAppend = messageText.slice(accumulatedDelta.length);
           } else {
-            textToAppend = (assistantContentWritten ? '\n' : '') + messageText;
+            // Full message diverged from deltas - append with separator
+            textToAppend = '\n' + messageText;
           }
 
           if (textToAppend) {
@@ -212,6 +220,7 @@ stdoutRl.on('line', (line) => {
             assistantContentWritten = true;
           }
 
+          accumulatedDelta = messageText;
           lastAssistantText = messageText;
         }
       }
@@ -225,14 +234,17 @@ stdoutRl.on('line', (line) => {
 
       updateFrontmatter(status);
       lastAssistantText = '';
+      accumulatedDelta = '';
     } else if (eventType === 'done' || eventType === 'complete' || event.type === 'done' || event.type === 'complete') {
       updateFrontmatter('done');
       lastAssistantText = '';
+      accumulatedDelta = '';
     } else if (event.type === 'error' || event.error) {
       const errorMsg = event.error || event.message || 'Unknown error';
       appendError(errorMsg);
       updateFrontmatter('failed');
       lastAssistantText = '';
+      accumulatedDelta = '';
     }
   } catch {
     // ignore malformed JSON

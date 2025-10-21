@@ -80,7 +80,7 @@ function createDelegationMessage(hookData, agentLogPath, agentId) {
       permissionDecision: "deny",
       permissionDecisionReason: `Delegated to an agent. Response logged to @${relativePath} in real time.
 
-A hook will alert on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\`. *The user cannot monitor progress themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
+A hook will alert you (not the user) on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\`. *The user cannot monitor progress or see updates themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
     },
   };
 }

@@ -157,13 +157,14 @@ const appendDeltaText = (message, deltaText) => {
 
   const key = getBlockKey(message, message.index ?? 0);
   const previous = blockStates.get(key) || '';
-  const next = previous + deltaText;
 
   // Add newline before [UPDATE] if not already at line start
   let textToAppend = deltaText;
   if (deltaText.startsWith('[UPDATE]') && previous && !previous.endsWith('\n')) {
     textToAppend = '\n' + deltaText;
   }
+
+  const next = previous + textToAppend;
 
   appendToLog(textToAppend);
   blockStates.set(key, next);
