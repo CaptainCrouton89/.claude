@@ -120,7 +120,7 @@
       "Bash(./agent-responses/await:*)"
     ]
   },
-  "model": "sonnet",
+  "model": "claude-haiku-4-5-20251001",
   "hooks": {
     "PreToolUse": [
       {
@@ -258,5 +258,5 @@
     "type": "command",
     "command": "~/.claude/hooks/statusline/statusline-wrapper.sh"
   },
-  "alwaysThinkingEnabled": false
+  "alwaysThinkingEnabled": true
 }

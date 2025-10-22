@@ -15,6 +15,6 @@ context:
   why: ""
   related: ""
 technical_notes:
-  apis: ""
-  data: ""
-  dependencies: ""
+  apis: "" # list of APIs and their endpoints
+  data: "" # list of data structures and their fields 
+  dependencies: "" # list of dependencies and their purpose

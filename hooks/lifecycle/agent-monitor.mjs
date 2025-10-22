@@ -172,6 +172,7 @@ async function main() {
   const updates = [];
 
   const currentAgentId = getCurrentAgentId();
+  const currentSessionId = hookData.session_id || null;
   const registry = loadRegistry(registryPath);
   const interruptionReasons = new Set([
     'user_interrupt',
@@ -233,8 +234,8 @@ async function main() {
                               previousState?.status !== fileInfo.status;
 
         if (justCompleted && !previousState?.notified) {
-          // Skip if not our direct child
-          if (registryEntry && registryEntry.parentId !== currentAgentId) {
+          // Skip if not spawned by current session
+          if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId) {
             continue;
           }
 
@@ -246,9 +247,8 @@ async function main() {
         } else if (fileInfo.status === 'interrupted') {
           // Agent was interrupted - notify once and track in state
           if (previousState?.status !== 'interrupted' && !previousState?.notified) {
-            // Extract agent ID and check if it's our direct child
-            // Skip if not our direct child
-            if (registryEntry && registryEntry.parentId !== currentAgentId) {
+            // Skip if not spawned by current session
+            if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId) {
               continue;
             }
 
@@ -258,9 +258,8 @@ async function main() {
           }
           // Keep in state to prevent re-notification
         } else if (previousState) {
-          // Extract agent ID and check if it's our direct child
-          // Skip if not our direct child
-          if (registryEntry && registryEntry.parentId !== currentAgentId) {
+          // Skip if not spawned by current session
+          if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId) {
             continue;
           }
 

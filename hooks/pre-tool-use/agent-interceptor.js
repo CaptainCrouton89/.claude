@@ -109,6 +109,7 @@ async function main() {
   const description = toolInput.description || 'Unnamed task';
   const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task (1-2 sentences, max. Incomplete sentences are fine). Only give these updates if you have important information to share. Prepend updates with: [UPDATE]";
   const subagentType = toolInput.subagent_type || 'general-purpose';
+  const spawnedBySessionId = hookData.session_id || null;
 
   // Load agent definition
   const agentDefinition = loadAgentDefinition(subagentType);
@@ -147,7 +148,8 @@ async function main() {
     subagentType,
     normalizedAllowedAgents,
     normalizedAllowedMcpServers,
-    missingMcpServers
+    missingMcpServers,
+    spawnedBySessionId
   );
   writeRegistry(registryPath, registry);
 

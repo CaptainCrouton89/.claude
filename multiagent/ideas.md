@@ -267,3 +267,20 @@ After exiting, the main agent sees that the subagent has been updated.
 
 Claude.md files being yaml structure, so that only the relevant context is read in automatically. 
 Custom pre-tool. When it reads, it automatically reads the "memory.md" and the "api.md" in that directory or wtvr depending on the type of task.
+
+
+## New ideas from CCA
+
+- Close loop: 
+  - Better logging
+  - profile at same time
+  - Better browser
+  - Idea is to have an environment that is decoupled from both the code and... elsewhere? Collection of scripts it can run to view what's going on. 
+  - Better browser: view network traffic coming and going from process?
+  - Auto-logging traces at different levels?
+
+- Get keys for backend quickly
+- Let it use CURL and monitor traffic
+- ast grep/modifications
+- Should be able to take function/symbol and understand everywhere it's used and needed
+- sqlite docs/user-stories/etc

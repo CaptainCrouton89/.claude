@@ -35,6 +35,7 @@ function writeRegistry(registryPath, registry) {
  * @param {Array|null} normalizedAllowedAgents - Allowed agents list
  * @param {Array|null} normalizedAllowedMcpServers - Allowed MCP servers list
  * @param {Array} missingMcpServers - Missing MCP servers list
+ * @param {string} spawnedBySessionId - Session ID that spawned this agent
  * @returns {Object} Registry entry
  */
 function createAgentRegistryEntry(
@@ -44,7 +45,8 @@ function createAgentRegistryEntry(
   subagentType,
   normalizedAllowedAgents,
   normalizedAllowedMcpServers,
-  missingMcpServers
+  missingMcpServers,
+  spawnedBySessionId
 ) {
   return {
     pid: null, // Will update after spawn
@@ -53,7 +55,8 @@ function createAgentRegistryEntry(
     agentType: subagentType,
     allowedAgents: Array.isArray(normalizedAllowedAgents) ? [...normalizedAllowedAgents] : null,
     allowedMcpServers: Array.isArray(normalizedAllowedMcpServers) ? [...normalizedAllowedMcpServers] : null,
-    missingMcpServers: missingMcpServers.length > 0 ? [...missingMcpServers] : []
+    missingMcpServers: missingMcpServers.length > 0 ? [...missingMcpServers] : [],
+    spawnedBySessionId
   };
 }
 
