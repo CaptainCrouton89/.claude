@@ -1,6 +1,7 @@
 title: <Story Title>
 story_id: US-###
 feature_id: F-##
+flow_ids: []                 # Which flows this story participates in (e.g. ["authentication-flow"])
 template: ~/.claude/file-templates/init-project/user-stories/story-title.md
 status: incomplete
 user_story:
@@ -15,6 +16,8 @@ context:
   why: ""
   related: ""
 technical_notes:
-  apis: "" # list of APIs and their endpoints
-  data: "" # list of data structures and their fields 
-  dependencies: "" # list of dependencies and their purpose
+  apis: []                   # List of API endpoints (e.g. ["POST /auth/login"])
+  data_structures: []        # List of data models used
+  data_events: []            # Events emitted by this story (e.g. ["user_login_attempt", "user_login_success"])
+  feature_flags: []          # Any feature flags gating this story
+  dependencies: []           # Dependencies and their purpose

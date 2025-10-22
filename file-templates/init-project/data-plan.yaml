@@ -2,19 +2,25 @@
 # Defines data sources, tracking, storage, and metrics alignment.
 
 data_sources:
-  - source: ""        # Data source name
-    description: ""   # What data it provides
-    owner: ""         # Responsible team/person
+  - source: ""                  # Data source name
+    description: ""             # What data it provides
+    owner: ""                   # Responsible team/person
+    feature_ids: []             # Features using this source (e.g. ["F-01", "F-02"])
 
 event_tracking:
-  - event_name: ""    # Event identifier
-    trigger: ""       # When event fires
-    properties: []    # Data properties captured
-    destinations: []  # GA/Mixpanel/Segment destinations
+  - event_name: ""              # Event identifier (snake_case)
+    trigger: ""                 # When event fires
+    properties: []              # Data properties captured
+    destinations: []            # GA/Mixpanel/Segment destinations
+    feature_ids: []             # Which features emit this event (e.g. ["F-01"])
+    story_ids: []               # Which stories trigger this event (e.g. ["US-101"])
 
 data_storage:
   initial_schema: ""    # Database table/collection structure
   retention_policy: ""  # Data retention rules
   privacy_notes: ""     # Compliance and privacy considerations
 
-success_metrics: []     # KPIs and success measurements
+success_metrics:
+  - metric: ""                  # Metric name (e.g. "Login Success Rate")
+    tracked_by: ""              # Event that measures this (e.g. "user_login_success")
+    prd_ref: ""                 # PRD acceptance metric this measures

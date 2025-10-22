@@ -17,21 +17,47 @@ docs/
 
 ```bash
 cd docs
-./run.sh list-stories                      # Filter by feature/status
-./run.sh list-flows                        # Filter by persona
-./run.sh list-features --format stats      # Stats, tree view
+
+# List stories with common filters
+./run.sh list-stories                      # All stories
+./run.sh list-stories --feature F-01       # Stories for specific feature
+./run.sh list-stories --status complete    # Filter by status (incomplete/in-progress/complete)
+./run.sh list-stories --format detailed    # Show full details
+
+# List user flows
+./run.sh list-flows                        # All flows
+./run.sh list-flows --persona "Admin"      # Flows for specific persona
+./run.sh list-flows --format json          # JSON output
+
+# List features
+./run.sh list-features                     # Summary view
+./run.sh list-features --format stats      # Statistics overview
+./run.sh list-features --format tree       # Hierarchical tree view
+./run.sh list-features --status complete   # Filter by status
+
+# List API endpoints
+./run.sh list-apis                         # All endpoints
 ./run.sh list-apis --format curl           # Generate curl commands
-./run.sh check-project -v                  # Validate all docs
-./run.sh generate-docs                     # Export to markdown
+./run.sh list-apis --method POST           # Filter by HTTP method
+./run.sh list-apis --path /api/users       # Filter by path pattern
+
+# Validate project
+./run.sh check-project                     # Basic validation
+./run.sh check-project -v                  # Verbose output
+./run.sh check-project --fix               # Auto-fix common issues
+
+# Generate documentation
+./run.sh generate-docs                     # Export all to markdown
+./run.sh generate-docs --output ./export   # Custom output directory
 ```
 
 All scripts support `--help`, multiple formats (summary/detailed/json/tree), and filters.
 
 ## ID Conventions
 
-- Features: `F-01`, `F-02` (zero-padded)
-- Stories: `US-101`, `US-102` (three digits)
-- Files: kebab-case (e.g., `user-authentication.yaml`)
+- Features: `F-01`, `F-02`
+- Stories: `US-101`, `US-102`
+- Files: kebab-case
 
 **Linking:** Stories/specs must set `feature_id: F-##` matching PRD. APIs note feature IDs in descriptions.
 

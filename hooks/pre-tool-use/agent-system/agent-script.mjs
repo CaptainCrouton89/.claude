@@ -113,6 +113,12 @@ const appendFullText = (message, block, index) => {
   const previous = blockStates.get(key) || '';
   const nextText = block.text;
 
+  // If we've already accumulated this text via deltas, skip the full text append
+  // The deltas have already been written incrementally
+  if (previous === nextText && blockStates.has(key)) {
+    return;
+  }
+
   if (previous !== nextText) {
     for (const existingValue of blockStates.values()) {
       if (existingValue === nextText) {

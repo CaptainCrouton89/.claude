@@ -7,10 +7,12 @@ overview:
 
 core_components:
   - component: "API Gateway"  # Component name
-    description: ""     # What it does
-    dependencies: []    # External dependencies
+    description: ""           # What it does
+    feature_ids: []           # Features implemented by this component (e.g. ["F-01", "F-02"])
+    dependencies: []          # External dependencies
   - component: "Frontend"
     description: ""
+    feature_ids: []
     dependencies: []
 
 data_flow: ""           # Data movement between components (include diagrams)

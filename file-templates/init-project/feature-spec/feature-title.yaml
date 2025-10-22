@@ -4,11 +4,13 @@ feature_id: F-##
 status: incomplete
 
 summary: ""
+story_ids: []                # Which user stories implement this feature (e.g. ["US-101", "US-102"])
+flow_ids: []                 # Which user flows this feature enables (e.g. ["authentication-flow"])
 
 functional_overview:
   core_logic: ""
   data_schema: ""
-  api_endpoints: []
+  api_endpoints: []         # Endpoints implementing this feature (e.g. ["POST /auth/login", "GET /auth/user"])
   integration_points: []
 
 detailed_design:
@@ -23,7 +25,10 @@ detailed_design:
       errors: []
   diagrams: ""
 
+data_events: []             # Events emitted by this feature (e.g. ["user_login_success"])
+
 dependencies:
+  features: []               # Other features this depends on (e.g. ["F-02"])
   libraries: ""
   services: ""
   data_sources: ""

@@ -7,10 +7,12 @@ overview:
   design_system: ""      # Design system/framework used
 
 layouts_components:
-  - screen: ""           # Screen/page name
-    description: ""      # What it shows/does
-    link: ""             # Design file link
-    notes: ""            # Implementation notes
+  - screen: ""                  # Screen/page name
+    description: ""             # What it shows/does
+    feature_ids: []             # Features on this screen (e.g. ["F-01", "F-02"])
+    flow_ids: []                # Flows that traverse this screen (e.g. ["authentication-flow"])
+    link: ""                    # Design file link
+    notes: ""                   # Implementation notes
 
 accessibility:
   color_contrast: ""     # Contrast compliance details
@@ -20,7 +22,8 @@ accessibility:
 responsive_behavior: ""  # Breakpoints and adaptive design
 
 interaction_specs:
-  - component: "Button"  # Component name
+  - component: "Button"         # Component name
+    feature_ids: []             # Features using this component (e.g. ["F-01"])
     states: ["default", "hover", "disabled"]  # Available states
     animation: "fade-in 150ms"  # Animation details
-    notes: ""           # Additional specifications
+    notes: ""                   # Additional specifications

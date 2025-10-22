@@ -1,5 +1,5 @@
 # Product Requirements Document
-# Keep descriptions brief. Features link to feature-title.yaml specs.
+# Keep descriptions brief.
 
 overview:
   project_name: ""     # Brief project identifier
@@ -14,7 +14,3 @@ summary:
   goal: ""             # Main objective
   primary_users: []    # Target user personas
   key_problems_solved: [] # Problems addressed
-
-features:
-  - id: "F-01"
-    description: ""

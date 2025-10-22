@@ -1,5 +1,8 @@
 title: User Flows
 template: ~/.claude/file-templates/init-project/user-flows/user-flow-title.yaml
+flow_id: ""                  # kebab-case slug (e.g. "authentication-flow")
+feature_ids: []              # Which features enable this flow (e.g. ["F-01", "F-02"])
+story_ids: []                # Which user stories this flow covers (e.g. ["US-101", "US-102"])
 
 key_personas: []
 

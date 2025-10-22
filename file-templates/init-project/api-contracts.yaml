@@ -7,6 +7,9 @@ paths:
   /users:
     get:
       summary: List users
+      x-feature-id: "F-##"           # Which feature implements this
+      x-story-ids: ["US-###"]         # Which stories cover this endpoint
+      x-data-events: []               # Events triggered by this endpoint
       responses:
         "200":
           description: OK
