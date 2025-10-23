@@ -284,3 +284,8 @@ Custom pre-tool. When it reads, it automatically reads the "memory.md" and the "
 - ast grep/modifications
 - Should be able to take function/symbol and understand everywhere it's used and needed
 - sqlite docs/user-stories/etc
+
+
+Agents needed:
+Orchestrator: Uses agents to orchestrate task. 
+Grunt: (grok) Used to 

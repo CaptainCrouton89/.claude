@@ -258,5 +258,5 @@
     "type": "command",
     "command": "~/.claude/hooks/statusline/statusline-wrapper.sh"
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": false
 }

@@ -92,7 +92,7 @@ cat > task_input_anthropic.json << 'EOF'
   "tool_input": {
     "description": "Test task",
     "prompt": "Test prompt",
-    "subagent_type": "general-purpose"
+    "subagent_type": "orchestrator"
   },
   "cwd": "/tmp"
 }
@@ -104,7 +104,7 @@ cat > task_input_cursor.json << 'EOF'
   "tool_input": {
     "description": "Test task for Cursor",
     "prompt": "Test prompt",
-    "subagent_type": "general-purpose"
+    "subagent_type": "orchestrator"
   },
   "cwd": "/tmp"
 }
@@ -129,7 +129,7 @@ const registry = {
     pid: null,
     depth: 0,
     parentId: 'root',
-    agentType: 'general-purpose'
+    agentType: 'orchestrator'
   }
 };
 
