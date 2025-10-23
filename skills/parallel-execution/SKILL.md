@@ -92,11 +92,10 @@ Stage 3: Parallel implementation of requirements
 - Expected output format
 
 ✅ **Use appropriate agents**
-- `backend-developer` — API, services, data layers
-- `frontend-ui-developer` — Components, pages, styling
-- `code-finder` — Semantic searches, flow tracing
-- `validation-orchestrator` — Testing and verification
-- `general-purpose` — Complex multi-agent work
+- `programmer` — API, services, data layers, components, pages, styling
+- `context-engineer` — Semantic searches, flow tracing
+- `senior-engineer` — Testing and verification
+- `orchestrator` — Complex multi-agent work
 
 ✅ **Respect dependencies**
 - Type dependencies (interfaces others use)

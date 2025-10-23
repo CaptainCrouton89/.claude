@@ -113,10 +113,10 @@ Best for <5 files, single concern:
 ### Parallel Multi-Agent Review
 Best for >5 files, multiple concerns:
 1. Spawn specialized agents:
-   - **Security:** `root-cause-analyzer` for vulnerability assessment
-   - **Architecture:** `code-finder` for pattern compliance
-   - **API Contracts:** `backend-developer` for endpoint validation
-   - **Frontend:** `frontend-ui-developer` for UI/UX and accessibility
+   - **Security:** `senior-engineer` for vulnerability assessment
+   - **Architecture:** `context-engineer` for pattern compliance
+   - **API Contracts:** `programmer` for endpoint validation
+   - **Frontend:** `programmer` for UI/UX and accessibility
    - **Documentation:** `documentor` for comment quality and docs
 
 2. Each agent reviews specific quality dimension

@@ -31,7 +31,7 @@
   - Files: [/path, /path]
   - Depends on: [none | 1 | 2.3]
   - Risks/Gotchas: [brief]
-  - Agent: [frontend-ui-developer | backend-developer | general-purpose]
+  - Agent: [programmer | junior-engineer | orchestrator | context-engineer | senior-engineer]
 - Task 2: [...]
 
 ### Data/Schema Impacts (if any)

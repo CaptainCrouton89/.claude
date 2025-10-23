@@ -42,12 +42,12 @@ Use direct investigation:
 #### Complex bugs (multiple subsystems or unclear origin)
 Delegate to async agents in parallel:
 
-**Spawn `root-cause-analyzer` agents to:**
+**Spawn `senior-engineer` agents to:**
 - Trace error flow through specific subsystem
 - Analyze related failure patterns
 - Investigate runtime conditions
 
-**Spawn `code-finder` agents to:**
+**Spawn `context-engineer` agents to:**
 - Map data flow across multiple files
 - Find all error handling for specific operation
 - Locate configuration and integration points

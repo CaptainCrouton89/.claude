@@ -66,7 +66,7 @@ description: Create structured implementation plans before coding. Use when brea
 Use direct tools (Grep, Glob, Read) for focused analysis.
 
 **Large/complex changes or refactors:**
-Delegate to `code-finder` agents in parallel for comprehensive impact analysis:
+Delegate to `context-engineer` agents in parallel for comprehensive impact analysis:
 - Find ALL affected files across codebase
 - Identify every usage, call site, and dependency
 - Map integration points and data flows
@@ -256,7 +256,7 @@ grep -r "describe.*ComponentName" --include="*.test.ts"
 ```
 
 **For parallel analysis:**
-- Delegate `code-finder` agents for pattern discovery
+- Delegate `context-engineer` agents for pattern discovery
 - Monitor agent responses from `agent-responses/` directory
 - Link investigation artifacts in final plan
 
