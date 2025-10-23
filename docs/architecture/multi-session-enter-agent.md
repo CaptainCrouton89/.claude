@@ -38,7 +38,7 @@
     "pid": 98765,
     "depth": 1,
     "parentId": null,
-    "agentType": "backend-developer",
+    "agentType": "programmer",
     "allowedAgents": ["general-purpose"],
     "allowedMcpServers": null,
     "missingMcpServers": []
@@ -114,7 +114,7 @@ process.exit(0);
     "parentPid": 53958,                            // ← NEW: Parent Claude process PID
     "depth": 1,
     "parentId": null,
-    "agentType": "backend-developer",
+    "agentType": "programmer",
     "allowedAgents": ["general-purpose"],
     "allowedMcpServers": null,
     "missingMcpServers": []

@@ -36,7 +36,7 @@ Comprehensive guidance for creating implementation plans including:
 
 #### Investigation Workflow (`INVESTIGATION_PROMPT`)
 Best practices for code discovery and analysis:
-- When to use code-finder vs direct tools
+- When to use context-engineer vs direct tools
 - Multiple agent strategies for complex investigations
 - Flow from context gathering to implementation
 

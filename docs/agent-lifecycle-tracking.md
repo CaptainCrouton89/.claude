@@ -9,7 +9,7 @@
     "pid": 12345,           // Process ID (null before spawn, updated after)
     "depth": 0,             // Recursion depth (0-2)
     "parentId": null,       // Parent agent ID or null for root
-    "agentType": "backend-developer"  // Agent type
+    "agentType": "programmer"  // Agent type
   }
 }
 ```
