@@ -277,7 +277,7 @@ The implementation workflow is broken into four distinct phases, each with its o
 The implement workflow strategically delegates to specialized agents:
 
 **Investigation Phase:**
-- 2-5 `@code-finder` agents for parallel codebase analysis
+- 2-5 `@context-engineer` agents for parallel codebase analysis
 - Each investigates independent domain
 - Results saved to `agent-responses/agent_*.md`
 
@@ -286,13 +286,12 @@ The implement workflow strategically delegates to specialized agents:
 - Uses all investigation artifacts as context
 
 **Execution Phase:**
-- `@backend-developer` for API/services/data
-- `@frontend-ui-developer` for React/UI/forms
-- `@general-purpose` for utilities/config
+- `@programmer` for API/services/data, React/UI/forms
+- `@orchestrator` for utilities/config
 - Validation agents run one step behind implementation
 
 **Validation Phase:**
-- `@completion-validator` for comprehensive final validation
+- `@senior-engineer` for comprehensive final validation
 
 ---
 

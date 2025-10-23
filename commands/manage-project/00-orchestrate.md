@@ -15,9 +15,9 @@ Understand user intent, show current state, route to appropriate commands.
 Most manage-project commands route to specialized workflows that should **delegate aggressively**:
 
 ### DELEGATE to specialists:
-- **`implement/` workflows** → `backend-developer`, `frontend-ui-developer`, or orchestrator agent
+- **`implement/` workflows** → `programmer`, or orchestrator agent
 - **`add/add-feature`, `update/update-*`** → `documentor` (document generation/updates)
-- **`validate/*` checks** → `validation-orchestrator` (comprehensive audits)
+- **`validate/*` checks** → `senior-engineer` (comprehensive audits)
 - **Complex multi-step flows** → Create orchestrator agent to coordinate phases
 
 ### HANDLE DIRECTLY:

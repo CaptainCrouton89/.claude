@@ -12,7 +12,7 @@ $ARGUMENTS
 @docs/product-requirements.md
 @docs/system-design.md
 @docs/api-contracts.yaml
-@agent-completion-validator
+@agent-senior-engineer
 
 ## Purpose
 
@@ -31,7 +31,7 @@ Verify execution phase complete. If missing artifacts, prompt to run `/manage-pr
 
 ### 2. Validation Strategy
 **Simple (inline):** Small scope (1-3 tasks), single domain, straightforward requirements  
-**Complex (delegated):** Large scope (4+ tasks), multi-domain, complex integration - delegate to `@agent-completion-validator`
+**Complex (delegated):** Large scope (4+ tasks), multi-domain, complex integration - delegate to `@agent-senior-engineer`
 
 ### 3. Delegate Final Validation Agent (if complex)
 ```markdown

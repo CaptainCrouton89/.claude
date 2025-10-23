@@ -11,8 +11,7 @@ $ARGUMENTS
 
 @docs/product-requirements.md
 @docs/system-design.md
-@agent-backend-developer
-@agent-frontend-ui-developer
+@agent-programmer
 
 ## Purpose
 
@@ -40,9 +39,8 @@ Based on plan's parallelization analysis:
 #### 3.1 Task Implementation
 **For simple tasks:** Main agent implements directly  
 **For complex tasks:** Delegate to specialized agent:
-- `@agent-backend-developer` for API endpoints, services, data layer (see `@agent-backend-developer` for backend expertise)
-- `@agent-frontend-ui-developer` for React components, UI, forms (see `@agent-frontend-ui-developer` for frontend patterns)
-- `@agent-general-purpose` for utilities, config, cross-cutting
+- `@agent-programmer` for API endpoints, services, data layer, components, UI, forms
+- `@agent-orchestrator` for utilities, config, cross-cutting
 
 #### 3.2 Spawn Validation Agent (One Step Behind)
 As soon as task implementation completes, spawn validation agent:

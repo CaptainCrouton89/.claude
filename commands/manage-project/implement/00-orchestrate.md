@@ -25,10 +25,10 @@ $ARGUMENTS
 - **Simple cases only** — For single-file, isolated changes with no dependencies, you may handle execution inline
 
 **Each phase delegates to:**
-- **Investigation** → Parallel `@agent-code-finder` or `@agent-general-purpose` research agents
+- **Investigation** → Parallel `@agent-context-engineer` or `@agent-orchestrator` research agents
 - **Planning** → `@agent-documentor` for task breakdown and plan synthesis
-- **Execution** → `@agent-backend-developer`, `@agent-frontend-ui-developer` based on scope; orchestrator agent for complex multi-layer work
-- **Validation** → `@agent-validation-orchestrator` or parallel validation agents
+- **Execution** → `@agent-programmer` based on scope; orchestrator agent for complex multi-layer work
+- **Validation** → `@agent-senior-engineer` or parallel validation agents
 
 **Quick reference:** See `@CLAUDE.md` for full delegation heuristics.
 
@@ -66,7 +66,7 @@ This is a substantial implementation requiring multi-phase orchestration.
 The orchestrator will:
 - Manage all phases and approval gates
 - Coordinate parallel investigation agents
-- Spawn specialized execution agents (backend-developer, frontend-ui-developer)
+- Spawn specialized execution agents (programmer)
 - Handle continuous validation
 - Keep you updated with milestone reports
 

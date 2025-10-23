@@ -13,9 +13,8 @@ $ARGUMENTS
 @docs/system-design.md
 @docs/api-contracts.yaml
 @docs/design-spec.md
-@agent-code-finder
-@agent-backend-developer
-@agent-frontend-ui-developer
+@agent-context-engineer
+@agent-programmer
 
 ## Purpose
 
@@ -62,7 +61,7 @@ Ask 5-7 discovery questions before delegating investigators:
 Present for confirmation before proceeding.
 
 ### 4. Delegate Investigation Agents
-Based on scope analysis, spawn 2-5 investigation agents in parallel using `@agent-code-finder`.
+Based on scope analysis, spawn 2-5 investigation agents in parallel using `@agent-context-engineer`.
 
 **Context to provide each agent:**
 - Requirements: `@docs/plans/implement-{item-id}-requirements.md`
@@ -84,12 +83,12 @@ Based on scope analysis, spawn 2-5 investigation agents in parallel using `@agen
 - Let agent trace data flows, dependencies, external APIs
 
 **Agent 4: UI/UX Patterns (if frontend)**
-- Use: `@agent-frontend-ui-developer` for pattern analysis
+- Use: `@agent-programmer` for pattern analysis
 - Focus: Frontend-specific concerns
 - Let agent analyze component patterns, state management, styling, accessibility
 
 **Agent 5: Database & API Layer (if backend)**
-- Use: `@agent-backend-developer` for pattern analysis
+- Use: `@agent-programmer` for pattern analysis
 - Focus: Backend-specific concerns
 - Let agent document data models, queries, API patterns, database schema
 
