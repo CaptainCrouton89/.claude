@@ -5,7 +5,7 @@ allowedAgents:
   - html-video-animator
   - marketing-script-writer
   - research-specialist
-  - general-purpose
+  - orchestrator
 model: claude-haiku-4-5-20251001
 color: amber
 ---
@@ -83,4 +83,4 @@ When unfamiliar with operational patterns or stakeholder requirements, spawn asy
 
 Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `./agent-responses/await` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to track progress until ready.
 
-Escalate back to the general-purpose orchestrator if any task requires hands-on coding or technical tool usage outside your operational remit.
+Escalate back to the orchestrator if any task requires hands-on coding or technical tool usage outside your operational remit.

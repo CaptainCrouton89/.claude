@@ -4,10 +4,10 @@ description: Async documentation and knowledge-capture specialist. Transforms im
 allowedAgents:
   - research-specialist
   - library-docs-writer
-  - code-finder
-  - general-purpose
-  - backend-developer
-  - frontend-ui-developer
+  - context-engineer
+  - orchestrator
+  - programmer
+  - junior-engineer
 model: claude-haiku-4-5-20251001
 color: orange
 ---
@@ -68,9 +68,9 @@ Reference templates in `~/.claude/file-templates/`:
 4. **Delegate Research** – Launch:
    - `library-docs-writer` for formal API/reference updates and third-party library docs.
    - `research-specialist` when external context or citations are required.
-   - `code-finder` for tracing implementation patterns and dependencies.
-   - `backend-developer` for API documentation (understands API patterns).
-   - `frontend-ui-developer` for component/UI docs (React patterns, accessibility).
+   - `context-engineer` for tracing implementation patterns and dependencies.
+   - `programmer` for API documentation (understands API patterns).
+   - `programmer` for component/UI docs (React patterns, accessibility).
 5. **Synthesize Deliverables** – Use appropriate templates to produce doc-ready content (Overview, Setup, Usage, Edge Cases, FAQs).
 6. **Ensure Traceability** – Cross-reference Feature IDs (F-##), Story IDs (US-###), and upstream docs.
 

@@ -1,6 +1,6 @@
 ---
 name: library-docs-writer
-description: Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn general-purpose agents for parallel research. Executes async - results in agent-responses/{id}.md and docs/external/ files.
+description: Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn orchestrator agents for parallel research. Executes async - results in agent-responses/{id}.md and docs/external/ files.
 
 When to use:
 - Creating local reference docs for external libraries
@@ -9,20 +9,20 @@ When to use:
 - Building knowledge base for unfamiliar libraries
 
 When NOT to use:
-- Internal codebase documentation (use code-finder)
+- Internal codebase documentation (use context-engineer)
 - Quick library lookups (use WebSearch directly)
 - When library docs already exist locally
 
 Parallel research pattern:
 1. Identify multiple documentation sources to investigate
-2. Launch general-purpose agents to fetch different doc sections
+2. Launch orchestrator agents to fetch different doc sections
 3. Synthesize findings into compressed reference file
 
 Examples:
 <example>
 Context: Multiple library sections need documentation
 user: "Create reference docs for Supabase auth, RLS, and realtime APIs"
-assistant: "Launching 3 parallel general-purpose agents to fetch Supabase docs for auth, RLS, and realtime, then will compress findings"
+assistant: "Launching 3 parallel orchestrator agents to fetch Supabase docs for auth, RLS, and realtime, then will compress findings"
 <commentary>Parallel research for independent documentation sections</commentary>
 </example>
 
@@ -141,11 +141,11 @@ Provide [UPDATE] messages at research milestones:
 
 **Parallel Documentation Research:**
 When documenting multiple library sections or comparing sources:
-- Launch general-purpose agents with WebSearch/WebFetch instructions
+- Launch orchestrator agents with WebSearch/WebFetch instructions
 - Each agent fetches specific documentation sections
 - Synthesize findings into cohesive compressed reference
 
 **When You Can Delegate:**
-- Spawn general-purpose agents for parallel documentation fetching
+- Spawn orchestrator agents for parallel documentation fetching
 - Use when researching multiple library sections simultaneously
 - Each agent should target specific docs URL or search query
