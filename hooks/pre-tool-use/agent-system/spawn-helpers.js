@@ -50,15 +50,33 @@ function setupAgentEnvironment(hookData, agentId) {
  * @param {string} prompt - Agent prompt
  * @param {number} currentDepth - Current recursion depth
  * @param {string|null} parentAgentId - Parent agent ID
+ * @param {number|null} pid - Process ID of the agent
  */
-function writeInitialLog(agentLogPath, description, prompt, currentDepth, parentAgentId) {
+function writeInitialLog(agentLogPath, description, prompt, currentDepth, parentAgentId, pid) {
+  const agentId = agentLogPath.match(/agent_[\w]+/)?.[0];
+  let promptRef = '';
+  let pidRef = '';
+
+  // Store prompt separately so response file doesn't need to retain it
+  if (agentId && prompt) {
+    const agentDir = agentLogPath.replace(/agent_[\w]+\.md$/, '');
+    const promptsDir = join(agentDir, '.agent-prompts');
+    mkdirSync(promptsDir, { recursive: true });
+    const promptPath = join(promptsDir, `${agentId}.txt`);
+    writeFileSync(promptPath, prompt, 'utf-8');
+    promptRef = `\nPrompt: .agent-prompts/${agentId}.txt`;
+  }
+
+  if (pid) {
+    pidRef = `\nPID: ${pid}`;
+  }
+
   const initialLog = `---
 Task: ${description}
-Instructions: ${prompt}
 Started: ${new Date().toISOString()}
 Status: in-progress
 Depth: ${currentDepth}
-ParentAgent: ${parentAgentId || 'root'}
+ParentAgent: ${parentAgentId || 'root'}${promptRef}${pidRef}
 ---
 
 `;
@@ -103,11 +121,11 @@ function spawnClaudeAgent({
   resolvedMcpServers
 }) {
   const claudeRunnerPath = join(__dirname, 'claude-runner.js');
-  const allowedAgentsForScript = normalizedAllowedAgents === null 
-    ? 'null' 
+  const allowedAgentsForScript = normalizedAllowedAgents === null
+    ? 'null'
     : JSON.stringify(normalizedAllowedAgents);
-  const mcpServersConfigForScript = resolvedMcpServers !== null 
-    ? JSON.stringify(resolvedMcpServers) 
+  const mcpServersConfigForScript = resolvedMcpServers !== null
+    ? JSON.stringify(resolvedMcpServers)
     : 'null';
 
   const runnerEnv = {
@@ -128,12 +146,17 @@ function spawnClaudeAgent({
     AGENT_MCP_SERVERS: mcpServersConfigForScript
   };
 
-  return spawn(process.execPath, [claudeRunnerPath], {
+  const child = spawn(process.execPath, [claudeRunnerPath], {
     env: runnerEnv,
     cwd: hookData.cwd,
     detached: true,
     stdio: 'ignore'
   });
+
+  // Store PID in environment for log file
+  runnerEnv.CLAUDE_RUNNER_PID = String(child.pid);
+
+  return child;
 }
 
 /**

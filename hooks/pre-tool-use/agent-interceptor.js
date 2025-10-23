@@ -108,7 +108,7 @@ async function main() {
   const toolInput = hookData.tool_input || {};
   const description = toolInput.description || 'Unnamed task';
   const prompt = toolInput.prompt + "\n\nGive me short, information-dense updates as you finish parts of the task (1-2 sentences, max. Incomplete sentences are fine). Only give these updates if you have important information to share. Prepend updates with: [UPDATE]";
-  const subagentType = toolInput.subagent_type || 'general-purpose';
+  const subagentType = toolInput.subagent_type || 'orchestrator';
   const spawnedBySessionId = hookData.session_id || null;
 
   // Load agent definition
@@ -138,7 +138,6 @@ async function main() {
   // Check permissions and initialize
   let registry = readRegistry(registryPath);
   checkAgentPermissions(parentAgentId, subagentType, registry);
-  writeInitialLog(agentLogPath, description, prompt, currentDepth, parentAgentId);
 
   // Track this agent in registry BEFORE spawning so children can find it
   registry[agentId] = createAgentRegistryEntry(
@@ -168,6 +167,7 @@ async function main() {
     });
 
     updateAgentPid(registryPath, agentId, runnerProcess.pid);
+    writeInitialLog(agentLogPath, description, prompt, currentDepth, parentAgentId, runnerProcess.pid);
     runnerProcess.unref();
 
     const output = createDelegationMessage(hookData, agentLogPath, agentId);
@@ -177,7 +177,7 @@ async function main() {
 
   // Anthropic model: use existing SDK flow
   const agentScriptPath = join(__dirname, 'agent-system', 'agent-script.mjs');
-  
+
   const runnerProcess = spawnClaudeAgent({
     agentId,
     currentDepth,
@@ -192,6 +192,7 @@ async function main() {
   });
 
   updateAgentPid(registryPath, agentId, runnerProcess.pid);
+  writeInitialLog(agentLogPath, description, prompt, currentDepth, parentAgentId, runnerProcess.pid);
   runnerProcess.unref();
 
   const output = createDelegationMessage(hookData, agentLogPath, agentId);

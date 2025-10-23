@@ -272,12 +272,11 @@ async function main() {
         }
       }
 
-      // Update state with content for next comparison
+      // Update state with metadata for next comparison
       state[fileId] = {
         mtime: fileInfo.mtime,
         status: fileInfo.status,
         size: fileInfo.size,
-        content: fileInfo.content,
         notified: fileInfo.notified,
         lastUpdateLine: fileInfo.lastUpdateLine ?? previousState?.lastUpdateLine ?? -1
       };

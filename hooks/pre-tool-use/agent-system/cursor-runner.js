@@ -32,6 +32,22 @@ const updateFrontmatter = (status) => {
   }
 };
 
+const updateFrontmatterPid = (childPid) => {
+  try {
+    const content = readFileSync(agentLogPath, 'utf-8');
+    // Replace the PID line if it exists, or add it before the closing ---
+    if (content.includes('PID:')) {
+      const updatedContent = content.replace(/PID: \d+/, `PID: ${childPid}`);
+      writeFileSync(agentLogPath, updatedContent, 'utf-8');
+    } else {
+      const updatedContent = content.replace(/^---\n/, `---\nPID: ${childPid}\n`);
+      writeFileSync(agentLogPath, updatedContent, 'utf-8');
+    }
+  } catch {
+    // ignore
+  }
+};
+
 const updateRegistryPid = (pid, extra = {}) => {
   try {
     let registryData = {};
@@ -143,6 +159,7 @@ if (!child || typeof child.pid !== 'number') {
 }
 
 updateRegistryPid(child.pid, { cursorPid: child.pid });
+updateFrontmatterPid(child.pid);
 
 child.on('error', (error) => {
   appendError(`Error spawning cursor-agent: ${error.message}`);

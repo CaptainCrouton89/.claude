@@ -666,6 +666,10 @@ const tailTranscript = async () => {
         if (blockType === 'text') {
           const key = getBlockKey(message, message.index ?? 0);
           if (!blockStates.has(key)) {
+            // Add separator if this is not the first content block
+            if (blockStates.size > 0) {
+              appendToLog('\n\n');
+            }
             blockStates.set(key, '');
           }
         }
