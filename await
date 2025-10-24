@@ -72,24 +72,29 @@ while true; do
       NEW_LINES=$(diff <(echo "${LAST_CONTENTS[$AGENT_ID]}") <(echo "$CURRENT_CONTENT") | grep "^>" | sed 's/^> //')
 
       if [ -n "$NEW_LINES" ]; then
-        # Print header only on first update
-        if [ "$FIRST_UPDATE" = true ]; then
-          echo "---"
-          if [ ${#AGENT_IDS[@]} -gt 1 ]; then
-            echo "📡 Agent Updates (streaming)"
-          else
-            echo "📡 Agent Output (streaming)"
-          fi
-          echo "---"
-          echo ""
-          FIRST_UPDATE=false
-        fi
+        # Filter to only show [UPDATE] tagged lines during streaming
+        UPDATE_LINES=$(echo "$NEW_LINES" | grep "^\[UPDATE\]")
 
-        if [ ${#AGENT_IDS[@]} -gt 1 ]; then
-          echo "[$AGENT_ID]"
+        if [ -n "$UPDATE_LINES" ]; then
+          # Print header only on first update
+          if [ "$FIRST_UPDATE" = true ]; then
+            echo "---"
+            if [ ${#AGENT_IDS[@]} -gt 1 ]; then
+              echo "📡 Agent Updates (streaming)"
+            else
+              echo "📡 Agent Output (streaming)"
+            fi
+            echo "---"
+            echo ""
+            FIRST_UPDATE=false
+          fi
+
+          if [ ${#AGENT_IDS[@]} -gt 1 ]; then
+            echo "[$AGENT_ID]"
+          fi
+          echo "$UPDATE_LINES"
+          echo ""
         fi
-        echo "$NEW_LINES"
-        echo ""
       fi
 
       LAST_MTIMES[$AGENT_ID]=$CURRENT_MTIME

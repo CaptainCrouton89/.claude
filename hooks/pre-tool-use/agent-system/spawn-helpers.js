@@ -96,9 +96,9 @@ function createDelegationMessage(hookData, agentLogPath, agentId) {
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: `Delegated to an agent. Response logged to @${relativePath} in real time.
+      permissionDecisionReason: `Delegated to an agent. Response logged to ${relativePath} in real time.
 
-A hook will alert you (not the user) on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\`. *The user cannot monitor progress or see updates themselves—you must either await this task _or_ perform other work until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete. Don't worry—you'll receive updates as it completes.`,
+A hook will alert you on updates and when complete. To sleep until completion you must run \`./agent-responses/await ${agentId}\` with a 10 minute timeout. *It is never acceptable to simply inform the user that they will be notified when the task is complete, since they WON'T be notified—only you will. You must await the agent, sleep and check agent responses, or work on other tasks until the agent is complete.* If this task is not-blocking, do not await it—perform other work until the agent is complete.`,
     },
   };
 }
@@ -133,6 +133,7 @@ function spawnClaudeAgent({
     CLAUDE_AGENT_ID: agentId,
     CLAUDE_AGENT_DEPTH: String(currentDepth + 1),
     CLAUDE_PARENT_PID: String(process.ppid),
+    CLAUDE_ROOT_SESSION_ID: process.env.CLAUDE_ROOT_SESSION_ID || hookData.session_id || '',
     CLAUDE_RUNNER_AGENT_ID: agentId,
     CLAUDE_RUNNER_LOG_PATH: agentLogPath,
     CLAUDE_RUNNER_REGISTRY_PATH: registryPath,
@@ -200,6 +201,7 @@ function spawnCursorAgent({
     CLAUDE_AGENT_ID: agentId,
     CLAUDE_AGENT_DEPTH: String(currentDepth + 1),
     CLAUDE_PARENT_PID: String(process.ppid),
+    CLAUDE_ROOT_SESSION_ID: process.env.CLAUDE_ROOT_SESSION_ID || hookData.session_id || '',
     CURSOR_RUNNER_AGENT_ID: agentId,
     CURSOR_RUNNER_LOG_PATH: agentLogPath,
     CURSOR_RUNNER_REGISTRY_PATH: registryPath,

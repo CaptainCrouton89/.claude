@@ -91,7 +91,7 @@ Tasks execute asynchronously in the background—delegate freely to parallelize 
 - **Non-blocking work**: Continue other tasks, hook alerts when done
 - **Blocking work**: Use `await {agent_id}` when results are prerequisites
 
-**Critical**: Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `./agent-responses/await` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to sleep until they are ready.
+**Critical**: If there are agents running, you must either work on other tasks in the mean time, sleep, or await the agents. Do not EVER stop working until all agents have stopped running. 
 
 ### Investigation & External Libraries
 

@@ -28,11 +28,11 @@ Read implementation plan:
 Verify plan exists. If missing, prompt user to run `/manage-project/implement/plan` first.
 
 ### 2. Execution Strategy
-Based on plan's parallelization analysis:
+Event-driven, dependency-based execution:
 
-**Sequential:** Tasks have hard dependencies or shared resource conflicts  
-**Parallel (preferred):** Independent tasks, 3-5 concurrent optimal  
-**Batched (common):** Execute dependency-ordered batches, each batch runs in parallel
+**Dependency-driven:** Each task launches immediately when its dependencies complete
+**Concurrent execution:** Multiple independent tasks run simultaneously (3-5 agents optimal)
+**No batch coordination:** Tasks don't wait for "batches" to complete—execution is fluid and asynchronous
 
 ### 3. Task Execution Loop
 
@@ -63,15 +63,13 @@ Validation agent runs asynchronously while next task proceeds.
 ```markdown
 ## Execution Progress
 
-### Batch 1 (3 tasks)
 - [✓] T1: Database schema - Complete (validated)
 - [✓] T2: API types - Complete (validated)
 - [⧗] T3: Utility functions - Validating...
-
-### Batch 2 (3 tasks)
-- [⧗] T4: Service layer - In progress
-- [○] T5: API endpoints - Pending
-- [○] T6: React components - Pending
+- [⧗] T4: Service layer - In progress (depends on T1, T2)
+- [○] T5: API endpoints - Ready to start (depends on T3, T4)
+- [○] T6: React components - Waiting on T2
+- [○] T7: Integration tests - Waiting on T5, T6
 ```
 
 **Legend:** ✓ Complete, ⧗ In progress/Validating, ○ Pending, ⚠ Validation issues, ✗ Failed
@@ -88,17 +86,18 @@ When validation agent reports issues:
 
 **Fix blocking/critical issues immediately, re-validate, then continue.**
 
-### 5. Batch Completion
-After each batch completes:
-1. Verify all tasks validated successfully
-2. Ensure no blocking issues
-3. Confirm next batch dependencies satisfied
-4. Launch next batch
+### 5. Task Completion
+After each task completes:
+1. Verify task validated successfully
+2. Check for blocking issues
+3. Identify tasks whose dependencies are now satisfied
+4. Launch newly-ready tasks immediately
 
 ### 6. Parallel Agent Management
 When running parallel agents:
-- 3-5 agents optimal per batch
-- Max 6 agents (diminishing returns)
+- 3-5 concurrent agents optimal
+- Max 6 agents running simultaneously (diminishing returns)
+- Tasks launch as dependencies complete, not in coordinated batches
 - Clear boundaries prevent conflicts
 
 Monitor with: `./agent-responses/await {agent_id}`
@@ -116,10 +115,14 @@ Follow patterns from investigations. Reference investigation findings for error 
 ✓ All tasks implemented
 ✓ All task validations passed
 
-**Tasks Summary:**
-- Batch 1: T1, T2, T3 ✓
-- Batch 2: T4, T5, T6 ✓
-- Batch 3: T7, T8, T9 ✓
+**Tasks Completed:**
+- T1: Database schema ✓
+- T2: API types ✓
+- T3: Utility functions ✓
+- T4: Service layer ✓
+- T5: API endpoints ✓
+- T6: React components ✓
+- T7: Integration tests ✓
 
 **Validation Reports:**
 - agent-responses/agent_*.md ✓

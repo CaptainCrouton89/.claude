@@ -287,5 +287,4 @@ Custom pre-tool. When it reads, it automatically reads the "memory.md" and the "
 
 
 Agents needed:
-Orchestrator: Uses agents to orchestrate task. 
 Grunt: (grok) Used to 
