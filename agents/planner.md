@@ -29,6 +29,7 @@ Planning workflow:
 4. Create implementation plan following plan.template.md
 5. Output plan to requested location or return in response
 model: sonnet
+thinking: 4000
 color: purple
 ---
 

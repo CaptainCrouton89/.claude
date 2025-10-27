@@ -87,6 +87,7 @@ const agentOutputStyle = process.env.AGENT_OUTPUT_STYLE;
 const agentAllowedAgents = process.env.AGENT_ALLOWED_AGENTS;
 const agentMcpServers = process.env.AGENT_MCP_SERVERS;
 const agentModel = process.env.CLAUDE_RUNNER_MODEL;
+const agentThinkingBudget = process.env.CLAUDE_RUNNER_THINKING_BUDGET;
 
 let child;
 if (!agentModel) {
@@ -96,6 +97,7 @@ if (!agentModel) {
 const outputStyleForChild = typeof agentOutputStyle === 'string' ? agentOutputStyle : '';
 const allowedAgentsForChild = typeof agentAllowedAgents === 'string' ? agentAllowedAgents : 'null';
 const mcpServersForChild = typeof agentMcpServers === 'string' ? agentMcpServers : 'null';
+const thinkingBudgetForChild = typeof agentThinkingBudget === 'string' && agentThinkingBudget ? agentThinkingBudget : '';
 
 try {
   child = spawn('node', [agentScriptPath], {
@@ -109,7 +111,8 @@ try {
       AGENT_OUTPUT_STYLE: outputStyleForChild,
       AGENT_ALLOWED_AGENTS: allowedAgentsForChild,
       AGENT_MCP_SERVERS: mcpServersForChild,
-      AGENT_MODEL: agentModel
+      AGENT_MODEL: agentModel,
+      AGENT_THINKING_BUDGET: thinkingBudgetForChild
     },
     stdio: 'ignore',
     cwd: workingDirectory,

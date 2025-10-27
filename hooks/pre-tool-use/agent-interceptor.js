@@ -117,6 +117,7 @@ async function main() {
   const modelName = agentDefinition.modelName;
   const agentAllowedAgents = agentDefinition.allowedAgents;
   const agentAllowedMcpServers = agentDefinition.allowedMcpServers;
+  const thinkingBudget = agentDefinition.metadata?.thinking;
 
   // Load and select MCP servers
   const { servers: availableMcpServers } = loadMcpServerLibrary({
@@ -189,7 +190,8 @@ async function main() {
     outputStyleContent,
     normalizedAllowedAgents,
     resolvedMcpServers,
-    modelName
+    modelName,
+    thinkingBudget
   });
 
   updateAgentPid(registryPath, agentId, runnerProcess.pid);

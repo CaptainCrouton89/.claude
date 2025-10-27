@@ -30,6 +30,7 @@ const childDepth = parseInt(process.env.CLAUDE_AGENT_DEPTH || '1', 10);
 const registryPath = process.env.CLAUDE_RUNNER_REGISTRY_PATH;
 const parentPid = process.env.CLAUDE_PARENT_PID;
 const agentModel = process.env.AGENT_MODEL;
+const thinkingBudget = process.env.AGENT_THINKING_BUDGET ? parseInt(process.env.AGENT_THINKING_BUDGET, 10) : null;
 
 const allowedAgents = allowedAgentsJson === 'null' ? null : JSON.parse(allowedAgentsJson);
 const mcpServersConfig = mcpServersConfigJson === 'null' ? null : JSON.parse(mcpServersConfigJson);
@@ -642,6 +643,10 @@ const tailTranscript = async () => {
 
     if (agentModel) {
       queryOptions.model = agentModel;
+    }
+
+    if (typeof thinkingBudget === 'number' && thinkingBudget > 0) {
+      queryOptions.maxThinkingTokens = thinkingBudget;
     }
 
     if (mcpServersConfig !== null) {

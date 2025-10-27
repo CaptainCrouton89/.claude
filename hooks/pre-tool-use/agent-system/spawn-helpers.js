@@ -119,7 +119,8 @@ function spawnClaudeAgent({
   outputStyleContent,
   normalizedAllowedAgents,
   resolvedMcpServers,
-  modelName
+  modelName,
+  thinkingBudget
 }) {
   if (!modelName) {
     throw new Error(`Agent ${agentId} is missing required model configuration in agent definition`);
@@ -145,6 +146,9 @@ function spawnClaudeAgent({
   }
 
   const outputStyle = typeof outputStyleContent === 'string' ? outputStyleContent : '';
+  const thinkingBudgetStr = typeof thinkingBudget === 'number' && thinkingBudget > 0
+    ? String(thinkingBudget)
+    : '';
 
   const runnerEnv = {
     ...process.env,
@@ -159,6 +163,7 @@ function spawnClaudeAgent({
     CLAUDE_RUNNER_SCRIPT_PATH: agentScriptPath,
     CLAUDE_RUNNER_CHILD_DEPTH: String(currentDepth + 1),
     CLAUDE_RUNNER_MODEL: normalizedModelName,
+    CLAUDE_RUNNER_THINKING_BUDGET: thinkingBudgetStr,
     AGENT_PROMPT: prompt,
     AGENT_CWD: hookData.cwd,
     AGENT_OUTPUT_STYLE: outputStyle,
