@@ -4,13 +4,13 @@ description: Collaborate with user to draft UI design specification and interact
 
 # Create Design Specification
 
-Your job is to collaborate with the user to draft the design specification, then save it to `docs/design-spec.yaml` using the template at @/file-templates/init-project/design-spec.yaml.
+Your job is to collaborate with the user to draft the design specification, then save it to `docs/design-spec.yaml`.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/design-spec.yaml to understand the structure.
-2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+1. Run `pdocs template design-spec` to understand the structure.
+2. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 3. Read `<project_root>/docs/user-flows/*.yaml` to understand primary user flows and personas.
 4. Read `<project_root>/docs/user-stories/*.yaml` to understand acceptance criteria and interaction requirements.
 5. Read `<project_root>/docs/feature-spec/*.yaml` to extract API constraints and interaction patterns.
@@ -23,7 +23,7 @@ Your job is to collaborate with the user to draft the design specification, then
 ## ⚡ Delegation
 
 **Default approach:** Delegate drafting of the design spec to `@agent-documentor` so you can keep orchestrating. Provide:
-- Output path (`<project_root>/docs/design-spec.yaml`) and template `@/file-templates/init-project/design-spec.yaml`
+- Output path (`<project_root>/docs/design-spec.yaml`) and template reference: "Run `pdocs template design-spec` to view the structure"
 - Inputs from user flows, stories, feature specs, and any design-system assumptions gathered
 - Instructions to cover accessibility/responsive requirements, link screens to Feature IDs, write the file immediately, and make edits if adjustments are requested
 
@@ -52,7 +52,7 @@ Continue collecting clarifications or lining up next steps while the agent works
 ---
 
 ## Output format
-- Exactly match @/file-templates/init-project/design-spec.yaml structure.
+- Exactly match the structure from `pdocs template design-spec`.
 - Include specific component names and interaction details (not vague placeholders).
 
 ---

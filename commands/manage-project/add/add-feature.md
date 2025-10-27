@@ -7,9 +7,7 @@ argument-hint: [feature name or description]
 
 Add feature to PRD and create feature specification.
 
-@~/.claude/file-templates/init-project/CLAUDE.md
-@~/.claude/file-templates/init-project/feature-spec/feature-title.yaml
-@agent-documentor
+Templates: `pdocs template product-requirements`, `pdocs template feature-spec`
 
 ## Process
 
@@ -17,7 +15,7 @@ Add feature to PRD and create feature specification.
 
 **Default approach:** Spawn `@agent-documentor` to handle PRD updates and feature-spec creation asynchronously while you gather details. Provide:
 - Target files: `product-requirements.yaml`, `feature-specs/F-##-<slug>.yaml`
-- Templates: `@/file-templates/init-project/feature-spec/feature-title.yaml`, `@/file-templates/init-project/product-requirements.yaml`
+- Template references: "Run `pdocs template product-requirements` and `pdocs template feature-spec` to view structures"
 - Feature inputs: collected feature details, dependencies, and any open questions
 - Context: existing features via `./list-features.sh` output
 

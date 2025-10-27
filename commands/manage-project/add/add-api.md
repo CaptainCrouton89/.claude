@@ -6,8 +6,7 @@ description: Add API endpoint to contracts and update related feature specificat
 
 Add API endpoint to contracts and optionally update feature specs.
 
-@~/.claude/file-templates/init-project/CLAUDE.md
-@~/.claude/file-templates/init-project/api-contracts.yaml
+Template: `pdocs template api-contracts`
 
 ## Process
 
@@ -15,7 +14,7 @@ Add API endpoint to contracts and optionally update feature specs.
 
 **Default approach:** Spawn `@agent-documentor` (or a backend specialist if schemas are complex) to update `api-contracts.yaml` asynchronously. Provide:
 - Target file: `docs/api-contracts.yaml`
-- Template: `@/file-templates/init-project/api-contracts.yaml`
+- Template reference: "Run `pdocs template api-contracts` to view the structure"
 - Endpoint details: collected from the user plus related feature/spec context
 - Context: existing API contracts via `./list-apis.sh` for schema alignment
 

@@ -118,8 +118,18 @@ function spawnClaudeAgent({
   prompt,
   outputStyleContent,
   normalizedAllowedAgents,
-  resolvedMcpServers
+  resolvedMcpServers,
+  modelName
 }) {
+  if (!modelName) {
+    throw new Error(`Agent ${agentId} is missing required model configuration in agent definition`);
+  }
+
+  // Normalize haiku to full model name (fix so that old sdk works with new haiku model)
+  const normalizedModelName = modelName && modelName.toLowerCase() === 'haiku'
+    ? 'claude-haiku-4-5-20251001'
+    : modelName;
+
   const claudeRunnerPath = join(__dirname, 'claude-runner.js');
   const allowedAgentsForScript = normalizedAllowedAgents === null
     ? 'null'
@@ -127,22 +137,31 @@ function spawnClaudeAgent({
   const mcpServersConfigForScript = resolvedMcpServers !== null
     ? JSON.stringify(resolvedMcpServers)
     : 'null';
+  const rootSessionId = process.env.CLAUDE_ROOT_SESSION_ID
+    ? process.env.CLAUDE_ROOT_SESSION_ID
+    : hookData.session_id;
+  if (!rootSessionId) {
+    throw new Error('Missing session ID - cannot create agent context');
+  }
+
+  const outputStyle = typeof outputStyleContent === 'string' ? outputStyleContent : '';
 
   const runnerEnv = {
     ...process.env,
     CLAUDE_AGENT_ID: agentId,
     CLAUDE_AGENT_DEPTH: String(currentDepth + 1),
     CLAUDE_PARENT_PID: String(process.ppid),
-    CLAUDE_ROOT_SESSION_ID: process.env.CLAUDE_ROOT_SESSION_ID || hookData.session_id || '',
+    CLAUDE_ROOT_SESSION_ID: rootSessionId,
     CLAUDE_RUNNER_AGENT_ID: agentId,
     CLAUDE_RUNNER_LOG_PATH: agentLogPath,
     CLAUDE_RUNNER_REGISTRY_PATH: registryPath,
     CLAUDE_RUNNER_WORKING_DIRECTORY: hookData.cwd,
     CLAUDE_RUNNER_SCRIPT_PATH: agentScriptPath,
     CLAUDE_RUNNER_CHILD_DEPTH: String(currentDepth + 1),
+    CLAUDE_RUNNER_MODEL: normalizedModelName,
     AGENT_PROMPT: prompt,
     AGENT_CWD: hookData.cwd,
-    AGENT_OUTPUT_STYLE: outputStyleContent || '',
+    AGENT_OUTPUT_STYLE: outputStyle,
     AGENT_ALLOWED_AGENTS: allowedAgentsForScript,
     AGENT_MCP_SERVERS: mcpServersConfigForScript
   };

@@ -145,7 +145,7 @@ Once all agents complete, synthesize findings:
 
 ### 7. Create Requirements Document
 Create: `@docs/plans/implement-{item-id}-requirements.md`
-- If the file does not exist, copy the scaffold from `@/file-templates/manage-project/plans/implement-requirements.md` before populating it.
+- If the file does not exist, get the scaffold from `pdocs template investigation-topic` before populating it.
 
 Include:
 - Original specification summary

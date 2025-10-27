@@ -6,8 +6,7 @@ description: Add user story linked to existing feature with acceptance criteria
 
 Add user story linked to existing feature.
 
-@~/.claude/file-templates/init-project/CLAUDE.md
-@~/.claude/file-templates/init-project/user-stories/story-title.yaml
+Template: `pdocs template user-story`
 
 ## Process
 
@@ -15,7 +14,7 @@ Add user story linked to existing feature.
 
 **Default approach:** Delegate story drafting to `@agent-documentor` so you can keep orchestrating. Provide:
 - Output path: `user-stories/US-###-<slug>.yaml`
-- Template: `@/file-templates/init-project/user-stories/story-title.yaml`
+- Template reference: "Run `pdocs template user-story` to view the structure"
 - Story details: selected feature ID, gathered story inputs, acceptance criteria notes, and any pending questions
 - Context: existing stories via `./list-stories.sh` to maintain sequential IDs
 

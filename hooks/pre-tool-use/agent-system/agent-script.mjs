@@ -15,6 +15,9 @@ import { setTimeout as delay } from 'timers/promises';
 
 const { query } = await import(join(homedir(), '.claude', 'claude-cli', 'sdk.mjs'));
 
+// Import registry manager (CommonJS module)
+const { updateAgentStatus } = await import('./registry-manager.js').then(m => m.default || m);
+
 // Get configuration from environment variables
 const agentLogPath = process.env.AGENT_LOG_PATH;
 const prompt = process.env.AGENT_PROMPT;
@@ -26,6 +29,7 @@ const agentId = process.env.CLAUDE_AGENT_ID;
 const childDepth = parseInt(process.env.CLAUDE_AGENT_DEPTH || '1', 10);
 const registryPath = process.env.CLAUDE_RUNNER_REGISTRY_PATH;
 const parentPid = process.env.CLAUDE_PARENT_PID;
+const agentModel = process.env.AGENT_MODEL;
 
 const allowedAgents = allowedAgentsJson === 'null' ? null : JSON.parse(allowedAgentsJson);
 const mcpServersConfig = mcpServersConfigJson === 'null' ? null : JSON.parse(mcpServersConfigJson);
@@ -636,6 +640,10 @@ const tailTranscript = async () => {
       queryOptions.customSystemPrompt = outputStyleContent;
     }
 
+    if (agentModel) {
+      queryOptions.model = agentModel;
+    }
+
     if (mcpServersConfig !== null) {
       queryOptions.mcpServers = mcpServersConfig;
     }
@@ -690,6 +698,12 @@ const tailTranscript = async () => {
         const updatedContent = content.replace(/Status: in-progress/, `Status: ${status}\nEnded: ${endTime}`);
 
         writeFileSync(agentLogPath, updatedContent, 'utf-8');
+
+        // Update status in registry for parent agent polling
+        if (registryPath && agentId) {
+          updateAgentStatus(registryPath, agentId, status);
+        }
+
         registerMessageId(message);
       }
     }
@@ -698,6 +712,12 @@ const tailTranscript = async () => {
     ensureExitLogged();
   } catch (error) {
     appendFileSync(agentLogPath, `\n\n## Status: Failed\n\nError: ${error.message}\n`, 'utf-8');
+
+    // Update status in registry for parent agent polling
+    if (registryPath && agentId) {
+      updateAgentStatus(registryPath, agentId, 'failed');
+    }
+
     ensureExitLogged();
   }
 })();

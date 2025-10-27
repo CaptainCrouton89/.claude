@@ -4,13 +4,13 @@ description: Collaborate with user to draft data structures, events, and analyti
 
 # Create Data & Analytics Plan
 
-Your job is to collaborate with the user to draft the data and analytics plan, then save it to `docs/data-plan.yaml` using the template at @/file-templates/init-project/data-plan.yaml.
+Your job is to collaborate with the user to draft the data and analytics plan, then save it to `docs/data-plan.yaml`.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/data-plan.yaml to understand the structure.
-2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+1. Run `pdocs template data-plan` to understand the structure.
+2. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 3. Read `<project_root>/docs/product-requirements.yaml` to extract success metrics, KPIs, and measurement methods.
 4. Read `<project_root>/docs/feature-spec/*.yaml` to extract data structures (tables, columns) and events to track.
 5. Read `<project_root>/docs/api-contracts.yaml` to understand endpoints and data flows.
@@ -23,7 +23,7 @@ Your job is to collaborate with the user to draft the data and analytics plan, t
 ## ⚡ Delegation
 
 **Default approach:** Delegate the data-plan drafting to `@agent-documentor` so you can keep orchestration flowing. Provide:
-- Output path (`<project_root>/docs/data-plan.yaml`) and template `@/file-templates/init-project/data-plan.yaml`
+- Output path (`<project_root>/docs/data-plan.yaml`) and template reference: "Run `pdocs template data-plan` to view the structure"
 - Success metrics from the PRD, structured data from feature specs, and API context, plus any assumptions
 - Instructions to map every metric to events/sources, surface privacy callouts, write the file immediately, and make edits if adjustments are requested
 - Reminder to update metadata
@@ -49,7 +49,7 @@ Continue collecting clarifications or prepping the next command while the agent 
 ---
 
 ## Output format
-- Exactly match @/file-templates/init-project/data-plan.yaml structure.
+- Exactly match the structure from `pdocs template data-plan`.
 - Include specific event names and properties (not placeholders).
 
 ---

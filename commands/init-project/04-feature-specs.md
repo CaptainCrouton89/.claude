@@ -4,13 +4,13 @@ description: Collaborate with user to draft technical feature specifications and
 
 # Create Feature Technical Specifications
 
-Your job is to collaborate with the user to draft technical specs for high-priority features, then save them to `docs/feature-spec/F-<##>-<slug>.yaml` using the template at @/file-templates/init-project/feature-spec/feature-title.yaml.
+Your job is to collaborate with the user to draft technical specs for high-priority features, then save them to `docs/feature-spec/F-<##>-<slug>.yaml`.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/feature-spec/feature-title.yaml to understand the structure.
-2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+1. Run `pdocs template feature-spec` to understand the structure.
+2. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 3. Read `<project_root>/docs/product-requirements.yaml` to extract the feature list (F-01..F-n) and priorities.
 4. Read `<project_root>/docs/user-stories/*.yaml` to understand acceptance criteria and technical notes.
 5. Check if `<project_root>/docs/feature-spec/` already has files. If so, read them and ask whether to improve/add/skip.
@@ -22,7 +22,7 @@ Your job is to collaborate with the user to draft technical specs for high-prior
 ## ⚡ Delegation
 
 **Default approach:** Hand feature-spec drafting to `@agent-documentor` so you can keep coordinating the workflow. Provide:
-- Output directory (`<project_root>/docs/feature-spec/`) and template `@/file-templates/init-project/feature-spec/feature-title.yaml`
+- Output directory (`<project_root>/docs/feature-spec/`) and template reference: "Run `pdocs template feature-spec` to view the structure"
 - Relevant PRD, user story, and flow context plus any assumptions/open decisions
 - Instructions to reference Feature IDs consistently, document APIs/data structures, write files immediately, and make edits if adjustments are requested
 - Reminder to update timestamps
@@ -51,7 +51,7 @@ Continue clarifying requirements or prepping later steps while the agent works. 
 ---
 
 ## Output format
-- Exactly match @/file-templates/init-project/feature-spec/feature-title.yaml structure.
+- Exactly match the structure from `pdocs template feature-spec`.
 - Include concrete data structures and API signatures; avoid vague placeholders.
 
 ---

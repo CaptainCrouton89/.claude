@@ -4,13 +4,13 @@ description: Collaborate with user to draft product requirements document
 
 # Create Product Requirements Document
 
-Your job is to collaborate with the user to draft the PRD, then save it to `docs/product-requirements.yaml` using the template at @/file-templates/init-project/product-requirements.yaml.
+Your job is to collaborate with the user to draft the PRD, then save it to `docs/product-requirements.yaml`.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/product-requirements.yaml to understand the structure.
-2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+1. Run `pdocs template product-requirements` to understand the structure.
+2. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 3. Check if `<project_root>/docs/product-requirements.yaml` already exists. If so, read it and ask whether to improve/replace/skip.
 
 ---
@@ -21,7 +21,7 @@ Your job is to collaborate with the user to draft the PRD, then save it to `docs
 
 **Default approach:** Spawn a `@agent-documentor` to draft and save the PRD while you continue orchestrating. Provide:
 - Target project root and output path (`<project_root>/docs/product-requirements.yaml`)
-- Template reference `@/file-templates/init-project/product-requirements.yaml` plus cross-doc rules in `@/file-templates/init-project/CLAUDE.md`
+- Reference to template: "Run `pdocs template product-requirements` to view the structure"
 - Collected answers, assumptions, and any open questions to document
 - Instruction to write the file immediately and make edits if adjustments are requested
 - Reminder to update metadata
@@ -56,7 +56,7 @@ Keep gathering inputs or lining up downstream commands while the documentor runs
 ---
 
 ## Output format
-- Exactly match @/file-templates/init-project/product-requirements.yaml structure.
+- Exactly match the structure from `pdocs template product-requirements`.
 
 ---
 

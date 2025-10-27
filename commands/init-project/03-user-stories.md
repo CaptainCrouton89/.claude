@@ -4,13 +4,13 @@ description: Collaborate with user to draft user stories with acceptance criteri
 
 # Create User Stories
 
-Your job is to collaborate with the user to draft user stories with acceptance criteria, then save them to `docs/user-stories/US-<###>-<slug>.yaml` using the template at @/file-templates/init-project/user-stories/story-title.yaml.
+Your job is to collaborate with the user to draft user stories with acceptance criteria, then save them to `docs/user-stories/US-<###>-<slug>.yaml`.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/user-stories/story-title.yaml to understand the structure.
-2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+1. Run `pdocs template user-story` to understand the structure.
+2. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 3. Read `<project_root>/docs/product-requirements.yaml` to extract the feature list (F-01..F-n) and priorities.
 4. Read `<project_root>/docs/user-flows/*.yaml` to understand the primary flows.
 5. Check if `<project_root>/docs/user-stories/` already has files. If so, read them and ask whether to improve/add/skip.
@@ -22,7 +22,7 @@ Your job is to collaborate with the user to draft user stories with acceptance c
 ## ⚡ Delegation
 
 **Default approach:** Delegate story drafting to a `@agent-documentor` so you can continue orchestration. Provide:
-- Output directory (`<project_root>/docs/user-stories/`) and template `@/file-templates/init-project/user-stories/story-title.yaml`
+- Output directory (`<project_root>/docs/user-stories/`) and template reference: "Run `pdocs template user-story` to view the structure"
 - Feature priorities, related user flows, and any assumptions or open questions gathered
 - Instructions to assign sequential IDs, link `feature_id`, write files immediately, and make edits if adjustments are requested
 - Reminder to update metadata
@@ -54,7 +54,7 @@ Keep interviewing the user or preparing downstream commands while the agent work
 ---
 
 ## Output format
-- Exactly match @/file-templates/init-project/user-stories/story-title.yaml structure.
+- Exactly match the structure from `pdocs template user-story`.
 - Keep ACs specific and testable.
 
 ---

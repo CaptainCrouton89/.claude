@@ -86,8 +86,17 @@ const agentCwd = process.env.AGENT_CWD;
 const agentOutputStyle = process.env.AGENT_OUTPUT_STYLE;
 const agentAllowedAgents = process.env.AGENT_ALLOWED_AGENTS;
 const agentMcpServers = process.env.AGENT_MCP_SERVERS;
+const agentModel = process.env.CLAUDE_RUNNER_MODEL;
 
 let child;
+if (!agentModel) {
+  throw new Error('Missing required CLAUDE_RUNNER_MODEL environment variable');
+}
+
+const outputStyleForChild = typeof agentOutputStyle === 'string' ? agentOutputStyle : '';
+const allowedAgentsForChild = typeof agentAllowedAgents === 'string' ? agentAllowedAgents : 'null';
+const mcpServersForChild = typeof agentMcpServers === 'string' ? agentMcpServers : 'null';
+
 try {
   child = spawn('node', [agentScriptPath], {
     env: {
@@ -97,9 +106,10 @@ try {
       AGENT_LOG_PATH: agentLogPath,
       AGENT_PROMPT: agentPrompt,
       AGENT_CWD: agentCwd,
-      AGENT_OUTPUT_STYLE: agentOutputStyle || '',
-      AGENT_ALLOWED_AGENTS: agentAllowedAgents || 'null',
-      AGENT_MCP_SERVERS: agentMcpServers || 'null'
+      AGENT_OUTPUT_STYLE: outputStyleForChild,
+      AGENT_ALLOWED_AGENTS: allowedAgentsForChild,
+      AGENT_MCP_SERVERS: mcpServersForChild,
+      AGENT_MODEL: agentModel
     },
     stdio: 'ignore',
     cwd: workingDirectory,

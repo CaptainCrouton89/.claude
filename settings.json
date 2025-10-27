@@ -120,7 +120,7 @@
       "Bash(./agent-responses/await:*)"
     ]
   },
-  "model": "sonnet",
+  "model": "haiku",
   "hooks": {
     "PreToolUse": [
       {

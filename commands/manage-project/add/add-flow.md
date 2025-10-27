@@ -6,8 +6,7 @@ description: Add user flow describing how users accomplish tasks and goals
 
 Add user flow describing how users accomplish tasks.
 
-@~/.claude/file-templates/init-project/CLAUDE.md
-@~/.claude/file-templates/init-project/user-flows/user-flow-title.yaml
+Template: `pdocs template user-flow`
 
 ## Process
 
@@ -15,7 +14,7 @@ Add user flow describing how users accomplish tasks.
 
 **Default approach:** Delegate creation of flow docs to `@agent-documentor` while you keep orchestrating. Provide:
 - Output path: `user-flows/<slug>.yaml`
-- Template: `@/file-templates/init-project/user-flows/user-flow-title.yaml`
+- Template reference: "Run `pdocs template user-flow` to view the structure"
 - Flow details: persona information, flow steps, edge cases gathered from the user, plus any assumptions needing confirmation
 - Context: existing features via `./list-features.sh` for reference alignment
 

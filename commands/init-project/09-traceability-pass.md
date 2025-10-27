@@ -9,7 +9,7 @@ Your job is to perform a final cross-document consistency check and update any f
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/CLAUDE.md to understand the cross-document conventions.
+1. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 2. Read all files under `<project_root>/docs/`:
    - `product-requirements.yaml`
    - `system-design.yaml`

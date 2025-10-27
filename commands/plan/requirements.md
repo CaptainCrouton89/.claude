@@ -3,7 +3,7 @@ description: Gather requirements for a new feature and document comprehensive sp
 argument-hint: [feature name or description]
 ---
 
-Define a new feature and produce `docs/plans/[feature-name]/requirements.md` using the canonical template at `~/.claude/file-templates/requirements.template.md`.
+Define a new feature and produce `docs/plans/[feature-name]/requirements.md` using the template from `pdocs template plan`.
 
 At a high level, the feature is:
 
@@ -12,7 +12,7 @@ $ARGUMENTS
 Instructions:
 - Ask targeted questions focusing on: user flow, technical implementation, and constraints.
 - Investigate the codebase in parallel (1-3 agents) if needed to understand current state.
-- If investigations are performed, document each using the canonical template at `~/.claude/file-templates/investigation.template.md` and save under `docs/plans/[feature-name]/investigations/`.
+- If investigations are performed, document each using the template from `pdocs template investigation-topic` and save under `docs/plans/[feature-name]/investigations/`.
 - **CRITICAL:** Resolve ALL technical inferences and clarifications with the user BEFORE creating the requirements document.
 - The final requirements document should contain ONLY confirmed decisions—no open questions or unresolved inferences.
 - When all unknowns are resolved, populate the template exactly and confirm with the user before saving.

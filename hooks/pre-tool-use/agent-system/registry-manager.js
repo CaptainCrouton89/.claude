@@ -56,7 +56,8 @@ function createAgentRegistryEntry(
     allowedAgents: Array.isArray(normalizedAllowedAgents) ? [...normalizedAllowedAgents] : null,
     allowedMcpServers: Array.isArray(normalizedAllowedMcpServers) ? [...normalizedAllowedMcpServers] : null,
     missingMcpServers: missingMcpServers.length > 0 ? [...missingMcpServers] : [],
-    spawnedBySessionId
+    spawnedBySessionId,
+    status: 'in-progress'
   };
 }
 
@@ -95,11 +96,26 @@ function updateAgentSessionInfo(registryPath, agentId, sessionInfo) {
   }
 }
 
+/**
+ * Updates the completion status for an agent in the registry
+ * @param {string} registryPath - Path to registry file
+ * @param {string} agentId - Agent ID
+ * @param {string} status - Completion status ('done', 'failed', 'interrupted')
+ */
+function updateAgentStatus(registryPath, agentId, status) {
+  const registry = readRegistry(registryPath);
+  if (registry[agentId]) {
+    registry[agentId].status = status;
+    writeRegistry(registryPath, registry);
+  }
+}
+
 module.exports = {
   readRegistry,
   writeRegistry,
   createAgentRegistryEntry,
   updateAgentPid,
-  updateAgentSessionInfo
+  updateAgentSessionInfo,
+  updateAgentStatus
 };
 

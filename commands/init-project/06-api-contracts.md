@@ -4,13 +4,13 @@ description: Collaborate with user to draft OpenAPI specification and API contra
 
 # Create API Contracts
 
-Your job is to collaborate with the user to draft the OpenAPI specification, then save it to `docs/api-contracts.yaml` using the template at @/file-templates/init-project/api-contracts.yaml.
+Your job is to collaborate with the user to draft the OpenAPI specification, then save it to `docs/api-contracts.yaml`.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/api-contracts.yaml to understand the structure.
-2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+1. Run `pdocs template api-contracts` to understand the structure.
+2. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 3. Read `<project_root>/docs/feature-spec/*.yaml` to extract all API endpoints (POST/GET/PUT/DELETE), request/response schemas, and error codes.
 4. Read `<project_root>/docs/system-design.yaml` to understand the tech stack and API Gateway design.
 5. Check if `<project_root>/docs/api-contracts.yaml` already exists. If so, read it and ask whether to improve/replace/skip.
@@ -22,7 +22,7 @@ Your job is to collaborate with the user to draft the OpenAPI specification, the
 ## ⚡ Delegation
 
 **Default approach:** Delegate OpenAPI authoring to `@agent-documentor` to keep orchestration moving. Provide:
-- Output path (`<project_root>/docs/api-contracts.yaml`) and template `@/file-templates/init-project/api-contracts.yaml`
+- Output path (`<project_root>/docs/api-contracts.yaml`) and template reference: "Run `pdocs template api-contracts` to view the structure"
 - Consolidated endpoint details from feature specs, system design context, and any assumptions
 - Instructions to reference Feature IDs, reuse component schemas, write the file immediately, and make edits if adjustments are requested
 

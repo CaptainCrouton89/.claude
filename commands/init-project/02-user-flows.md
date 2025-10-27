@@ -4,13 +4,13 @@ description: Collaborate with user to draft primary user flows and scenarios
 
 # Create User Flows
 
-Your job is to collaborate with the user to draft 2–5 primary user flows, then save them to `docs/user-flows/<slug>.yaml` using the template at @/file-templates/init-project/user-flows/user-flow-title.yaml.
+Your job is to collaborate with the user to draft 2–5 primary user flows, then save them to `docs/user-flows/<slug>.yaml`.
 
 ---
 
 ## Pre-flight: re-initialize context
-1. Read @/file-templates/init-project/user-flows/user-flow-title.yaml to understand the structure.
-2. Read @/file-templates/init-project/CLAUDE.md for cross-document conventions.
+1. Run `pdocs template user-flow` to understand the structure.
+2. Read `<project_root>/docs/CLAUDE.md` for cross-document conventions if available.
 3. Read `<project_root>/docs/product-requirements.yaml` to extract primary users, top features (F-01..F-n), and goals.
 4. Check if `<project_root>/docs/user-flows/` already has files. If so, read them and ask whether to improve/add/skip.
 
@@ -21,7 +21,7 @@ Your job is to collaborate with the user to draft 2–5 primary user flows, then
 ## ⚡ Delegation
 
 **Default approach:** Spawn a `@agent-documentor` to draft each user-flow file asynchronously. Provide:
-- Target directory (`<project_root>/docs/user-flows/`) and template `@/file-templates/init-project/user-flows/user-flow-title.yaml`
+- Target directory (`<project_root>/docs/user-flows/`) and template reference: "Run `pdocs template user-flow` to view the structure"
 - Persona and feature context pulled from the PRD plus any clarifications/assumptions
 - Guidance on naming slugs, referencing Feature IDs, and capturing edge cases per this workflow
 - Instruction to write files immediately and make edits if adjustments are requested
@@ -51,7 +51,7 @@ Continue interviewing the user and teeing up downstream steps while the agent wo
 ---
 
 ## Output format
-- Exactly match @/file-templates/init-project/user-flows/user-flow-title.yaml structure.
+- Exactly match the structure from `pdocs template user-flow`.
 - Each flow should reference the relevant feature ID (F-##) in the description.
 
 ---

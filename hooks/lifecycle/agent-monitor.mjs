@@ -3,6 +3,11 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
 import { basename, join } from 'path';
 
+// Import registry manager for status updates (CommonJS module)
+import { homedir } from 'os';
+const globalClaudeDir = join(homedir(), '.claude');
+const { updateAgentStatus } = await import(join(globalClaudeDir, 'hooks', 'pre-tool-use', 'agent-system', 'registry-manager.js')).then(m => m.default || m);
+
 function loadState(stateFile) {
   if (!existsSync(stateFile)) {
     return {};
@@ -121,7 +126,7 @@ function getRelativePath(cwd, filePath) {
   return `${basename(filePath)}`;
 }
 
-function markAgentAsInterrupted(filePath, currentContent) {
+function markAgentAsInterrupted(filePath, currentContent, registryPath, agentId) {
   if (!currentContent.includes('Status: in-progress')) {
     return null;
   }
@@ -138,6 +143,12 @@ function markAgentAsInterrupted(filePath, currentContent) {
 
   try {
     writeFileSync(filePath, updatedContent, 'utf-8');
+
+    // Update status in registry for parent agent polling
+    if (registryPath && agentId) {
+      updateAgentStatus(registryPath, agentId, 'interrupted');
+    }
+
     return updatedContent;
   } catch {
     return null;
@@ -174,6 +185,11 @@ async function main() {
   const currentAgentId = getCurrentAgentId();
   const currentSessionId = hookData.session_id || null;
   const registry = loadRegistry(registryPath);
+
+  // Get current agent's sessionId from registry for nested agent filtering
+  const currentAgentSessionId = currentAgentId && registry[currentAgentId]
+    ? registry[currentAgentId].sessionId
+    : null;
   const interruptionReasons = new Set([
     'user_interrupt',
     'prompt_input_exit',
@@ -198,7 +214,7 @@ async function main() {
       fileInfo.status === 'in-progress' &&
       (!registryEntry || !isPidActive(registryEntry.pid))
     ) {
-      const updatedContent = markAgentAsInterrupted(filePath, fileInfo.content);
+      const updatedContent = markAgentAsInterrupted(filePath, fileInfo.content, registryPath, agentId);
       if (updatedContent) {
         fileInfo = getFileInfo(filePath);
         fileInfo.notified = true;
@@ -234,8 +250,9 @@ async function main() {
                               previousState?.status !== fileInfo.status;
 
         if (justCompleted && !previousState?.notified) {
-          // Skip if not spawned by current session
-          if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId) {
+          // Skip if not spawned by current session or current agent's session
+          if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId &&
+              registryEntry.spawnedBySessionId !== currentAgentSessionId) {
             continue;
           }
 
@@ -247,8 +264,9 @@ async function main() {
         } else if (fileInfo.status === 'interrupted') {
           // Agent was interrupted - notify once and track in state
           if (previousState?.status !== 'interrupted' && !previousState?.notified) {
-            // Skip if not spawned by current session
-            if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId) {
+            // Skip if not spawned by current session or current agent's session
+            if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId &&
+                registryEntry.spawnedBySessionId !== currentAgentSessionId) {
               continue;
             }
 
@@ -258,8 +276,9 @@ async function main() {
           }
           // Keep in state to prevent re-notification
         } else if (previousState) {
-          // Skip if not spawned by current session
-          if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId) {
+          // Skip if not spawned by current session or current agent's session
+          if (registryEntry && registryEntry.spawnedBySessionId !== currentSessionId &&
+              registryEntry.spawnedBySessionId !== currentAgentSessionId) {
             continue;
           }
 

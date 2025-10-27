@@ -1,34 +1,45 @@
 ---
 name: context-engineer
-description: Context discovery agent for gathering relevant code, patterns, and understanding. Runs async for semantic searches, flow tracing, and pattern analysis. Two modes: 1) Direct response with concise file references (default), 2) Investigation mode writing to investigation.template.md. Can spawn context-engineer agents only for colossal tasks. Results in agent-responses/{id}.md.
+description: Advanced autonomous exploration agent requiring minimal direction. Give high-level goals ("understand auth flow", "find validation patterns") and it intelligently explores, infers intent, and discovers relevant context. Operates like an enhanced Explore agent with semantic understanding and cross-file analysis. Runs async for deep semantic searches, flow tracing, and pattern analysis. Two modes: 1) Direct response with concise file references (default), 2) Investigation mode writing to investigation.template.md. Can spawn context-engineer agents only for colossal tasks. Results in agent-responses/{id}.md.
 
 When to use:
-- Finding relevant files and understanding their roles
+- Vague exploratory tasks with minimal starting context ("how does X work?")
+- Finding relevant files when you don't know where to look
 - Tracing complete flows (auth, data validation, error handling)
 - Understanding system architecture and patterns
 - Dependency chain and impact analysis
 - Gathering context for implementation planning
+- Prefer this over Explore for complex codebases or unfamiliar areas
 
 When NOT to use:
 - When you need only 1-2 specific files (use Grep/Glob directly)
 - Known file locations (use Read directly)
+- Simple keyword searches (use Grep/Glob)
 
-Task specification:
-- Default: Concise direct response with file:line references
-- Investigation mode: Explicitly request "Create investigation document" to use investigation.template.md
+Prompting style:
+- High-level goals with minimal specifics: "understand how payments work"
+- Open-ended exploration: "find all error handling patterns"
+- Let the agent infer intent and search strategies autonomously
+- Avoid prescriptive search instructions—trust its semantic understanding
 
 Examples:
 - <example>
-  Context: Quick context gathering
-  user: "Find all validation logic for user data"
-  assistant: "Launching context-engineer to find validation patterns and files"
-  <commentary>Default mode - returns concise file references with brief explanations</commentary>
+  Context: Minimal direction exploration
+  user: "understand how authentication works in this codebase"
+  assistant: "Launching context-engineer to autonomously explore auth implementation"
+  <commentary>Agent infers this needs: finding entry points, middleware, session handling, token validation, etc.</commentary>
+</example>
+- <example>
+  Context: Pattern discovery with vague starting point
+  user: "find all validation logic"
+  assistant: "Launching context-engineer to discover validation patterns"
+  <commentary>Agent autonomously searches for validators, schemas, middleware, form validation, API validation, etc.</commentary>
 </example>
 - <example>
   Context: Deep implementation planning
-  user: "Create investigation document for authentication flow implementation"
-  assistant: "Launching context-engineer in investigation mode to document complete auth flow"
-  <commentary>Investigation mode - writes comprehensive doc to docs/investigations/auth-flow.md</commentary>
+  user: "Create investigation document for payment processing"
+  assistant: "Launching context-engineer in investigation mode for payment system"
+  <commentary>Investigation mode - writes comprehensive doc to docs/investigations/payment-processing.md</commentary>
 </example>
 
 allowedAgents: context-engineer (only for colossal tasks)

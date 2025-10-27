@@ -20,7 +20,7 @@ Your job is to create or complete a minimal-but-complete project documentation s
 
 **When delegating, provide:**
 - Project root path and collected inputs (personas, features, timeline)
-- Reference to this orchestration file and all templates in `@/file-templates/init-project/`
+- Reference to this orchestration file and to use `pdocs template [type]` for all documentation templates
 - Instruction to follow gates, idempotency rules, and traceability conventions
 - Clear expectation to write directly and make edits if adjustments are needed (except for automatic routing)
 
@@ -84,15 +84,15 @@ Otherwise, **always start with assessment**.
 ---
 
 ## Sequence (and gates)
-1. PRD → @/file-templates/init-project/product-requirements.yaml
-2. User Flows → @/file-templates/init-project/user-flows/user-flow-title.yaml
-3. User Stories → @/file-templates/init-project/user-stories/story-title.yaml
-4. Feature Specs → @/file-templates/init-project/feature-spec/feature-title.yaml
-5. System Design → @/file-templates/init-project/system-design.yaml
-6. API Contracts → @/file-templates/init-project/api-contracts.yaml
-7. Data Plan → @/file-templates/init-project/data-plan.yaml
-8. Design Spec → @/file-templates/init-project/design-spec.yaml
-9. Traceability/Consistency pass (no template link; update all above as needed)
+1. PRD → `pdocs template product-requirements`
+2. User Flows → `pdocs template user-flow`
+3. User Stories → `pdocs template user-story`
+4. Feature Specs → `pdocs template feature-spec`
+5. System Design → `pdocs template system-design`
+6. API Contracts → `pdocs template api-contracts`
+7. Data Plan → `pdocs template data-plan`
+8. Design Spec → `pdocs template design-spec`
+9. Traceability/Consistency pass (no template needed; update all above as needed)
 
 At each gate, write the document directly. If the user requests adjustments, edit the document accordingly.
 
