@@ -19,19 +19,19 @@ Context to provide:
 - Expected deliverables
 - Validation criteria if applicable
 
-Examples:
-- <example>
-  Context: Large refactoring request
-  user: "Find all code smells in the codebase and implement refactors for them"
-  assistant: "Launching orchestrator to coordinate code smell discovery and remediation"
-  <commentary>Vague, large task requiring decomposition, parallel investigation, planning, and implementation phases</commentary>
-</example>
-- <example>
-  Context: Full feature from scratch
-  user: "Build a complete authentication system with social login"
-  assistant: "Launching orchestrator to manage full feature lifecycle"
-  <commentary>Large feature requiring investigation, planning, implementation, and validation phases</commentary>
-</example>
+Examples: |
+  - <example>
+    Context: Large refactoring request
+    user: "Find all code smells in the codebase and implement refactors for them"
+    assistant: "Launching orchestrator to coordinate code smell discovery and remediation"
+    <commentary>Vague, large task requiring decomposition, parallel investigation, planning, and implementation phases</commentary>
+  </example>
+  - <example>
+    Context: Full feature from scratch
+    user: "Build a complete authentication system with social login"
+    assistant: "Launching orchestrator to manage full feature lifecycle"
+    <commentary>Large feature requiring investigation, planning, implementation, and validation phases</commentary>
+  </example>
 
 allowedAgents: context-engineer, planner, junior-engineer, programmer, orchestrator, senior-engineer
 model: sonnet

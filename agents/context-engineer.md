@@ -1,49 +1,45 @@
 ---
 name: context-engineer
-description: Advanced autonomous exploration agent requiring minimal direction. Give high-level goals ("understand auth flow", "find validation patterns") and it intelligently explores, infers intent, and discovers relevant context. Operates like an enhanced Explore agent with semantic understanding and cross-file analysis. Runs async for deep semantic searches, flow tracing, and pattern analysis. Two modes: 1) Direct response with concise file references (default), 2) Investigation mode writing to investigation.template.md. Can spawn context-engineer agents only for colossal tasks. Results in agent-responses/{id}.md.
+description: |
+  Advanced autonomous exploration agent requiring minimal direction. Give high-level goals ("understand auth flow", "find validation patterns") and it intelligently explores, infers intent, and discovers relevant context. Operates like an enhanced Explore agent with semantic understanding and cross-file analysis. Runs async for deep semantic searches, flow tracing, and pattern analysis. Two modes: 1) Direct response with concise file references (default), 2) Investigation mode writing to investigation.template.md. Can spawn context-engineer agents only for colossal tasks. Results in agent-responses/{id}.md.
 
-When to use:
-- Vague exploratory tasks with minimal starting context ("how does X work?")
-- Finding relevant files when you don't know where to look
-- Tracing complete flows (auth, data validation, error handling)
-- Understanding system architecture and patterns
-- Dependency chain and impact analysis
-- Gathering context for implementation planning
-- Prefer this over Explore for complex codebases or unfamiliar areas
+  When to use:
+  - Vague exploratory tasks with minimal starting context ("how does X work?")
+  - Finding relevant files when you don't know where to look
+  - Tracing complete flows (auth, data validation, error handling)
+  - Understanding system architecture and patterns
+  - Dependency chain and impact analysis
+  - Gathering context for implementation planning
+  - Prefer this over Explore for complex codebases or unfamiliar areas
 
-When NOT to use:
-- When you need only 1-2 specific files (use Grep/Glob directly)
-- Known file locations (use Read directly)
-- Simple keyword searches (use Grep/Glob)
+  When NOT to use:
+  - When you need only 1-2 specific files (use Grep/Glob directly)
+  - Known file locations (use Read directly)
+  - Simple keyword searches (use Grep/Glob)
 
-Prompting style:
-- High-level goals with minimal specifics: "understand how payments work"
-- Open-ended exploration: "find all error handling patterns"
-- Let the agent infer intent and search strategies autonomously
-- Avoid prescriptive search instructions—trust its semantic understanding
+  Prompting style:
+  - High-level goals with minimal specifics: "understand how payments work"
+  - Open-ended exploration: "find all error handling patterns"
+  - Let the agent infer intent and search strategies autonomously
+  - Avoid prescriptive search instructions—trust its semantic understanding
 
-Examples:
-- <example>
-  Context: Minimal direction exploration
-  user: "understand how authentication works in this codebase"
-  assistant: "Launching context-engineer to autonomously explore auth implementation"
-  <commentary>Agent infers this needs: finding entry points, middleware, session handling, token validation, etc.</commentary>
-</example>
-- <example>
-  Context: Pattern discovery with vague starting point
-  user: "find all validation logic"
-  assistant: "Launching context-engineer to discover validation patterns"
-  <commentary>Agent autonomously searches for validators, schemas, middleware, form validation, API validation, etc.</commentary>
-</example>
-- <example>
-  Context: Deep implementation planning
-  user: "Create investigation document for payment processing"
-  assistant: "Launching context-engineer in investigation mode for payment system"
-  <commentary>Investigation mode - writes comprehensive doc to docs/investigations/payment-processing.md</commentary>
-</example>
-
-allowedAgents: context-engineer (only for colossal tasks)
-model: claude-sonnet-4-5-20250929
+  Examples:
+  - Context: Minimal direction exploration
+    user: "understand how authentication works in this codebase"
+    assistant: "Launching context-engineer to autonomously explore auth implementation"
+    commentary: Agent infers this needs - finding entry points, middleware, session handling, token validation, etc.
+  - Context: Pattern discovery with vague starting point
+    user: "find all validation logic"
+    assistant: "Launching context-engineer to discover validation patterns"
+    commentary: Agent autonomously searches for validators, schemas, middleware, form validation, API validation, etc.
+  - Context: Deep implementation planning
+    user: "Create investigation document for payment processing"
+    assistant: "Launching context-engineer in investigation mode for payment system"
+    commentary: Investigation mode - writes comprehensive doc to docs/investigations/payment-processing.md
+allowedAgents: context-engineer
+model: composer-1
+inheritProjectMcps: false
+inheritParentMcps: false
 color: orange
 ---
 

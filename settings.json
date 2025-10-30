@@ -120,7 +120,7 @@
       "Bash(./agent-responses/await:*)"
     ]
   },
-  "model": "haiku",
+  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -129,6 +129,15 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/pre-tool-use/npm-to-pnpm-warning.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "klaude hook task"
           }
         ]
       }
@@ -154,6 +163,10 @@
             "type": "command",
             "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "klaude hook pre-user-message"
           }
         ]
       }
@@ -230,7 +243,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/lifecycle/session-tracker.mjs"
+            "command": "klaude hook session-start"
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "klaude hook session-start"
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "klaude hook session-start"
           }
         ]
       }
@@ -240,15 +271,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/lifecycle/session-tracker.mjs"
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/session-history-logger.mjs"
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/claude-md-manager.mjs"
+            "command": "klaude hook session-end"
           }
         ]
       }
@@ -258,5 +281,5 @@
     "type": "command",
     "command": "~/.claude/hooks/statusline/statusline-wrapper.sh"
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": false
 }

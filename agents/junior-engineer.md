@@ -21,20 +21,20 @@ Context to provide:
 - Shared types/interfaces to use (e.g., "Use UserDTO from types/user.ts")
 - Specific code examples to replicate (e.g., "Copy error handling from utils/errors.ts:12-20")
 
-Examples:
-- <example>
-  Context: Task with explicit instructions
-  user: "Add a new endpoint in src/api/users.ts following the pattern in src/api/orders.ts:45-67"
-  assistant: "Launching junior-engineer agent with exact file paths and pattern reference"
-  <commentary>Clear task with specific files and pattern to follow</commentary>
-</example>
-- <example>
-  Context: Implementation from detailed plan
-  user: "Implement step 3 from the plan document"
-  assistant: "Launching junior-engineer agent to execute step 3 from @agent-responses/agent_789012.md"
-  <commentary>Well-defined task with explicit plan to follow</commentary>
-</example>
-model: haiku
+Examples: |
+  - <example>
+    Context: Task with explicit instructions
+    user: "Add a new endpoint in src/api/users.ts following the pattern in src/api/orders.ts:45-67"
+    assistant: "Launching junior-engineer agent with exact file paths and pattern reference"
+    <commentary>Clear task with specific files and pattern to follow</commentary>
+  </example>
+  - <example>
+    Context: Implementation from detailed plan
+    user: "Implement step 3 from the plan document"
+    assistant: "Launching junior-engineer agent to execute step 3 from @agent-responses/agent_789012.md"
+    <commentary>Well-defined task with explicit plan to follow</commentary>
+  </example>
+model: composer-1
 thinking: 4000
 color: green
 ---

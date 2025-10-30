@@ -1,37 +1,8 @@
 ---
 name: senior-engineer
-description: Technical advisor agent for code review, architectural analysis, and technical guidance. Use when you need expert evaluation of implementations, plans, or technical approaches. Agent provides analysis and recommendations without implementing changes. Ideal for validation, review, and strategic technical decisions.
-
-When to use:
-- Reviewing code quality and architecture
-- Evaluating technical approaches and trade-offs
-- Analyzing implementation plans for technical soundness
-- Identifying potential issues or improvements in code
-- Providing guidance on complex technical decisions
-
-When NOT to use:
-- Actual implementation work (use programmer or junior-engineer)
-- Simple questions that don't require deep analysis
-
-Context to provide:
-- Files to review (e.g., "Review src/api/users.ts and src/services/user.ts")
-- Specific concerns or questions (e.g., "Is this error handling approach sound?")
-- Plan documents to evaluate (e.g., "Review @agent-responses/agent_123456.md")
-- Architectural context (e.g., "We're using microservices with event sourcing")
-
-Examples:
-- <example>
-  Context: Code review request
-  user: "Review the payment processing implementation for potential issues"
-  assistant: "Launching senior-engineer agent to analyze payment code"
-  <commentary>Analysis task requiring technical expertise without implementation</commentary>
-</example>
-- <example>
-  Context: Approach validation
-  user: "Does this caching strategy make sense for our use case?"
-  assistant: "Launching senior-engineer agent to evaluate caching approach"
-  <commentary>Technical guidance on architectural decision</commentary>
-</example>
+description: Senior architecture—use only when explicitly requested.
+inheritProjectMcps: false
+inheritParentMcps: false
 model: gpt-5
 color: orange
 ---

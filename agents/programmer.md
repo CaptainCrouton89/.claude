@@ -1,6 +1,44 @@
 ---
 name: programmer
-description: Specialized agent for programming asynchronously in parallel batches. Use for independent tasks where 1) shared dependencies exist or 2) task involves 3+ files. Agent analyzes patterns first, then implements. Ideal for parallel execution with other programming agents\n\nWhen to use:\n- Multi-file features (3+ files)\n- Complex implementations requiring pattern analysis\n- Work that can run parallel to other tasks\n- Implementation of documented plans or specifications\n\nWhen NOT to use:\n- Single-file edits (use direct tools)\n- Quick bug fixes (use direct tools)\n- Debugging with rapid iteration (work directly)\n- Shared dependencies not yet created (implement first)\n\nContext to provide:\n- Files to read for patterns (e.g., "Read api/users.ts for endpoint patterns")\n- Target files to modify (e.g., "Create components/PaymentForm.tsx")\n- Plan/investigation documents (e.g., "Read @agent-responses/agent_123456.md for implementation plan")\n- Shared types/interfaces already created (e.g., "Use types/payment.ts PaymentIntent interface")\n- Project conventions to follow (e.g., "Follow error handling pattern in utils/errors.ts")\n\nParallel execution pattern:\n1. Create shared types/schemas/interfaces yourself first\n2. Launch multiple programmer agents for independent features\n3. Monitor with ./agent-responses/await only when results needed\n\nExamples:\n- <example>\n  Context: Feature with existing plan\n  user: "Implement the payment flow"\n  assistant: "Launching programmer agent with implementation plan from @agent-responses/agent_789012.md"\n  <commentary>Agent references prior investigation/plan document for context</commentary>\n</example>\n- <example>\n  Context: Parallel feature work\n  user: "Build dashboard analytics and user settings pages"\n  assistant: "Creating shared types first, then launching 2 parallel programmer agents - one for analytics, one for settings"\n  <commentary>Shared dependencies created first, then parallel agents for independent features</commentary>\n</example>
+description: |
+  Specialized agent for programming asynchronously in parallel batches. Use for independent tasks where 1) shared dependencies exist or 2) task involves 3+ files. Agent analyzes patterns first, then implements. Ideal for parallel execution with other programming agents.
+
+  When to use:
+  - Multi-file features (3+ files)
+  - Complex implementations requiring pattern analysis
+  - Work that can run parallel to other tasks
+  - Implementation of documented plans or specifications
+
+  When NOT to use:
+  - Single-file edits (use direct tools)
+  - Quick bug fixes (use direct tools)
+  - Debugging with rapid iteration (work directly)
+  - Shared dependencies not yet created (implement first)
+
+  Context to provide:
+  - Files to read for patterns (e.g., "Read api/users.ts for endpoint patterns")
+  - Target files to modify (e.g., "Create components/PaymentForm.tsx")
+  - Plan/investigation documents (e.g., "Read @agent-responses/agent_123456.md for implementation plan")
+  - Shared types/interfaces already created (e.g., "Use types/payment.ts PaymentIntent interface")
+  - Project conventions to follow (e.g., "Follow error handling pattern in utils/errors.ts")
+
+  Parallel execution pattern:
+  1. Create shared types/schemas/interfaces yourself first
+  2. Launch multiple programmer agents for independent features
+  3. Monitor with ./agent-responses/await only when results needed
+Examples: |
+  - <example>
+    Context: Feature with existing plan
+    user: "Implement the payment flow"
+    assistant: "Launching programmer agent with implementation plan from @agent-responses/agent_789012.md"
+    <commentary>Agent references prior investigation/plan document for context</commentary>
+  </example>
+  - <example>
+    Context: Parallel feature work
+    user: "Build dashboard analytics and user settings pages"
+    assistant: "Creating shared types first, then launching 2 parallel programmer agents - one for analytics, one for settings"
+    <commentary>Shared dependencies created first, then parallel agents for independent features</commentary>
+  </example>
 model: sonnet
 color: blue
 ---

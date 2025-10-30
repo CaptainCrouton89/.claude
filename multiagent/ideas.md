@@ -288,3 +288,68 @@ Custom pre-tool. When it reads, it automatically reads the "memory.md" and the "
 
 Agents needed:
 Grunt: (grok) Used to 
+
+
+CLI subagents, async? All tools async? 
+BetterTask (pretool hook on task, tell it to use "better task" instead)
+
+args: 
+agent_type, prompt, run_in_background: true, agent_count: ?
+
+
+
+if multiple agents, first step is orchestration stage
+
+I want it to just "know" to call "agent-cli debug 'description of issue'"
+
+
+
+
+Needed Features
+	⁃	Proactive AF. Not Q&A—should be predictive
+	⁃	Tomorrow going to food, the AI gives you path there
+	⁃	
+
+	⁃	Knoweldge Work
+	⁃	Research, gather information
+	⁃	Synthesize slides
+	⁃	Give genuine insights
+	⁃	Any interface
+	⁃	Keep learning from observing
+	⁃	Understands structured and unstructured data
+	⁃	Connects dots
+	⁃	Epiphanies for you
+	⁃	Proactively predicting things ahead of time, plotting the future
+	⁃	Proactively provides just in time insight
+
+What Form Factor
+	⁃	
+
+Real Milestones
+	⁃	Disrupt
+	⁃	We don’t want others telling us what to build
+	⁃	First in the world as a digital employee
+
+
+Phases: 
+- Risk Scenarios
+- It needs to have the role of an employee in that position to make a good set of phases
+- It needs to be able to request other roles to create plans too. Each system is a human, with a role, who tackles problem like a real person would for that problem. 
+- So many things that have to be accounted for: feasibility, components of data center (fiber, gpus, regulation, internet infrastructure). Requires researching, talking to people, sending emails, etc—each agent is just trying to figure it out
+- Employees have tool collections
+- Individual agents good at specific parts of any given task. 
+
+Add logical guard rails: time, compute, tokens, what’s good enough. A “boss” can set guardrails on employees. One last phase—summarize what happened/what failed, what was tried, etc. The agent can predict how long subagent will need, and if it goes over, it checks in. If it’s way sooner than the range, then it casts doubt (checks in). It needs to “learn” this over time by having metadata on previous attempts. Maybe agent can self regulate to some degree—it needs to know to report back. 
+
+
+Give the agents selfawareness, timestamps for the strategy agent. 
+
+
+- Get context management/long term tasks working well. Stability > intelligence
+- Get agents able to spawn new agents
+- Get them better able to produce actionable/requested output
+
+
+
+
+You want money to take pressure off so you can relax and focus
