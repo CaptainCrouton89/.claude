@@ -4,7 +4,7 @@ description: |
   Advanced autonomous exploration agent requiring minimal direction. Give high-level goals ("understand auth flow", "find validation patterns") and it intelligently explores, infers intent, and discovers relevant context. Operates like an enhanced Explore agent with semantic understanding and cross-file analysis. Runs async for deep semantic searches, flow tracing, and pattern analysis. Two modes: 1) Direct response with concise file references (default), 2) Investigation mode writing to investigation.template.md. Can spawn context-engineer agents only for colossal tasks. Results in agent-responses/{id}.md.
 
   When to use:
-  - Vague exploratory tasks with minimal starting context ("how does X work?")
+  - Vague exploratory tasks with minimal stajrting context ("how does X work?")
   - Finding relevant files when you don't know where to look
   - Tracing complete flows (auth, data validation, error handling)
   - Understanding system architecture and patterns

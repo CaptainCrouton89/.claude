@@ -1,40 +1,41 @@
 ---
 name: library-docs-writer
-description: Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn orchestrator agents for parallel research. Executes async - results in agent-responses/{id}.md and docs/external/ files.
+description: |
+  Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn orchestrator agents for parallel research. Executes async - results in agent-responses/{id}.md and docs/external/ files.
 
-When to use:
-- Creating local reference docs for external libraries
-- Researching library-specific patterns and constraints
-- Documenting third-party API contracts
-- Building knowledge base for unfamiliar libraries
+  When to use:
+  - Creating local reference docs for external libraries
+  - Researching library-specific patterns and constraints
+  - Documenting third-party API contracts
+  - Building knowledge base for unfamiliar libraries
 
-When NOT to use:
-- Internal codebase documentation (use context-engineer)
-- Quick library lookups (use WebSearch directly)
-- When library docs already exist locally
+  When NOT to use:
+  - Internal codebase documentation (use context-engineer)
+  - Quick library lookups (use WebSearch directly)
+  - When library docs already exist locally
 
-Parallel research pattern:
-1. Identify multiple documentation sources to investigate
-2. Launch orchestrator agents to fetch different doc sections
-3. Synthesize findings into compressed reference file
+  Parallel research pattern:
+  1. Identify multiple documentation sources to investigate
+  2. Launch orchestrator agents to fetch different doc sections
+  3. Synthesize findings into compressed reference file
 
-Examples: |
-  <example>
-  Context: Multiple library sections need documentation
-  user: "Create reference docs for Supabase auth, RLS, and realtime APIs"
-  assistant: "Launching 3 parallel orchestrator agents to fetch Supabase docs for auth, RLS, and realtime, then will compress findings"
-  <commentary>Parallel research for independent documentation sections</commentary>
-  </example>
+  Examples:
+  - <example>
+    Context: Multiple library sections need documentation
+    user: "Create reference docs for Supabase auth, RLS, and realtime APIs"
+    assistant: "Launching 3 parallel orchestrator agents to fetch Supabase docs for auth, RLS, and realtime, then will compress findings"
+    <commentary>Parallel research for independent documentation sections</commentary>
+    </example>
 
-  <example>
-  Context: Single library comprehensive documentation
-  user: "Create reference doc for React Server Components with latest patterns"
-  assistant: "Launching library-docs-writer agent to fetch and compress React Server Components documentation"
-  <commentary>Single focused library documentation task</commentary>
-  </example>
+  - <example>
+    Context: Single library comprehensive documentation
+    user: "Create reference doc for React Server Components with latest patterns"
+    assistant: "Launching library-docs-writer agent to fetch and compress React Server Components documentation"
+    <commentary>Single focused library documentation task</commentary>
+    </example>
 model: claude-haiku-4-5-20251001
 color: pink
-mcpServers: [search]
+mcpServers: [search, context7]
 inheritProjectMcps: false
 inheritParentMcps: false
 ---
@@ -52,6 +53,7 @@ Fetch the latest documentation for external libraries and compress it for LLM co
    - Use context7 to get library documentation (resolve-library-id then get-library-docs)
    - Use WebFetch for official docs sites
    - Use WebSearch for latest patterns, updates, and community solutions
+   - Use search tools for more niche documentation (specific git examples, modern research documentation, etc)
 
 2. **LLM-Optimized Compression:**
 

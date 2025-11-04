@@ -169,6 +169,14 @@
             "command": "klaude hook pre-user-message"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "klaude hook pre-user-message"
+          }
+        ]
       }
     ],
     "PostToolUse": [
