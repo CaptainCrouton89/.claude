@@ -33,7 +33,7 @@ description: |
     assistant: "Launching library-docs-writer agent to fetch and compress React Server Components documentation"
     <commentary>Single focused library documentation task</commentary>
     </example>
-model: claude-haiku-4-5-20251001
+model: haiku
 color: pink
 mcpServers: [search, context7]
 inheritProjectMcps: false

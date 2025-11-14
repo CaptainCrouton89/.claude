@@ -6,7 +6,7 @@ allowedAgents:
   - marketing-script-writer
   - research-specialist
   - orchestrator
-model: claude-haiku-4-5-20251001
+model: haiku
 mcpServers: [google-mcp, search]
 color: amber
 ---

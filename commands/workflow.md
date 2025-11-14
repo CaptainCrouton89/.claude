@@ -16,34 +16,33 @@ Execute the complete feature development lifecycle using strategic agent delegat
 **Requirements & Investigation**
 - Main agent performs lightweight initial investigation to understand the feature scope
 - Main agent asks clarifying questions to understand user intent and constraints
-- As requirements emerge, delegate investigation agents asynchronously to document specific areas:
-  - Existing patterns and conventions
-  - Related code structures
-  - Dependencies and integration points
-  - Technical constraints and considerations
-- Each agent writes real-time responses to `agent-responses/{agent_id}.md` files
-- Use `./agent-responses/await {agent_id}` to monitor specific agents or continue other work until completion alerts
-- Investigation agents run in parallel, each producing focused documentation
+- As requirements emerge, spawn investigation agents asynchronously to document specific areas:
+  - `klaude start context-engineer "investigate authentication patterns for feature X"`
+  - `klaude start context-engineer "document existing API integration patterns"`
+  - Each focusing on: existing patterns, related code, dependencies, technical constraints
+- Investigation agents run in parallel (non-blocking by default)
+- Monitor progress: `klaude sessions` shows all active agents
+- Continue requirements gathering while investigations proceed in background
+- Check completion: `klaude status <session-id>` or `klaude wait <session-id>` to block when needed
+- Review findings: `klaude logs <session-id>` or `klaude logs <session-id> --summary`
 - All investigation documents MUST use the template from `pdocs template investigation-topic`
-- Main agent continues requirements gathering while investigations proceed
-- Output: 
-  - Requirements document incorporating user clarifications high-level findings
+- Output:
+  - Requirements document incorporating user clarifications and high-level findings
   - Collection of investigation documents covering different aspects of the feature
 - User signs off on requirements and investigation before proceeding to planning
 
 **Planning**
-- Delegate a planning agent with access to ALL requirements and investigation documents
+- Spawn planning agent: `klaude start planner "create implementation plan for feature X"`
+- Agent has access to ALL requirements and investigation documents
 - Agent creates detailed implementation plan citing specific investigation findings
-- Plan should break down work into discrete, delegatable tasks
+- Plan breaks down work into discrete, delegatable tasks
+- Review plan: `klaude logs <session-id>` when complete
 
 **Implementation**
-- Delegate individual implementation agents for each task
-- Each agent receives relevant investigation documents and plan sections for their task (you can pass them the plan file)
-- Validate implementation continuously: spawn validation agents one step behind implementation
-- Validation agents run asynchronously while next implementation steps proceed
-- Each validation agent has access to requirements, investigation, plans, and the specific implementation being validated
-
-**Final Validation**
-- After all implementation complete, perform one comprehensive validation round
-- Final validation agent has access to everything: requirements, investigation, plans, all implementations
-- Systematically verify all requirements have been met across the entire feature
+- Spawn implementation agents in parallel for independent tasks:
+  - `klaude start programmer "<relevant investigation and plan documents> Implement phase 3"`
+  - `klaude start junior-engineer "<relevant investigation and plan documents> Implement phase 4"`
+- Each agent receives relevant investigation documents and plan sections
+- Monitor all agents: `klaude sessions -v` shows detailed progress
+- Use `klaude message <session-id> "clarification..."` for async communication
+- Block on critical dependencies: `klaude wait <session-id>` when needed
