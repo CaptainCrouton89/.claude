@@ -17,7 +17,7 @@ When NOT to use:
 Context to provide:
 - Explicit files to modify (e.g., "Modify src/api/users.ts")
 - Exact patterns to follow (e.g., "Follow the same structure as src/api/orders.ts:45-67")
-- Plan documents with detailed steps (e.g., "Read @agent-responses/agent_123456.md and implement steps 1-3")
+- Plan documents with detailed steps (e.g., "Follow the implementation plan and implement steps 1-3")
 - Shared types/interfaces to use (e.g., "Use UserDTO from types/user.ts")
 - Specific code examples to replicate (e.g., "Copy error handling from utils/errors.ts:12-20")
 
@@ -31,7 +31,7 @@ Examples: |
   - <example>
     Context: Implementation from detailed plan
     user: "Implement step 3 from the plan document"
-    assistant: "Launching junior-engineer agent to execute step 3 from @agent-responses/agent_789012.md"
+    assistant: "Launching junior-engineer agent to execute step 3 from the implementation plan"
     <commentary>Well-defined task with explicit plan to follow</commentary>
   </example>
 model: haiku
@@ -93,7 +93,7 @@ Exit immediately after reporting blockers - do not attempt workarounds or altern
 
 You execute asynchronously as a subagent. Your parent orchestrator:
 - Cannot see your progress until you provide [UPDATE] messages
-- Uses `./agent-responses/await {your_agent_id}` only when blocking on your results
+- Uses `klaude wait {your_agent_id}` to retrieve your results
 - Expects you to flag blockers immediately rather than attempting complex fixes
 
 **Update Protocol:**

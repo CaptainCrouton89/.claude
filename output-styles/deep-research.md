@@ -43,12 +43,11 @@ First, establishing the research framework and initial reconnaissance:
 
 [performs initial searches to understand scope...]
 
-Launching parallel investigation streams:
+Launching parallel investigation streams via klaude:
 
 <function_calls>
-<invoke name="Task">
-<parameter name="description">Analyze auth implementation</parameter>
-<parameter name="prompt">Deep dive into authentication implementation:
+<invoke name="Bash">
+<parameter name="command">klaude start Explore "Deep dive into authentication implementation:
 
 Priority Questions:
 - Token generation and validation mechanisms
@@ -61,12 +60,11 @@ Requirements:
 - Document security measures with confidence ratings
 - Note any potential vulnerabilities or gaps
 
-Output: Detailed implementation report with code references</parameter>
-<parameter name="subagent_type">Explore</parameter>
+Output: Detailed implementation report with code references"</parameter>
+<parameter name="description">Analyze auth implementation</parameter>
 </invoke>
-<invoke name="Task">
-<parameter name="description">Audit auth security</parameter>
-<parameter name="prompt">Security audit of authentication system:
+<invoke name="Bash">
+<parameter name="command">klaude start Explore "Security audit of authentication system:
 
 Focus Areas:
 - OWASP compliance check
@@ -80,12 +78,11 @@ Requirements:
 - Check for timing attacks in validation
 - Document findings with CVE references where applicable
 
-Output: Security assessment with risk ratings</parameter>
-<parameter name="subagent_type">Explore</parameter>
+Output: Security assessment with risk ratings"</parameter>
+<parameter name="description">Audit auth security</parameter>
 </invoke>
-<invoke name="Task">
-<parameter name="description">Research auth patterns</parameter>
-<parameter name="prompt">Research authentication best practices and patterns:
+<invoke name="Bash">
+<parameter name="command">klaude start orchestrator "Research authentication best practices and patterns:
 
 Investigation targets:
 - Industry standard implementations (OAuth2, JWT, SAML)
@@ -98,10 +95,12 @@ Requirements:
 - Compare our implementation to standards
 - Note deviations with justification analysis
 
-Output: Standards comparison with recommendations</parameter>
-<parameter name="subagent_type">orchestrator</parameter>
+Output: Standards comparison with recommendations"</parameter>
+<parameter name="description">Research auth patterns</parameter>
 </invoke>
 </function_calls>
+
+[klaude returns each agent's output directly upon completion]
 </parallel_research_example>
 
 ### Direct Investigation When

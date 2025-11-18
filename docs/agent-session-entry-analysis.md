@@ -11,7 +11,7 @@
    - Otherwise exits normally
 
 2. **Enter Agent** (`bin/enter-agent`)
-   - Reads registry (`agent-responses/.active-pids.json`) to find spawned agent's sessionId
+   - Reads registry (`.active-pids.json`) to find spawned agent's sessionId
    - Writes `.current-agent-id` file with agent ID
    - Writes marker file `.next-session` with agent's sessionId
    - Walks process tree to find Claude and kills it
@@ -24,9 +24,9 @@
    - Walks process tree to find Claude and kills it
    - Cleans up `.current-agent-id`
 
-4. **Registry** (`agent-responses/.active-pids.json`)
-   - JSON file with agent entries: `{ agent_ID: { sessionId, parentSessionId, parentPid, ... } }`
-   - Populated when Task spawns an agent
+4. **Registry** (`.active-pids.json`)
+   - JSON file with agent entries: `{ agent_ID: { sessionId, parentSessionId, parentPid, status, ... } }`
+   - Populated when klaude spawns an agent
    - Persists for agent lifecycle
 
 ### Current Flow Example

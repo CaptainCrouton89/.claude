@@ -21,11 +21,11 @@ This directory implements the **agent spawning and orchestration system** for Cl
 - **Runner pattern**: Wrapper scripts handle process lifecycle, registry updates, log streaming
 - All spawned processes are **detached** with `stdio: 'ignore'` for async execution
 
-### Agent Output Streaming & Status Tracking
-- **Incremental streaming**: `agent-script.mjs` uses delta tracking via `blockStates` Map
-- **Status lifecycle**: Frontmatter transitions from `Status: in-progress` → `Status: done`/`failed` on completion
+### Agent Output & Status Tracking
+- **Direct output**: klaude agents output directly to terminal (non-blocking)
 - **Registry status tracking**: `updateAgentStatus()` updates `.active-pids.json` with agent completion status
-- Parent agents can poll registry to check child agent progress
+- **Status lifecycle**: Registry status transitions `in-progress` → `done`/`failed` on completion
+- Parent agents poll registry to check child agent progress
 
 ### Environment Variables
 Agent context passed via env vars (see `spawn-helpers.js`):
@@ -35,10 +35,10 @@ Agent context passed via env vars (see `spawn-helpers.js`):
 - `AGENT_ALLOWED_AGENTS`, `AGENT_MCP_SERVERS` - Permissions (JSON-encoded)
 
 ### Registry Management
-- **File**: `agent-responses/.active-pids.json`
-- **Structure**: `{ [agentId]: { pid, agentId, depth, status, spawnedBySessionId, ... } }`
+- **File**: `.active-pids.json` (project root)
+- **Structure**: `{ [agentId]: { pid, agentId, depth, status, spawnedBySessionId, sessionId, ... } }`
 - **Status field**: Tracks agent completion (`in-progress`, `done`, `failed`, `interrupted`)
-- Enables process tracking, cleanup, parent polling, and hierarchy inspection
+- Enables process tracking, cleanup, parent polling, hierarchy inspection
 
 ## Module Responsibilities
 

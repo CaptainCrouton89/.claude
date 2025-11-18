@@ -20,10 +20,10 @@ SessionEnd hooks that run background workers after conversations complete.
     - Local: `.claude-md-manager-ignore` (project root)
   - Patterns support wildcards, one per line, `#` for comments
 - `session-history-logger.mjs`: Logs substantive changes to history.md via history-mcp
-- `agent-cleanup.mjs`: Terminates tracked agent processes, updates logs to "interrupted" status
-- `agent-monitor.mjs`: Tracks agent response file changes, notifies on completion/interruption
-  - Uses cwd-relative `agent-responses/` directory (not global)
-  - State files: `.monitor-state.json`, `.active-pids.json` (inside `agent-responses/`)
+- `agent-cleanup.mjs`: Terminates tracked agent processes
+- `agent-monitor.mjs`: Monitors klaude agent completion via registry polling
+  - Checks `.active-pids.json` for agent status changes
+  - Notifies on completion/failure
 - `history-mcp.mjs`: MCP server providing history entry management tools
 - `klaude-handler.js`: Legacy handler (migrate to .mjs pattern)
 
@@ -32,5 +32,5 @@ SessionEnd hooks that run background workers after conversations complete.
 - **MUST handle `SessionEnd` event**: Check `inputData.hook_event_name === 'SessionEnd'`
 - **MUST validate `reason !== 'other'`**: Prevents infinite loops from internal SDK calls
 - **ALWAYS use background workers**: Never block the main process
-- **State management**: Use dedicated JSON files in appropriate dirs (`.claude/`, `agent-responses/`)
+- **State management**: Use dedicated JSON files in `.claude/` or project root
 - **Error tolerance**: Wrap I/O in try/catch, gracefully handle missing files/git failures

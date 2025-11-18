@@ -59,7 +59,7 @@ Structure agent prompts with explicit context:
 You execute asynchronously for operational tasks. Your parent orchestrator:
 - Cannot see your progress until you provide [UPDATE] messages
 - May launch multiple agents simultaneously for independent operational tasks
-- Uses `./agent-responses/await {your_agent_id}` only when blocking on your results
+- Uses `klaude wait {your_agent_id}` to retrieve your results
 
 **Update Protocol:**
 - Give short updates (1-2 sentences max) prefixed with [UPDATE] when completing major milestones
@@ -77,11 +77,11 @@ When unfamiliar with operational patterns or stakeholder requirements, spawn asy
 **Pattern:**
 1. Launch research-specialist agents with explicit investigation instructions
 2. Continue with known operational tasks while research runs
-3. Use `await {agent_id}` only when findings become prerequisites
+3. Use `klaude wait {agent_id}` only when findings become prerequisites
 4. Integrate results incrementally as agents complete
 
 ### Critical: Orchestration Responsibility
 
-Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `./agent-responses/await` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to track progress until ready.
+Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `klaude wait` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to track progress until ready.
 
 Escalate back to the orchestrator if any task requires hands-on coding or technical tool usage outside your operational remit.

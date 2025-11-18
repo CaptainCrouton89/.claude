@@ -23,7 +23,6 @@ Execute planned tasks, implement the feature/story/API, and validate continuousl
 Read implementation plan:
 - `@docs/plans/implement-{item-id}-plan.md` - Task breakdown and dependencies
 - `@docs/plans/implement-{item-id}-requirements.md` - Requirements
-- `agent-responses/agent_*.md` - Investigation artifacts referenced in plan
 
 Verify plan exists. If missing, prompt user to run `/manage-project/implement/plan` first.
 
@@ -52,7 +51,6 @@ Validate implementation of [Task T#].
 - Modified files: [Files modified/created in T#]
 - Success criteria: @docs/plans/implement-{item-id}-plan.md (Task T# section)
 - Requirements: @docs/plans/implement-{item-id}-requirements.md
-- Patterns: agent-responses/agent_*.md
 
 Determine validation strategy to verify the implementation meets success criteria and follows established patterns.
 ```
@@ -77,7 +75,7 @@ Validation agent runs asynchronously while next task proceeds.
 ### 4. Handle Validation Issues
 When validation agent reports issues:
 
-**Review validation report:** Read `agent-responses/agent_{agent_id}.md`
+**Review validation report:** Agent output returned via klaude
 
 **Assess impact:**
 - **Blocking:** Must fix before proceeding (breaks next tasks)
@@ -99,8 +97,7 @@ When running parallel agents:
 - Max 6 agents running simultaneously (diminishing returns)
 - Tasks launch as dependencies complete, not in coordinated batches
 - Clear boundaries prevent conflicts
-
-Monitor with: `./agent-responses/await {agent_id}`
+- klaude returns agent output directly upon completion
 
 ### 7. Shared Dependencies
 Before parallelizing, create shared types, interfaces, core utilities FIRST. Then spawn parallel agents with clear boundaries.
@@ -125,7 +122,7 @@ Follow patterns from investigations. Reference investigation findings for error 
 - T7: Integration tests ✓
 
 **Validation Reports:**
-- agent-responses/agent_*.md ✓
+- All validations passed ✓
 
 **Next Step:** Run `/manage-project/implement/validate {item-id}` for comprehensive final validation.
 ```
@@ -143,7 +140,6 @@ Follow patterns from investigations. Reference investigation findings for error 
 
 **Created:**
 - Implemented code (feature/story/API)
-- `agent-responses/agent_{agent_id}.md` - Task validation reports
 - Tests (if included in plan)
 
 **References:**

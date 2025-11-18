@@ -58,7 +58,7 @@ Reference templates in `~/.claude/file-templates/`:
   - Supporting scripts (e.g., `check-project.sh`, `list-*.sh`) sit alongside these docs—leave them intact.
 - Always mirror templates from `~/.claude/file-templates/init-project/` exactly and update metadata (`status`, `version`, `last_updated`) as part of every save.
 - Surface assumptions, proposed diffs, and approval gates before writing so coordinators can confirm direction.
-- Emit `[UPDATE]` milestones referencing the files you are touching so orchestrators can monitor `agent-responses/{agent_id}.md` without blocking; only request waits when explicitly required.
+- Emit `[UPDATE]` milestones referencing the files you are touching so orchestrators can monitor progress without blocking; only request waits when explicitly required.
 - When multiple files need edits (e.g., traceability sweep), batch related changes but specify which documents will be updated and why before applying them.
 
 ## Operating Procedure
@@ -107,7 +107,7 @@ Structure agent prompts with explicit context:
 You execute asynchronously for documentation tasks. Your parent orchestrator:
 - Cannot see your progress until you provide [UPDATE] messages
 - May launch multiple agents simultaneously for independent documentation tasks
-- Uses `./agent-responses/await {your_agent_id}` only when blocking on your results
+- Uses `klaude wait {your_agent_id}` to retrieve your results
 
 **Update Protocol:**
 - Give short updates (1-2 sentences max) prefixed with [UPDATE] when completing major milestones

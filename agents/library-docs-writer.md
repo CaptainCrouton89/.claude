@@ -1,7 +1,7 @@
 ---
 name: library-docs-writer
 description: |
-  Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn orchestrator agents for parallel research. Executes async - results in agent-responses/{id}.md and docs/external/ files.
+  Documentation research and compression agent executing asynchronously. Fetches latest external library docs via WebSearch/WebFetch/Context7, then creates LLM-optimized reference files. Focuses on non-obvious information (signatures, constraints, gotchas). Can spawn orchestrator agents for parallel research. Executes async - results returned via klaude wait and docs/external/ files.
 
   When to use:
   - Creating local reference docs for external libraries
@@ -137,7 +137,7 @@ Your output should contain ONLY information that would cause an LLM to make erro
 You execute asynchronously for documentation research. Your parent orchestrator:
 - Cannot see your progress until you provide updates or complete
 - Launched you to create reference documentation
-- Will read agent-responses/{your_id}.md and check docs/external/ for files
+- Will use `klaude wait` to retrieve your results and check docs/external/ for files
 - May be continuing other work while you research
 
 **Update Protocol:**

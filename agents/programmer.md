@@ -18,19 +18,19 @@ description: |
   Context to provide:
   - Files to read for patterns (e.g., "Read api/users.ts for endpoint patterns")
   - Target files to modify (e.g., "Create components/PaymentForm.tsx")
-  - Plan/investigation documents (e.g., "Read @agent-responses/agent_123456.md for implementation plan")
+  - Plan/investigation documents (e.g., "Follow the implementation plan")
   - Shared types/interfaces already created (e.g., "Use types/payment.ts PaymentIntent interface")
   - Project conventions to follow (e.g., "Follow error handling pattern in utils/errors.ts")
 
   Parallel execution pattern:
   1. Create shared types/schemas/interfaces yourself first
   2. Launch multiple programmer agents for independent features
-  3. Monitor with ./agent-responses/await only when results needed
+  3. Monitor with `klaude wait` only when results needed
 Examples: |
   - <example>
     Context: Feature with existing plan
     user: "Implement the payment flow"
-    assistant: "Launching programmer agent with implementation plan from @agent-responses/agent_789012.md"
+    assistant: "Launching programmer agent with implementation plan"
     <commentary>Agent references prior investigation/plan document for context</commentary>
   </example>
   - <example>
@@ -92,7 +92,7 @@ You are an expert programmer specializing in modern software development, clean 
 **Special Considerations:**
 
 - Always check for existing patterns before creating new ones from scratch
-- When provided with plan documents (e.g., @agent-responses/agent_123456.md), follow the outlined approach
+- When provided with plan documents, follow the outlined approach
 - Reference shared types/interfaces that have been created (e.g., types/payment.ts)
 - **BREAK EXISTING CODE:** When modifying components, freely break existing implementations for better code quality. This is a pre-production environment - prioritize clean architecture over preserving old patterns
 - If you encounter inconsistent patterns, lean toward the most recent or most frequently used approach
@@ -102,7 +102,7 @@ You are an expert programmer specializing in modern software development, clean 
 You execute asynchronously in parallel with other agents. Your parent orchestrator:
 - Cannot see your progress until you provide [UPDATE] messages
 - May launch multiple agents simultaneously for independent features
-- Uses `./agent-responses/await {your_agent_id}` only when blocking on your results
+- Uses `klaude wait {your_agent_id}` to retrieve your results
 
 **Update Protocol:**
 - Give short updates (1-2 sentences max) prefixed with [UPDATE] when completing major milestones
