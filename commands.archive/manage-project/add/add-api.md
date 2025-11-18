@@ -18,7 +18,7 @@ Template: `pdocs template api-contracts`
 - Endpoint details: collected from the user plus related feature/spec context
 - Context: existing API contracts via `./list-apis.sh` for schema alignment
 
-Keep interviewing the user or coordinating downstream updates while the agent works. Monitor via hook updates; use `./agent-responses/await {agent_id}` only when the contract changes block further routing.
+Keep interviewing the user or coordinating downstream updates while the agent works. Monitor via hook updates; klaude returns output directly when complete.
 
 **Inline exception:** Make direct edits yourself only for explicit single-field tweaks. Otherwise defer to the async path.
 

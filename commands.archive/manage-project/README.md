@@ -143,10 +143,7 @@ The implementation workflow is broken into four distinct phases, each with its o
 
 **Output:**
 - `docs/plans/implement-{item-id}-requirements.md`
-- `agent-responses/patterns-*.md`
-- `agent-responses/related-code-*.md`
-- `agent-responses/integrations-*.md`
-- (more investigation artifacts)
+- Investigation findings (returned via klaude)
 
 **Next:** Run `/manage-project/implement/plan {item-id}`
 

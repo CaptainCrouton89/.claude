@@ -23,7 +23,6 @@ Transform investigation findings into actionable implementation plan with discre
 ### 1. Load Investigation Artifacts
 Read all artifacts from investigation phase:
 - `@docs/plans/implement-{item-id}-requirements.md` - Requirements document
-- `agent-responses/agent_*.md` - All investigation findings
 
 Verify artifacts exist. If missing, prompt user to run `/manage-project/implement/investigate` first.
 
@@ -78,9 +77,7 @@ Document how tasks integrate (shared interfaces, data flow, API contracts, event
 Identify potential issues: breaking changes, performance concerns, security considerations, edge cases.
 
 ### 5. Link to Investigation Findings
-Throughout plan, cite specific investigation findings:
-- "Follow error handling pattern from `agent-responses/agent_{id}.md:45`"
-- "Integrate with existing auth at `src/auth/service.ts:89` per `agent-responses/agent_{id}.md`"
+Throughout plan, cite specific investigation findings from requirements document.
 
 Plans must be grounded in investigation findings, not assumptions.
 
@@ -127,7 +124,6 @@ Wait for explicit approval before proceeding.
 
 **References:**
 - `@docs/plans/implement-{item-id}-requirements.md` (from investigation)
-- `agent-responses/agent_*.md` (from investigation)
 
 **Handoff to:** Execution phase (`/manage-project/implement/execute`)
 

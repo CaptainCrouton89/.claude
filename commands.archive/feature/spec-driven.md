@@ -39,7 +39,7 @@ klaude start Explore "/feature/investigate/codebase $ARGUMENTS" -s
    - Present to user: "I understand we're building: [summary]. Investigations running in background..."
    - Don't wait for user confirmation, continue immediately
 
-4. **WAIT for investigations**: `./agent-responses/await {agent_001} {agent_002}`
+4. **WAIT for investigations**: klaude returns output directly
 
 Both investigation documents now exist in `docs/investigations/`.
 
@@ -72,7 +72,7 @@ If no: Skip validation
 ## Key Points
 
 - Background agents spawn WITHOUT `-c` (no checkout)
-- Use `./agent-responses/await` to block until investigations complete
+- klaude blocks until agents complete and returns output
 - Plan and programmer spawn WITH `-c -s` (checkout + share context)
 - Update TodoWrite as phases complete
 - Validate understanding early while investigations run

@@ -19,7 +19,7 @@ Templates: `pdocs template product-requirements`, `pdocs template feature-spec`
 - Feature inputs: collected feature details, dependencies, and any open questions
 - Context: existing features via `./list-features.sh` output
 
-Continue gathering answers or routing follow-up commands while the agent works. Rely on hook updates for status and only run `./agent-responses/await {agent_id}` when the written docs block the next step.
+Continue gathering answers or routing follow-up commands while the agent works. Rely on hook updates for status; klaude returns output directly when complete.
 
 **Inline exception:** Direct edits are acceptable only when the user explicitly wants a tiny tweak (e.g., adjust priority). Otherwise, stick with asynchronous delegation.
 

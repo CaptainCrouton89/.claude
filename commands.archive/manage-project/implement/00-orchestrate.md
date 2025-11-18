@@ -133,7 +133,7 @@ If user selects "Full workflow":
 - Comprehensive final validation
 - Verify all requirements met
 - Check for regressions
-- **Output:** `agent-responses/final-validation-*.md` + acceptance report
+- **Output:** Validation report + acceptance report
 
 ## Special Cases
 

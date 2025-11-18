@@ -18,7 +18,6 @@
   - `docs/data-plan.md`
 
 ## Investigation Artifacts (if any)
-- `agent-responses/agent_XXXXXX.md` – [Short description]
 - `docs/plans/[feature-name]/investigations/[topic].md` – [Short description]
 
 ## Current System Overview
@@ -43,7 +42,7 @@
 - **Item ID:** <F-## / S-## / API-...>
 - **Spec:** `docs/feature-spec/F-##-<slug>.yaml` (or equivalent)
 - **Requirements:** `docs/plans/implement-<id>-requirements.md`
-- **Investigations:** [`agent-responses/agent_*.md`]
+- **Investigations:** Findings in requirements document
 
 ## Problem (for fixes/refactors)
 - [Specific failure/symptom]

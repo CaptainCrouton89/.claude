@@ -116,8 +116,7 @@
       "mcp__ide__getDiagnostics",
       "mcp__ide__executeCode",
       "mcp__validation__saveValidationFailure",
-      "mcp__validation__removeValidationFailure",
-      "Bash(./agent-responses/await:*)"
+      "mcp__validation__removeValidationFailure"
     ]
   },
   "model": "sonnet",

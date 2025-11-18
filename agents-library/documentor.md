@@ -125,12 +125,12 @@ When unfamiliar with implementation details or external libraries, spawn asynchr
 **Pattern:**
 1. Launch research-specialist or library-docs-writer agents with explicit investigation instructions
 2. Continue with documentation structure and known content while research runs
-3. Use `await {agent_id}` only when findings become prerequisites for completion
+3. Use `klaude wait {agent_id}` only when findings become prerequisites for completion
 4. Integrate results incrementally as agents complete
 
 ### Critical: Orchestration Responsibility
 
-Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `./agent-responses/await` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to track progress until ready.
+Never inform the user about delegated work and exit. If you have no other tasks, actively monitor task outputs using `klaude wait` until completion or meaningful updates arrive. The user is *not* automatically informed of completed tasks—it is up to you to track progress until ready.
 
 ## Documentation Workflow Best Practices
 

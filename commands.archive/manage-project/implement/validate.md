@@ -23,7 +23,6 @@ Systematically verify that the complete implementation meets all requirements, f
 ### 1. Load All Artifacts
 - `@docs/plans/implement-{item-id}-requirements.md` - Requirements
 - `@docs/plans/implement-{item-id}-plan.md` - Implementation plan
-- `agent-responses/agent_*.md` - Investigation findings and task validations
 - Original specification (feature/story/API/flow)
 - Implemented code
 
@@ -40,8 +39,6 @@ Perform comprehensive final validation of {item-id} implementation.
 **Context:**
 - Requirements: @docs/plans/implement-{item-id}-requirements.md
 - Implementation plan: @docs/plans/implement-{item-id}-plan.md
-- Task validation reports: agent-responses/agent_*.md
-- Investigation findings: agent-responses/agent_*.md
 - Original specification: [Feature/Story/API spec path]
 - Modified files: [list or git diff reference]
 
@@ -172,7 +169,7 @@ Fix critical issues, re-validate, then present non-critical issues to user for d
 - ✓ Edge cases handled
 - ✓ Integration points working
 
-**Validation Report:** agent-responses/agent_{agent_id}.md
+**Validation Report:** Returned via klaude
 
 Ready for acceptance?
 ```
@@ -207,7 +204,6 @@ Update feature status from `in_progress` to `implemented`, update timestamps.
 - Feature/Story/API implementation
 - @docs/plans/implement-{item-id}-requirements.md
 - @docs/plans/implement-{item-id}-plan.md
-- agent-responses/agent_*.md (investigations and validations)
 
 ### Summary
 [Brief description of what was implemented]
@@ -218,7 +214,7 @@ Update feature status from `in_progress` to `implemented`, update timestamps.
 ## Output Artifacts
 
 **Created:**
-- `agent-responses/agent_{agent_id}.md` - Comprehensive validation report
+- Validation report (output via klaude)
 
 **References:**
 - All artifacts from investigation, planning, and execution phases

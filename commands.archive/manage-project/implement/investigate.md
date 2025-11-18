@@ -109,14 +109,14 @@ Each agent receives context artifacts and determines its own investigation metho
 ### 5. Monitor Investigation Progress
 ```markdown
 ## Investigation Agents Active
-- [Agent {id}] Patterns investigation → agent-responses/agent_{id}.md
-- [Agent {id}] Related code investigation → agent-responses/agent_{id}.md
-- [Agent {id}] Integrations investigation → agent-responses/agent_{id}.md
-- [Agent {id}] UI patterns investigation → agent-responses/agent_{id}.md
-- [Agent {id}] Data layer investigation → agent-responses/agent_{id}.md
+- [Agent {id}] Patterns investigation (via klaude)
+- [Agent {id}] Related code investigation (via klaude)
+- [Agent {id}] Integrations investigation (via klaude)
+- [Agent {id}] UI patterns investigation (via klaude)
+- [Agent {id}] Data layer investigation (via klaude)
 ```
 
-Monitor with: `./agent-responses/await {agent_id}`
+klaude returns agent output directly upon completion
 
 ### 6. Consolidate Investigation Results
 Once all agents complete, synthesize findings:
@@ -182,14 +182,12 @@ Wait for explicit user approval.
 
 The planning agent will use:
 - @docs/plans/implement-{item-id}-requirements.md
-- agent-responses/agent_*.md (all investigation findings)
 ```
 
 ## Output Artifacts
 
 **Created:**
-- `@docs/plans/implement-{item-id}-requirements.md` - Comprehensive requirements
-- `agent-responses/agent_{agent_id}.md` - Investigation findings (2-5 files)
+- `@docs/plans/implement-{item-id}-requirements.yaml` - Comprehensive requirements (includes all investigation findings)
 
 **Handoff to:** Planning phase (`/manage-project/implement/plan`)
 
