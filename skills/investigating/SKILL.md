@@ -88,7 +88,7 @@ Read in this order:
 - `Glob` — discover files by name pattern
 
 **For semantic queries:**
-- Launch `context-engineer` agent for complex, multi-file pattern discovery
+- Launch `Explore` agent for complex, multi-file pattern discovery
 - Use `senior-engineer` agent for subtle performance bottlenecks
 
 ### Parallel Investigation

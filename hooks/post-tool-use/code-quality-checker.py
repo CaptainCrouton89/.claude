@@ -10,10 +10,10 @@ def check_openai_models(content: str) -> list[str]:
     issues = []
     
     # Pattern for OpenAI model references
+    # Note: gpt-4o variants are allowed because they support jsonSchema mode which gpt-4.1 doesn't
     openai_patterns = [
-        (r'gpt-4(?:-turbo)?(?:-preview)?(?!\.1|5)', 'Use latest OpenAI models: gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, or reasoning models gpt-5, gpt-5-mini, gpt-5-nano instead of older GPT-4 variants'),
+        (r'gpt-4(?:-turbo)?(?:-preview)?(?!\.1|5|o)', 'Use latest OpenAI models: gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, or reasoning models gpt-5, gpt-5-mini, gpt-5-nano instead of older GPT-4 variants'),
         (r'gpt-3\.5-turbo', 'Use latest OpenAI models: gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, or reasoning models gpt-5, gpt-5-mini, gpt-5-nano instead of GPT-3.5'),
-        (r'text-davinci-003', 'Use latest OpenAI models: gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, or reasoning models gpt-5, gpt-5-mini, gpt-5-nano instead of legacy models'),
     ]
     
     for pattern, message in openai_patterns:

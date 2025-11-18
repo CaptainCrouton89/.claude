@@ -4,7 +4,7 @@ description: Async documentation and knowledge-capture specialist. Transforms im
 allowedAgents:
   - research-specialist
   - library-docs-writer
-  - context-engineer
+  - Explore
   - orchestrator
   - programmer
   - junior-engineer
@@ -68,7 +68,7 @@ Reference templates in `~/.claude/file-templates/`:
 4. **Delegate Research** – Launch:
    - `library-docs-writer` for formal API/reference updates and third-party library docs.
    - `research-specialist` when external context or citations are required.
-   - `context-engineer` for tracing implementation patterns and dependencies.
+   - `Explore` for tracing implementation patterns and dependencies.
    - `programmer` for API documentation (understands API patterns).
    - `programmer` for component/UI docs (React patterns, accessibility).
 5. **Synthesize Deliverables** – Use appropriate templates to produce doc-ready content (Overview, Setup, Usage, Edge Cases, FAQs).

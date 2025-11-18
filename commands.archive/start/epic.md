@@ -14,7 +14,7 @@ This is a straightforward router to the epic orchestration workflow.
 Execute:
 
 ```bash
-klaude start general-purpose "/epic/orchestrate $ARGUMENTS" -c -s
+klaude start general-purpose "/epic/orchestrate $ARGUMENTS" -s
 ```
 
 The orchestrator will:

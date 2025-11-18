@@ -47,7 +47,7 @@ Delegate to async agents in parallel:
 - Analyze related failure patterns
 - Investigate runtime conditions
 
-**Spawn `context-engineer` agents to:**
+**Spawn `Explore` agents to:**
 - Map data flow across multiple files
 - Find all error handling for specific operation
 - Locate configuration and integration points

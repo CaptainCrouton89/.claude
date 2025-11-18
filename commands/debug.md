@@ -17,7 +17,7 @@ If you already know _exactly_ what's causing the bug, fix it immediately and ign
 
 ## Step 1: Document the Problem
 
-1. If you do not yet understand the code relating to the bug, quickly launch an @agent-context-engineer and tell it to understand the code related to the bug request. Prompt it with something brief, and tell it to give you a concise understanding of related documents and data-flow. It should _not_ attempt to find a solution.
+1. If you do not yet understand the code relating to the bug, quickly launch an @agent-Explore and tell it to understand the code related to the bug request. Prompt it with something brief, and tell it to give you a concise understanding of related documents and data-flow. It should _not_ attempt to find a solution.
 2. While this runs in the background, verify your understanding of the bug. Perform some brief investigation of your own and respond with your own understanding of the issue. Do not hypothesize a solution, just clarify the issue with the user.
 
 Based on the issue, clarify:

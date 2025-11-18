@@ -1,6 +1,6 @@
 ---
 name: product-designer
-description: For interactive requirements gathering sessions. Use with `klaude start product-designer "/some/slash-command" -c` to start an interactive requirements gathering session.
+description: For interactive requirements gathering sessions. Use with `klaude start product-designer "/some/slash-command"` to start an interactive requirements gathering session.
 model: sonnet
 thinking: 4000
 color: purple

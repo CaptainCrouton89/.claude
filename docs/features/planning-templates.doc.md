@@ -38,8 +38,8 @@ When users run planning commands (`/shared`, `/requirements`, `/parallel`, quick
 
 ## Async Agent Integration
 - Async agents are enabled by `hooks/pre-tool-use/agent-interceptor.js` and monitored by `hooks/lifecycle/agent-monitor.mjs`.
-- Planning commands instruct when to spawn `context-engineer` agents and link their outputs under `agent-responses/`.
-- Plans should include an “Investigation Artifacts” section linking these outputs.
+- Planning commands instruct when to spawn `Explore` agents and link their outputs under `agent-responses/`.
+- Plans should include an "Investigation Artifacts" section linking these outputs.
 
 ## Investigation Documents
 - Canonical template: `~/.claude/file-templates/investigation.template.md`

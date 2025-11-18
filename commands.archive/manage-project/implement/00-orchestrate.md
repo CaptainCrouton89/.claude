@@ -25,7 +25,7 @@ $ARGUMENTS
 - **Simple cases only** — For single-file, isolated changes with no dependencies, you may handle execution inline
 
 **Each phase delegates to:**
-- **Investigation** → Parallel `@agent-context-engineer` or `@agent-orchestrator` research agents
+- **Investigation** → Parallel `@agent-Explore` or `@agent-orchestrator` research agents
 - **Planning** → `@agent-documentor` for task breakdown and plan synthesis
 - **Execution** → `@agent-programmer` based on scope; orchestrator agent for complex multi-layer work
 - **Validation** → `@agent-senior-engineer` or parallel validation agents

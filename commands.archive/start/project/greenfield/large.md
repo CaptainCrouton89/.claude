@@ -24,25 +24,25 @@ Create TodoWrite with all 7 phases, then execute sequentially:
 
 ```bash
 # Phase 1: PRD
-klaude start product-designer "/start:project:greenfield:large:01-prd $ARGUMENTS" -c -s
+klaude start product-designer "/start:project:greenfield:large:01-prd $ARGUMENTS" -s
 
 # After checkout, Phase 2: User Flows
-klaude start product-designer "/start:project:greenfield:large:02-flows" -c -s
+klaude start product-designer "/start:project:greenfield:large:02-flows" -s
 
 # After checkout, Phase 3: User Stories
-klaude start product-designer "/start:project:greenfield:large:03-stories" -c -s
+klaude start product-designer "/start:project:greenfield:large:03-stories" -s
 
 # After checkout, Phase 4: Feature Specs
-klaude start product-designer "/start:project:greenfield:large:04-specs" -c -s
+klaude start product-designer "/start:project:greenfield:large:04-specs" -s
 
 # After checkout, Phase 5: System Design
-klaude start product-designer "/start:project:greenfield:large:05-design" -c -s
+klaude start product-designer "/start:project:greenfield:large:05-design" -s
 
 # After checkout, Phase 6: API Contracts
-klaude start product-designer "/start:project:greenfield:large:06-apis" -c -s
+klaude start product-designer "/start:project:greenfield:large:06-apis" -s
 
 # After checkout, Phase 7: Design Spec
-klaude start product-designer "/start:project:greenfield:large:07-ui" -c -s
+klaude start product-designer "/start:project:greenfield:large:07-ui" -s
 ```
 
 Mark each phase in_progress when spawning, complete after checkout. Present final summary when all phases done.

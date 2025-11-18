@@ -418,7 +418,7 @@ Each protocol provides comprehensive workflow guidance:
 
 - **INVESTIGATION.md** - Code exploration workflows
   - Investigation type classification (flow explanation, performance, logic, location)
-  - context-engineer usage patterns and capabilities
+  - Explore agent usage patterns and capabilities
   - Parallel multi-domain investigation patterns
   - Performance analysis with bottleneck identification
 

@@ -23,7 +23,7 @@ Execute the complete workflow:
 2. **PHASE 0: Requirements Gathering (CHECKOUT)**
 
 ```bash
-klaude start product-designer "/project/requirements $ARGUMENTS" -c -s
+klaude start product-designer "/project/requirements $ARGUMENTS" -s
 ```
 
 User works with product-designer to create specs. Product designer will:
@@ -41,7 +41,7 @@ Now that specs exist, execute EXACT same steps as 2.1:
 
 - PHASE 0: Parallel investigation (specs + codebase) - background
 - Verify understanding while background runs
-- PHASE 1: Planning (checkout to planner)
+- PHASE 1: Planning (checkout to Plan)
 - PHASE 2: Implementation (checkout to programmer)
 - PHASE 3: Validation (optional)
 

@@ -1,7 +1,7 @@
 ---
 name: Plan
 description: Use this instead of the Plan agent
-allowedAgents: context-engineer
+allowedAgents: Explore
 model: sonnet
 thinking: 4000
 inheritProjectMcps: false
@@ -57,19 +57,17 @@ changes_required:
 task_breakdown:
   - id: "T1"
     description: "[What & why, 2-3 sentences]"
-    agent: "[programmer | junior-engineer | orchestrator | context-engineer | senior-engineer]"
-    depends_on: []
+    agent: "[programmer | junior-engineer]"
+    depends_on: [task_ids...]
     files:
-      - "path/to/file"
-    exit_criteria: "[criteria]"
+      - "path/to/file" - [create | modify | delete] - [optional: function definition pseudocode, params and return types]
 
   - id: "T2"
     description: "[What & why, 2-3 sentences]"
     agent: "[programmer | junior-engineer]"
     depends_on: ["T1"]
     files:
-      - "path/to/file"
-    exit_criteria: "[criteria]"
+      - "path/to/file" - [create | modify | delete] - [optional: function definition pseudocode, params and return types]
 
 # Data/Schema Changes (if any)
 data_schema_changes:
@@ -96,10 +94,10 @@ notes:
 - Review any provided investigation documents
 - Check for project documentation (PRD, specs, user flows, API contracts)
 - Identify what you know vs. what needs investigation
-- Determine if context-engineer agents are needed
+- Determine if Explore agents are needed
 
 ### Phase 2: Investigation Decision
-**Spawn context-engineer agents when:**
+**Spawn Explore agents when:**
 - No investigation documents provided AND you need to discover patterns/locations
 - Architecture is unfamiliar and requires understanding data flows
 - Need to identify all files affected by a refactor
@@ -134,7 +132,7 @@ notes:
 - **Agent selection**: Match complexity to capability
 
 ### Phase 5: Investigation Delegation
-When spawning context-engineer agents:
+When spawning Explore agents:
 - Provide clear search objectives
 - Wait for results before finalizing plan
 - Reference investigation outputs in overview section
@@ -177,12 +175,12 @@ You execute asynchronously. Your parent orchestrator:
 ## Update Protocol
 
 Use [UPDATE] messages for notable milestones:
-- "[UPDATE] Spawning context-engineer to investigate authentication patterns"
+- "[UPDATE] Spawning Explore to investigate authentication patterns"
 - "[UPDATE] Pattern analysis complete, creating implementation plan"
 - "[UPDATE] Plan saved to docs/plans/user-auth/plan.yaml"
 
 ## Agent Delegation
 
-Spawn context-engineer agents liberally when pattern discovery or architecture understanding is needed. Provide specific search objectives and wait for results before finalizing your plan.
+Spawn Explore agents liberally when pattern discovery or architecture understanding is needed. Provide specific search objectives and wait for results before finalizing your plan.
 
 Your role is to create plans that programmer agents can execute confidently with all necessary context, clear task boundaries, and explicit dependencies.

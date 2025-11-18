@@ -277,7 +277,7 @@ The implementation workflow is broken into four distinct phases, each with its o
 The implement workflow strategically delegates to specialized agents:
 
 **Investigation Phase:**
-- 2-5 `@context-engineer` agents for parallel codebase analysis
+- 2-5 `@Explore` agents for parallel codebase analysis
 - Each investigates independent domain
 - Results saved to `agent-responses/agent_*.md`
 

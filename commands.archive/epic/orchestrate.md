@@ -25,10 +25,10 @@ Execute the complete workflow:
 2. **PHASE 0: Epic Planning (CHECKOUT)**
 
 ```bash
-klaude start planner "/epic/plan $ARGUMENTS" -c -s
+klaude start Plan "/epic/plan $ARGUMENTS" -s
 ```
 
-Planner will:
+Plan will:
 - Identify constituent features (F-01, F-02, F-03...)
 - Determine dependency order
 - Create `docs/plans/{epic-name}/epic-plan.yaml`
@@ -73,7 +73,7 @@ For each feature in dependency order:
 
 ## Key Points
 
-- Epic planner identifies features and creates build order
+- Epic Plan identifies features and creates build order
 - For each feature, detect if spec exists and route appropriately
 - Each feature workflow gets full checkout
 - Features in same phase can be done sequentially (or ask user about parallel)

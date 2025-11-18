@@ -28,7 +28,7 @@ Spawn both investigation agents WITHOUT `-c` flag (no checkout):
 
 ```bash
 klaude start junior-engineer "/feature/investigate/specs $ARGUMENTS" -s
-klaude start context-engineer "/feature/investigate/codebase $ARGUMENTS" -s
+klaude start Explore "/feature/investigate/codebase $ARGUMENTS" -s
 ```
 
 3. **WHILE PHASE 0 RUNS: Verify Understanding**
@@ -46,7 +46,7 @@ Both investigation documents now exist in `docs/investigations/`.
 5. **PHASE 1: Planning (CHECKOUT)**
 
 ```bash
-klaude start planner "/feature/plan $ARGUMENTS" -c -s
+klaude start Plan "/feature/plan $ARGUMENTS" -c -s
 ```
 
 After checkout, plan exists at `docs/plans/{feature-id}/plan.yaml`.
@@ -73,6 +73,6 @@ If no: Skip validation
 
 - Background agents spawn WITHOUT `-c` (no checkout)
 - Use `./agent-responses/await` to block until investigations complete
-- Planner and programmer spawn WITH `-c -s` (checkout + share context)
+- Plan and programmer spawn WITH `-c -s` (checkout + share context)
 - Update TodoWrite as phases complete
 - Validate understanding early while investigations run

@@ -34,7 +34,8 @@ Examples: |
     assistant: "Launching junior-engineer agent to execute step 3 from @agent-responses/agent_789012.md"
     <commentary>Well-defined task with explicit plan to follow</commentary>
   </example>
-model: composer-1
+model: haiku
+allowedAgents: Explore
 thinking: 4000
 color: green
 ---

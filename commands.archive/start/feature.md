@@ -27,7 +27,7 @@ ls docs/feature-specs/$ARGUMENTS.yaml
 
 **IF SPEC EXISTS** → Route to spec-driven workflow:
 ```bash
-klaude start general-purpose "/feature/spec-driven $ARGUMENTS" -c -s
+klaude start general-purpose "/feature/spec-driven $ARGUMENTS" -s
 ```
 
 **IF SPEC DOES NOT EXIST** → Ask user:
@@ -59,7 +59,7 @@ If no, I'll gather requirements for a new feature.
 
 **IF NO MATCH** → Route to exploratory workflow:
 ```bash
-klaude start general-purpose "/feature/exploratory $ARGUMENTS" -c -s
+klaude start general-purpose "/feature/exploratory $ARGUMENTS" -s
 ```
 
 ### Step 4: If Unclear

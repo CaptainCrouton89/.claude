@@ -17,8 +17,8 @@ Execute the complete feature development lifecycle using strategic agent delegat
 - Main agent performs lightweight initial investigation to understand the feature scope
 - Main agent asks clarifying questions to understand user intent and constraints
 - As requirements emerge, spawn investigation agents asynchronously to document specific areas:
-  - `klaude start context-engineer "investigate authentication patterns for feature X"`
-  - `klaude start context-engineer "document existing API integration patterns"`
+  - `klaude start Explore "investigate authentication patterns for feature X"`
+  - `klaude start Explore "document existing API integration patterns"`
   - Each focusing on: existing patterns, related code, dependencies, technical constraints
 - Investigation agents run in parallel (non-blocking by default)
 - Monitor progress: `klaude sessions` shows all active agents
@@ -32,7 +32,7 @@ Execute the complete feature development lifecycle using strategic agent delegat
 - User signs off on requirements and investigation before proceeding to planning
 
 **Planning**
-- Spawn planning agent: `klaude start planner "create implementation plan for feature X"`
+- Spawn planning agent: `klaude start Plan "create implementation plan for feature X"`
 - Agent has access to ALL requirements and investigation documents
 - Agent creates detailed implementation plan citing specific investigation findings
 - Plan breaks down work into discrete, delegatable tasks

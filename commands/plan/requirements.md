@@ -3,7 +3,112 @@ description: Gather requirements for a new feature and document comprehensive sp
 argument-hint: [feature name or description]
 ---
 
-Define a new feature and produce `docs/plans/[feature-name]/requirements.md` using the template from `pdocs template plan`.
+Define a new feature and produce `docs/plans/[feature-name]/requirements.md` using the following requirements template:
+
+```yaml
+# Requirements: [Feature Name]
+# Detailed requirements for implementing [Feature Name].
+
+title: Requirements - [Feature Name]
+feature_id: F-##                    # REQUIRED: Link to feature in product-requirements.yaml
+related_feature_specs: []       # List of feature spec IDs (e.g., F-01, F-02)
+related_user_stories: []        # List of user story IDs (e.g., US-101, US-102)
+related_user_flows: []          # List of user flow file names (e.g., admin-dashboard, onboarding)
+
+# ============================================================================
+# OVERVIEW
+# ============================================================================
+
+overview:
+  purpose: |                                     # OPTIONAL
+    # Brief description and why this is needed
+    # What does this feature enable? Why does the user need it?
+
+  user_benefit: |                                # OPTIONAL
+    # Value proposition for the user
+    # What problem does this solve or what capability does it unlock?
+
+  problem: |                                     # OPTIONAL
+    # What problem or gap does this address?
+
+  related_docs:                                  # OPTIONAL
+    - "docs/product-requirements.md - [Product context and goals]"
+    - "docs/user-flows/[feature-slug].md - [User journey]"
+    - "docs/feature-spec/[feature-slug].md - [Technical spec]"
+    - "docs/api-contracts/paths/[endpoint]/api-contract.yaml - [API contracts]"
+    - "docs/system-design.md - [Architecture]"
+
+# ============================================================================
+# EDGE CASES & STATES
+# ============================================================================
+
+edge_cases:
+  empty_state: |                                 # OPTIONAL
+    # Behavior when no data exists
+    # What does the user see and what can they do?
+
+  error_state: |                                 # OPTIONAL
+    # Behavior on failure or invalid input
+    # How is the error communicated? Can the user recover?
+
+  loading_state: |                               # OPTIONAL
+    # What user sees during async operations
+    # Loading indicator? Progress? Timeout handling?
+
+  large_dataset: |                               # OPTIONAL
+    # Considerations for scale or performance
+    # Pagination? Virtual scrolling? Caching?
+
+# ============================================================================
+# FUNCTIONAL REQUIREMENTS
+# ============================================================================
+
+functional_requirements:
+
+  user_interactions: |                           # OPTIONAL
+    # Specific actions users can take
+    # - User can [action 1]
+    # - User can [action 2]
+    # - System must [requirement 1]
+
+  data_requirements: |                           # OPTIONAL
+    # Required fields, types, and validation
+    # Field | Type | Required | Description | Validation
+    # [field_name] | [string/number/etc] | [yes/no] | [purpose] | [constraints]
+
+  api_endpoints: |                               # OPTIONAL
+    # If applicable, reference docs/api-contracts/paths/*/api-contract.yaml for full details
+    # - POST /endpoint - [brief purpose]
+    # - GET /endpoint/{id} - [brief purpose]
+
+  ui_layout: |                                   # OPTIONAL
+    # Component structure and hierarchy
+    # Where does this appear? What components are involved?
+
+  ui_states: |                                   # OPTIONAL
+    # Visual states beyond the happy path
+    # - Default: [what user sees initially]
+    # - Loading: [what user sees while waiting]
+    # - Success: [what user sees after success]
+    # - Error: [what user sees on failure]
+
+  accessibility: |                               # OPTIONAL
+    # WCAG 2.1 requirements
+    # Required level: AA or AAA
+    # Specific needs: [keyboard nav, screen reader, color contrast, etc.]
+
+  responsive_behavior: |                         # OPTIONAL
+    # Mobile, tablet, desktop considerations
+    # Layout adjustments, touch targets, breakpoints
+
+# ============================================================================
+# OUT OF SCOPE
+# ============================================================================
+
+out_of_scope: |                                   # OPTIONAL
+  # What is explicitly NOT included in this requirement
+  # Future enhancements or known gaps
+```
 
 At a high level, the feature is:
 
@@ -17,36 +122,5 @@ Instructions:
 - The final requirements document should contain ONLY confirmed decisions—no open questions or unresolved inferences.
 - When all unknowns are resolved, populate the template exactly and confirm with the user before saving.
 
-Integration with docs/ (init-project):
-- Ensure the requirements reference or create these docs if they don't exist yet:
-  - `docs/product-requirements.md`
-  - `docs/user-flows/[feature-slug].md`
-  - `docs/feature-spec/[feature-slug].md`
-  - `docs/api-contracts.yaml`
-  - `docs/system-design.md`
-  - `docs/data-plan.md`
-
 Output:
-- Save the completed requirements to `docs/plans/[feature-name]/requirements.md`.
-- Ensure the "Relevant Files" section is comprehensive to enable downstream planning.
-
-## Next Steps
-
-After requirements are complete and saved:
-
-```markdown
-✓ Requirements documented: @docs/plans/[feature-name]/requirements.md
-✓ Technical inferences resolved
-✓ Codebase investigations complete (if performed)
-
-**Next Step:** Add this feature to project documentation
-
-Run `/manage-project/start [feature description]` to:
-- Add feature to product requirements (`docs/product-requirements.md`)
-- Create feature specification (`docs/feature-spec/F-##-[slug].yaml`)
-- Optionally add user stories, APIs, and flows
-- Then proceed to implementation with `/manage-project/implement/00-orchestrate F-##`
-
-**Alternative:** If you want to implement immediately without updating project docs:
-- Run `/manage-project/implement/00-orchestrate` and provide the requirements.md file directly
-```
+- Save the completed requirements to `docs/plans/[feature-name]/requirements.yaml`.

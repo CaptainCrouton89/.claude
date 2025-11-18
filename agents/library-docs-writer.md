@@ -10,7 +10,7 @@ description: |
   - Building knowledge base for unfamiliar libraries
 
   When NOT to use:
-  - Internal codebase documentation (use context-engineer)
+  - Internal codebase documentation (use Explore)
   - Quick library lookups (use WebSearch directly)
   - When library docs already exist locally
 
@@ -35,6 +35,7 @@ description: |
     </example>
 model: haiku
 color: pink
+allowedAgents: Explore
 mcpServers: [search, context7]
 inheritProjectMcps: false
 inheritParentMcps: false

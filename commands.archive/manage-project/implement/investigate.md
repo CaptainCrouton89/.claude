@@ -13,7 +13,7 @@ $ARGUMENTS
 @docs/system-design.md
 @docs/api-contracts.yaml
 @docs/design-spec.md
-@agent-context-engineer
+@agent-Explore
 @agent-programmer
 
 ## Purpose
@@ -61,7 +61,7 @@ Ask 5-7 discovery questions before delegating investigators:
 Present for confirmation before proceeding.
 
 ### 4. Delegate Investigation Agents
-Based on scope analysis, spawn 2-5 investigation agents in parallel using `@agent-context-engineer`.
+Based on scope analysis, spawn 2-5 investigation agents in parallel using `@agent-Explore`.
 
 **Context to provide each agent:**
 - Requirements: `@docs/plans/implement-{item-id}-requirements.md`

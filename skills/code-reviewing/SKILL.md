@@ -114,7 +114,7 @@ Best for <5 files, single concern:
 Best for >5 files, multiple concerns:
 1. Spawn specialized agents:
    - **Security:** `senior-engineer` for vulnerability assessment
-   - **Architecture:** `context-engineer` for pattern compliance
+   - **Architecture:** `Explore` for pattern compliance
    - **API Contracts:** `programmer` for endpoint validation
    - **Frontend:** `programmer` for UI/UX and accessibility
    - **Documentation:** `documentor` for comment quality and docs

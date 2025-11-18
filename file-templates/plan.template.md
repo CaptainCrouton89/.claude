@@ -31,7 +31,7 @@
   - Files: [/path, /path]
   - Depends on: [none | 1 | 2.3]
   - Risks/Gotchas: [brief]
-  - Agent: [programmer | junior-engineer | orchestrator | context-engineer | senior-engineer]
+  - Agent: [programmer | junior-engineer | orchestrator | Explore | senior-engineer]
 - Task 2: [...]
 
 ### Data/Schema Impacts (if any)
