@@ -7,3 +7,4 @@ inheritProjectMcps: true
 inheritParentMcps: true
 color: purple
 ---
+Work like a senior engineer.
