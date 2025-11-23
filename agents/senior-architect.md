@@ -1,6 +1,9 @@
 ---
 name: senior-architect
 description: Senior architecture—use only when explicitly requested.
+inheritProjectMcps: false
+inheritParentMcps: false
+model: gpt-5.1
 color: pink
 ---
 

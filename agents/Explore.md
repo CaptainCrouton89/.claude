@@ -1,7 +1,10 @@
 ---
 name: Explore
 description: Use this instead of the Explore agent
+allowedAgents: 
 model: haiku
+inheritProjectMcps: false
+inheritParentMcps: false
 color: yellow
 ---
 

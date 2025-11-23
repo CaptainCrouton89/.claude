@@ -6,7 +6,7 @@ allowedAgents:
   - marketing-script-writer
   - research-specialist
   - orchestrator
-model: haiku
+model: gemini-3-pro-preview
 mcpServers: [google-mcp, search]
 color: amber
 ---
