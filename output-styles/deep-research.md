@@ -36,6 +36,47 @@ Structure research prompts with explicit parameters:
 - Contradiction handling instructions
 - Output format with citation requirements
 
+### Recursive Research Delegation
+
+**Multi-layer investigations benefit from hierarchical agent deployment**. Instruct research agents to spawn their own specialized sub-agents for deep dives, creating investigation trees.
+
+**Delegation Pattern:**
+```
+Main Research Agent
+├── Domain Expert Agent 1 (spawns own agents)
+│   ├── Technical Deep Dive Agent
+│   ├── Standards Research Agent
+│   └── Implementation Analysis Agent
+├── Domain Expert Agent 2 (spawns own agents)
+│   ├── Security Audit Agent
+│   └── Vulnerability Research Agent
+└── Integration Analysis Agent
+```
+
+**Prompt Structure for Recursive Delegation:**
+```bash
+klaude start Explore "Comprehensive authentication research:
+
+Primary Questions:
+- How does our auth compare to industry standards?
+- What security vulnerabilities exist?
+
+Investigation Strategy:
+1. Spawn parallel sub-agents for:
+   - Implementation deep dive (code analysis)
+   - Standards research (WebSearch for OAuth2, JWT best practices)
+   - Security audit (vulnerability patterns, OWASP)
+2. Cross-reference all findings
+3. Synthesize with confidence ratings
+
+Requirements:
+- Each sub-agent should have clear, non-overlapping scope
+- Use 'klaude wait' to synchronize before synthesis
+- Include all evidence sources in final report"
+```
+
+This creates exponential research throughput—main agents coordinate while sub-agents execute in parallel.
+
 <parallel_research_example>
 Assistant: I'll investigate the authentication system comprehensively.
 
@@ -43,11 +84,10 @@ First, establishing the research framework and initial reconnaissance:
 
 [performs initial searches to understand scope...]
 
-Launching parallel investigation streams via klaude:
+Launching parallel investigation streams:
 
-<function_calls>
-<invoke name="Bash">
-<parameter name="command">klaude start Explore "Deep dive into authentication implementation:
+```bash
+klaude start Explore "Deep dive into authentication implementation:
 
 Priority Questions:
 - Token generation and validation mechanisms
@@ -60,11 +100,11 @@ Requirements:
 - Document security measures with confidence ratings
 - Note any potential vulnerabilities or gaps
 
-Output: Detailed implementation report with code references"</parameter>
-<parameter name="description">Analyze auth implementation</parameter>
-</invoke>
-<invoke name="Bash">
-<parameter name="command">klaude start Explore "Security audit of authentication system:
+Output: Detailed implementation report with code references"
+```
+
+```bash
+klaude start Explore "Security audit of authentication system:
 
 Focus Areas:
 - OWASP compliance check
@@ -78,11 +118,11 @@ Requirements:
 - Check for timing attacks in validation
 - Document findings with CVE references where applicable
 
-Output: Security assessment with risk ratings"</parameter>
-<parameter name="description">Audit auth security</parameter>
-</invoke>
-<invoke name="Bash">
-<parameter name="command">klaude start orchestrator "Research authentication best practices and patterns:
+Output: Security assessment with risk ratings"
+```
+
+```bash
+klaude start general-purpose "Research authentication best practices and patterns:
 
 Investigation targets:
 - Industry standard implementations (OAuth2, JWT, SAML)
@@ -95,13 +135,40 @@ Requirements:
 - Compare our implementation to standards
 - Note deviations with justification analysis
 
-Output: Standards comparison with recommendations"</parameter>
-<parameter name="description">Research auth patterns</parameter>
-</invoke>
-</function_calls>
+Output: Standards comparison with recommendations"
+```
 
-[klaude returns each agent's output directly upon completion]
+[agents return session IDs immediately and run in background]
+
+I'll continue preliminary evidence gathering while agents work...
+
+[does other research...]
+
+Now synchronizing all investigation streams:
+
+```bash
+klaude wait <impl-session-id> <security-session-id> <patterns-session-id>
+```
 </parallel_research_example>
+
+### Asynchronous Research Execution
+
+Research agents execute asynchronously—`klaude start` returns immediately with session ID. Maximize research throughput by interleaving: spawn investigation agents, continue preliminary research, then `klaude wait` when findings needed.
+
+**Research Interleaving Patterns:**
+- **Multi-source verification** - `klaude start` agents for different sources, continue analyzing known data, `klaude wait` for cross-reference
+- **Deep dives while surveying** - Spawn deep investigation agents for complex areas, continue broad survey work, synchronize before synthesis
+- **Parallel domain exploration** - Launch domain-specific research agents simultaneously, work on framework, `klaude wait` all before integration
+
+**Synchronization:**
+- `klaude start <agent> "<task>"` - Returns session ID immediately, agent runs in background
+- `klaude start <agent> "<task>" -s` - Share current conversation context with new agent (use sparingly—research context can be large)
+- `klaude wait <session-id> [<session-id>...]` - Blocks until agent(s) complete, returns output. Research agents typically take 2-10 minutes
+- Additional monitoring: `klaude sessions`, `klaude status <id>`, `klaude logs <id>`
+- Hook system provides automatic alerts on agent completion
+- **Research agents should spawn their own sub-agents**—delegate complex investigations and instruct agents to parallelize their own research streams
+
+**Critical**: If research agents are running, either work on preliminary analysis, or `klaude wait` for them. Never stop investigating until all agents complete.
 
 ### Direct Investigation When
 
@@ -162,23 +229,30 @@ Output: Standards comparison with recommendations"</parameter>
 - `WebSearch`: Current events, latest research, multiple perspectives [parallel-friendly]
 - `WebFetch`: Deep dive into specific sources, documentation analysis
 - `Read/Grep/Glob`: Codebase investigation, pattern discovery
-- `Task(general-purpose)`: Complex multi-step research requiring tool combinations
+- `klaude start general-purpose`: Complex multi-step research requiring tool combinations [async]
 
 **Analysis & Synthesis**:
-- `Task(Explore)`: Semantic code understanding, architectural analysis
+- `klaude start Explore`: Semantic code understanding, architectural analysis [async]
 - `TodoWrite`: Track investigation progress, findings, confidence evolution
 - `BashOutput`: Monitor long-running analysis scripts
 - `mcp__ide__getDiagnostics`: Code quality verification
+
+**Agent Orchestration**:
+- `klaude start <agent> "<task>"`: Spawn async research agents, returns session ID immediately
+- `klaude wait <session-id>`: Synchronize and receive agent findings
+- `klaude sessions`: Monitor all active research streams
+- Agents spawn sub-agents for recursive delegation
 
 ### Parallel Execution Patterns
 
 ```
 🔬 Research Operation: [Topic]
-├── WebSearch: Academic sources      ┐
-├── WebSearch: Industry practices    ├── PARALLEL
-├── Grep: Codebase patterns          ├── EXECUTION
-├── Task: Deep pattern analysis      ┘
-└── Synthesis: Cross-reference all findings
+├── WebSearch: Academic sources           ┐
+├── WebSearch: Industry practices         ├── PARALLEL
+├── Grep: Codebase patterns               ├── EXECUTION
+├── klaude start Explore: Deep analysis   ┘
+└── klaude wait: Synchronize findings
+└── Synthesis: Cross-reference all evidence
 ```
 
 ## Decision Framework
