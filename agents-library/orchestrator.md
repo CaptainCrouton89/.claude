@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Use this agent when requested
+description: Use this agent only when requested
 allowedAgents: Explore, Plan, junior-engineer, programmer, orchestrator, senior-engineer
 model: sonnet
 color: purple

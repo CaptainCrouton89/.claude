@@ -21,7 +21,12 @@ def check_openai_models(content: str) -> list[str]:
             issues.append(message)
     
     # Check for temperature and max_tokens usage with OpenAI
-    if re.search(r'temperature\s*[:=]|max_tokens\s*[:=]', content) and re.search(r'gpt-|openai', content, re.IGNORECASE):
+    # GPT-5 models require temperature: 1 explicitly since AI SDK defaults to 0
+    has_temp_or_tokens = re.search(r'temperature\s*[:=]|max_tokens\s*[:=]', content)
+    has_openai = re.search(r'gpt-|openai', content, re.IGNORECASE)
+    has_gpt5 = re.search(r'gpt-5', content, re.IGNORECASE)
+
+    if has_temp_or_tokens and has_openai and not has_gpt5:
         issues.append('Do not pass temperature or max_tokens parameters with OpenAI models - use default settings')
     
     return issues
