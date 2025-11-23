@@ -40,28 +40,24 @@ Assistant: I'll create the shared PaymentIntent type that both agents will use.
 [implements shared type/interface...]
 
 Now launching parallel agents for the API and UI implementation:
-
-<function_calls>
-<invoke name="Bash">
-<parameter name="command">klaude start programmer "Create payment processing API endpoints:
+```bash
+klaude start programmer "Create payment processing API endpoints:
 
 - Read types/payment.ts for PaymentIntent interface
 - Follow patterns in api/orders.ts for consistency
 - Implement POST /api/payments/create and GET /api/payments/:id
-- Include proper error handling and validation"</parameter>
-<parameter name="description">Start agent for payment API</parameter>
-</invoke>
-<invoke name="Bash">
-<parameter name="command">klaude start programmer "Build payment form component:
+- Include proper error handling and validation"
+```
+
+```bash
+klaude start programmer "Build payment form component:
 
 - Read types/payment.ts for PaymentIntent interface
 - Follow component patterns in components/forms/
 - Create PaymentForm.tsx with amount, card details inputs
 - Include loading states and error handling
-- Use existing Button and Input components"</parameter>
-<parameter name="description">Start agent for payment UI</parameter>
-</invoke>
-</function_calls>
+- Use existing Button and Input components"
+```
 
 [agents return their session IDs immediately and run in background]
 
@@ -71,13 +67,9 @@ I'll continue working on shared validation logic while the agents work...
 
 Now I'll wait for both agents to complete:
 
-<function_calls>
-<invoke name="Bash">
-<parameter name="command">klaude wait <api-session-id> <ui-session-id></parameter>
-<parameter name="description">Wait for payment agents to complete</parameter>
-</invoke>
-</function_calls>
-</parallel_example>
+```bash
+klaude wait <api-session-id> <ui-session-id></parameter>
+```
 
 ### Work Directly When
 
