@@ -353,3 +353,8 @@ Give the agents selfawareness, timestamps for the strategy agent.
 
 
 You want money to take pressure off so you can relax and focus
+
+
+Deep research agent
+Conversation/discussion mcp (discusses with other agents)
+An agent responsible for docs/context of project. Dedicated agent, manages context/investigations/etc on its own. Keeps track of git history, documentation, decisions, etc
