@@ -280,11 +280,24 @@
             "command": "klaude hook session-start"
           }
         ]
+      },
+      {
+        "matcher": "clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/lifecycle/claude-md-manager.mjs"
+          }
+        ]
       }
     ],
     "SessionEnd": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/lifecycle/claude-md-manager.mjs"
+          },
           {
             "type": "command",
             "command": "klaude hook session-end"
