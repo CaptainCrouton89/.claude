@@ -15,6 +15,8 @@ SessionEnd hooks that run background workers after conversations complete.
 ## Hook Responsibilities
 
 - `claude-md-manager.mjs`: Auto-generates/updates CLAUDE.md files for directories with changes
+  - **State caching**: Tracks file signatures (`mtime`, `size`) in `claude-md-manager-cache.json` to skip unchanged files
+  - **Deduplication**: Uses lock files to prevent duplicate processing across parent/child sessions
   - **Configuration**: Uses gitignore-style exclusion patterns from:
     - Global: `~/.claude/.claude-md-manager-ignore`
     - Local: `.claude-md-manager-ignore` (project root)

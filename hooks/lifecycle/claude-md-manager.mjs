@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
+import { query } from "@r-cli/sdk";
 import { execSync } from "child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "fs";
 import { basename, dirname, join, relative } from "path";
-import { query } from "~/.claude/claude-cli/sdk.mjs";
 
 const HOOK_NAME = 'claude-md-manager';
 const STATE_FILE_NAME = 'claude-md-manager-cache.json';
@@ -401,6 +401,12 @@ async function backgroundWorker() {
     const claudeMdHierarchy = getClaudeMdHierarchy(fileDir, cwd);
     const changedFilesInDir = filesInDir.map(({ file }) => basename(file));
 
+    // Load custom guidance file if present
+    const customGuidancePath = join(fileDir, '.claude-md-manager.md');
+    const customGuidance = existsSync(customGuidancePath)
+      ? readFileSync(customGuidancePath, 'utf-8')
+      : null;
+
     directoriesToProcess.push({
       relativePath,
       claudeMdPath,
@@ -412,7 +418,8 @@ async function backgroundWorker() {
       targetLines,
       claudeMdHierarchy,
       changedFilesInDir,
-      filesInDir
+      filesInDir,
+      customGuidance
     });
   }
 
@@ -453,7 +460,8 @@ async function backgroundWorker() {
     targetLines,
     claudeMdHierarchy,
     changedFilesInDir,
-    filesInDir
+    filesInDir,
+    customGuidance
   } of directoriesToProcess) {
     let hierarchyContext = '';
     if (claudeMdHierarchy.length > 0) {
@@ -461,6 +469,11 @@ async function backgroundWorker() {
       for (const { path, content, lineCount } of claudeMdHierarchy) {
         hierarchyContext += `### ${path} (${lineCount} lines)\n\`\`\`\n${content}\n\`\`\`\n\n`;
       }
+    }
+
+    let customGuidanceContext = '';
+    if (customGuidance) {
+      customGuidanceContext = '\n\n## Custom Guidance For This Directory\n\n' + customGuidance + '\n\n';
     }
 
     const systemPrompt = isRoot
@@ -522,7 +535,7 @@ This directory already has a CLAUDE.md file (${existingClaudeMd.split('\n').leng
 \`\`\`
 ${existingClaudeMd}
 \`\`\`
-${hierarchyContext}
+${hierarchyContext}${customGuidanceContext}
 Directory contains:
 - File types: ${fileTypes.slice(0, 10).join(', ')}
 - Subdirectories: ${subdirs.length === 0 ? 'none' : subdirs.slice(0, 10).join(', ')}
@@ -544,7 +557,7 @@ Be somewhat conservative - only edit if there's a clear, important reason.`
       : `Files were edited in: ${relativePath}
 
 This directory does NOT have a CLAUDE.md file.
-${hierarchyContext}
+${hierarchyContext}${customGuidanceContext}
 Directory contains:
 - File types: ${fileTypes.slice(0, 10).join(', ')}
 - Subdirectories: ${subdirs.length === 0 ? 'none' : subdirs.slice(0, 10).join(', ')}
@@ -572,11 +585,12 @@ If none apply, do nothing.`;
           model: "claude-haiku-4-5",
           allowedTools: ["Write"],
           permissionMode: "bypassPermissions",
-          hooks: {}
+          hooks: {},
+          pathToClaudeCodeExecutable: "/opt/homebrew/bin/claude"
         }
       });
 
-      for await (const message of result) {
+      for await (const _message of result) {
         // Consume the stream
       }
 
@@ -609,7 +623,10 @@ async function main() {
   const stdin = readFileSync(0, 'utf-8');
   const inputData = JSON.parse(stdin);
 
-  if (inputData.hook_event_name !== 'SessionEnd') {
+  const isSessionEnd = inputData.hook_event_name === 'SessionEnd';
+  const isSessionStartClear = inputData.hook_event_name === 'SessionStart' && inputData.source === 'clear';
+
+  if (!isSessionEnd && !isSessionStartClear) {
     process.exit(0);
   }
 
