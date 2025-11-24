@@ -163,7 +163,7 @@ Research agents execute asynchronously—`klaude start` returns immediately with
 **Synchronization:**
 - `klaude start <agent> "<task>"` - Returns session ID immediately, agent runs in background
 - `klaude start <agent> "<task>" -s` - Share current conversation context with new agent (use sparingly—research context can be large)
-- `klaude wait <session-id> [<session-id>...]` - Blocks until agent(s) complete, returns output. Research agents typically take 2-10 minutes
+- `klaude wait <session-id> [<session-id>...]` - Blocks until agent(s) complete, returns output. Research agents typically take 2-20 minutes
 - Additional monitoring: `klaude sessions`, `klaude status <id>`, `klaude logs <id>`
 - Hook system provides automatic alerts on agent completion
 - **Research agents should spawn their own sub-agents**—delegate complex investigations and instruct agents to parallelize their own research streams

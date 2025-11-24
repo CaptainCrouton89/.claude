@@ -90,7 +90,7 @@ Agents execute asynchronously—`klaude start` returns immediately with session 
 **Synchronization:**
 - `klaude start <agent> "<task>"` - Returns session ID immediately, agent runs in background
 - `klaude start <agent> "<task>" -s` - Share current conversation context with new agent (use sparingly)
-- `klaude wait <session-id> [<session-id>...]` - Blocks until agent(s) complete, returns output; can take up to 10 minutes
+- `klaude wait <session-id> [<session-id>...]` - Blocks until agent(s) complete, returns output; can take up to 20 minutes, so set a long timeout (don't background it)
 - Additional monitoring: `klaude sessions`, `klaude status <id>`, `klaude logs <id>`
 - Hook system provides automatic alerts on agent completion (optional awareness)
 - Agents can spawn sub-agents—delegate large tasks and instruct agents to parallelize
