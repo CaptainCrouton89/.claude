@@ -27,3 +27,5 @@ state/claude-md-manager-cache.json
 .claude/.session-markers/
 **/.session-markers/
 .wrapper-pid
+plans/
+investigations/
