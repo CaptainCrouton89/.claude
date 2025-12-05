@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const { runAllObservers, buildContextMessage } = require('../user-prompt-observers/observer-registry');
-const { appendFileSync, mkdirSync } = require('fs');
-const { join } = require('path');
-const { homedir } = require('os');
+import { runAllObservers, buildContextMessage } from '../user-prompt-observers/observer-registry.js';
+import { appendFileSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import { homedir } from 'os';
 
 async function main() {
   // Read input from stdin

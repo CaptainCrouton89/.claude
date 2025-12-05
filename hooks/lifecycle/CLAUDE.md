@@ -23,9 +23,15 @@ SessionEnd hooks that run background workers after conversations complete.
   - Patterns support wildcards, one per line, `#` for comments
 - `session-history-logger.mjs`: Logs substantive changes to history.md via history-mcp
 - `agent-cleanup.mjs`: Terminates tracked agent processes
-- `agent-monitor.mjs`: Monitors klaude agent completion via registry polling
-  - Checks `.active-pids.json` for agent status changes
-  - Notifies on completion/failure
+- `agent-monitor.mjs`: Monitors agent file status and lifecycle via polling
+  - **State tracking**: Maintains `.monitor-state.json` with file metadata (`mtime`, `status`, `size`, `notified`, `lastUpdateLine`) to deduplicate notifications
+  - **Session filtering**: Notifies parent agent only if spawned by current session or current agent's parent session (via `spawnedBySessionId` registry check to prevent cross-session noise)
+  - **Interruption detection**: Marks `in-progress` agents as interrupted when:
+    - Process PID dies (registry check fails) AND interruption reason fires (`user_interrupt`, `prompt_input_exit`, `cancelled`, `user_cancel`) OR `SubagentStop` event
+    - Updates registry status to interrupt parent agent polling
+  - **Update extraction**: Scans `[UPDATE]` markers in agent response files, tracks `lastUpdateLine` to avoid duplicate notifications
+  - **Event routing**: PostToolUse events return `hookSpecificOutput` (context-aware), other events use `systemMessage` (user-visible)
+  - Integrates with registry (`.active-pids.json`) to notify parent agents of completion/failure/interruption
 - `history-mcp.mjs`: MCP server providing history entry management tools
 - `klaude-handler.js`: Legacy handler (migrate to .mjs pattern)
 

@@ -6,7 +6,7 @@ import { basename, join } from 'path';
 // Import registry manager for status updates (CommonJS module)
 import { homedir } from 'os';
 const globalClaudeDir = join(homedir(), '.claude');
-const { updateAgentStatus } = await import(join(globalClaudeDir, 'hooks', 'pre-tool-use', 'agent-system', 'registry-manager.js')).then(m => m.default || m);
+const { updateAgentStatus } = await import(join(globalClaudeDir, 'hooks', 'pre-tool-use', 'agent-system', 'registry-manager.cjs')).then(m => m.default || m);
 
 function loadState(stateFile) {
   if (!existsSync(stateFile)) {
