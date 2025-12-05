@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { query } from '../claude-cli/sdk.mjs';
+import { query } from '@r-cli/sdk';
 
 // Parse JSON input from stdin or command-line args
 async function main() {
@@ -40,6 +40,12 @@ async function main() {
     console.error('   or: echo \'{"prompt": "your query"}\' | claude-query');
     process.exit(1);
   }
+
+  // Disable hooks by not loading any settings files
+  if (!options.options) {
+    options.options = {};
+  }
+  options.options.settingSources = [];
 
   try {
     const result = query(options);

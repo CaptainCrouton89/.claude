@@ -116,10 +116,18 @@
       "mcp__ide__getDiagnostics",
       "mcp__ide__executeCode",
       "mcp__validation__saveValidationFailure",
-      "mcp__validation__removeValidationFailure"
-    ]
+      "mcp__validation__removeValidationFailure",
+      "Bash(supabase:*)",
+      "Bash(brew upgrade:*)",
+      "Bash(brew list:*)",
+      "Bash(mdutil:*)",
+      "Bash(launchctl:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "default"
   },
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "PreToolUse": [
       {
@@ -240,6 +248,10 @@
             "type": "command",
             "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/stop/backwards-compat-warning.py"
           }
         ]
       }
