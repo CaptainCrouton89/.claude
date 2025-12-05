@@ -16,7 +16,7 @@ import { setTimeout as delay } from 'timers/promises';
 const { query } = await import(join(homedir(), '.claude', 'claude-cli', 'sdk.mjs'));
 
 // Import registry manager (CommonJS module)
-const { updateAgentStatus } = await import('./registry-manager.js').then(m => m.default || m);
+const { updateAgentStatus } = await import('./registry-manager.cjs').then(m => m.default || m);
 
 // Get configuration from environment variables
 const agentLogPath = process.env.AGENT_LOG_PATH;

@@ -1,8 +1,8 @@
 const { readFileSync, existsSync } = require('fs');
 const { join } = require('path');
 const { homedir } = require('os');
-const { resolveAgentFilePath } = require('./agent-file-resolver');
-const { parseFrontmatterBlock, toList } = require('./frontmatter-parser');
+const { resolveAgentFilePath } = require('./agent-file-resolver.cjs');
+const { parseFrontmatterBlock, toList } = require('./frontmatter-parser.cjs');
 
 const AGENT_DIRECTORY = join(homedir(), '.claude', 'agents');
 const AGENT_LIBRARY_DIR = join(homedir(), '.claude', 'agents-library');

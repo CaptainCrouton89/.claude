@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const { join } = require('path');
-const { loadAgentDefinition } = require('./agent-system/agent-loader');
-const { loadMcpServerLibrary, selectMcpServers } = require('./agent-system/mcp-manager');
-const { readRegistry, writeRegistry, createAgentRegistryEntry, updateAgentPid } = require('./agent-system/registry-manager');
+const { loadAgentDefinition } = require('./agent-system/agent-loader.cjs');
+const { loadMcpServerLibrary, selectMcpServers } = require('./agent-system/mcp-manager.cjs');
+const { readRegistry, writeRegistry, createAgentRegistryEntry, updateAgentPid } = require('./agent-system/registry-manager.cjs');
 const {
   isAnthropicModel,
   setupAgentEnvironment,
@@ -11,7 +11,7 @@ const {
   createDelegationMessage,
   spawnClaudeAgent,
   spawnCursorAgent
-} = require('./agent-system/spawn-helpers');
+} = require('./agent-system/spawn-helpers.cjs');
 
 const MAX_RECURSION_DEPTH = 3;
 
