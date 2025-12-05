@@ -1,0 +1,23 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@r-cli/sdk':
+        specifier: latest
+        version: 1.1.117
+
+packages:
+
+  '@r-cli/sdk@1.1.117':
+    resolution: {integrity: sha512-HSumnUPdLwvhFSqG+QtJ6DbtvJXLkDuwzaTtYxMWKsOGOz1DsFFXMfAEBzfHt2p3vP9nqsyfvDh9TLKmu4IbJQ==}
+    engines: {node: '>=14.0.0'}
+
+snapshots:
+
+  '@r-cli/sdk@1.1.117': {}

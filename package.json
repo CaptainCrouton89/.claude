@@ -1,0 +1,8 @@
+{
+  "name": "claude-bin",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@r-cli/sdk": "latest"
+  }
+}
