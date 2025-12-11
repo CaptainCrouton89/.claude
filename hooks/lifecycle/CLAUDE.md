@@ -22,6 +22,7 @@ SessionEnd hooks that run background workers after conversations complete.
     - Local: `.claude-md-manager-ignore` (project root)
   - Patterns support wildcards, one per line, `#` for comments
 - `session-history-logger.mjs`: Logs substantive changes to history.md via history-mcp
+- `session-tracker.mjs`: Tracks active session metadata for cross-hook coordination
 - `agent-cleanup.mjs`: Terminates tracked agent processes
 - `agent-monitor.mjs`: Monitors agent file status and lifecycle via polling
   - **State tracking**: Maintains `.monitor-state.json` with file metadata (`mtime`, `status`, `size`, `notified`, `lastUpdateLine`) to deduplicate notifications
@@ -32,8 +33,8 @@ SessionEnd hooks that run background workers after conversations complete.
   - **Update extraction**: Scans `[UPDATE]` markers in agent response files, tracks `lastUpdateLine` to avoid duplicate notifications
   - **Event routing**: PostToolUse events return `hookSpecificOutput` (context-aware), other events use `systemMessage` (user-visible)
   - Integrates with registry (`.active-pids.json`) to notify parent agents of completion/failure/interruption
+- `auto-copy-skills-on-init.mjs`: Copies skill definitions on session init
 - `history-mcp.mjs`: MCP server providing history entry management tools
-- `klaude-handler.js`: Legacy handler (migrate to .mjs pattern)
 
 ## Critical Requirements
 
