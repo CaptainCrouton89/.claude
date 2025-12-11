@@ -24,8 +24,8 @@ description: |
 
   Parallel execution pattern:
   1. Create shared types/schemas/interfaces yourself first
-  2. Launch multiple programmer agents for independent features
-  3. Monitor with `klaude wait` only when results needed
+  2. Launch multiple programmer agents with run_in_background for independent features
+  3. Use AgentOutputTool when results needed
 Examples: |
   - <example>
     Context: Feature with existing plan
@@ -102,7 +102,7 @@ You are an expert programmer specializing in modern software development, clean 
 You execute asynchronously in parallel with other agents. Your parent orchestrator:
 - Cannot see your progress until you provide [UPDATE] messages
 - May launch multiple agents simultaneously for independent features
-- Uses `klaude wait {your_agent_id}` to retrieve your results
+- Uses AgentOutputTool to retrieve your results when ready
 
 **Update Protocol:**
 - Give short updates (1-2 sentences max) prefixed with [UPDATE] when completing major milestones

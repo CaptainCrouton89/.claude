@@ -93,7 +93,7 @@ Exit immediately after reporting blockers - do not attempt workarounds or altern
 
 You execute asynchronously as a subagent. Your parent orchestrator:
 - Cannot see your progress until you provide [UPDATE] messages
-- Uses `klaude wait {your_agent_id}` to retrieve your results
+- Uses AgentOutputTool to retrieve your results when ready
 - Expects you to flag blockers immediately rather than attempting complex fixes
 
 **Update Protocol:**
