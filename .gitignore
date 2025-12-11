@@ -29,3 +29,5 @@ state/claude-md-manager-cache.json
 .wrapper-pid
 plans/
 investigations/
+plugins/
+hooks-archive/
