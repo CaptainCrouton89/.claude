@@ -132,30 +132,12 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-tool-use/npm-to-pnpm-warning.py"
-          }
-        ]
-      },
-      {
-        "matcher": "Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "klaude hook task"
-          }
-        ]
+        "hooks": []
       }
     ],
     "UserPromptSubmit": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/user-prompt-submit/git-hook.py"
-          },
           {
             "type": "command",
             "command": "~/.claude/hooks/user-prompt-submit/activity-observer.js",
@@ -165,23 +147,6 @@
             "type": "command",
             "command": "~/.claude/hooks/user-prompt-submit/auto-copy-skills.mjs",
             "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "klaude hook pre-user-message"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "klaude hook pre-user-message"
           }
         ]
       }
@@ -201,30 +166,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/post-tool-use/code-quality-checker.py"
-          },
-          {
-            "type": "command",
             "command": "~/.claude/hooks/post-tool-use/parallel.py"
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "klaude hook post-tool-use-updates"
           }
         ]
       }
@@ -243,84 +185,25 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/notifications/pushover-notification.py"
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/klaude-handler.js",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/stop/backwards-compat-warning.py"
           }
         ]
       }
     ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notifications/notification-sound.sh"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "klaude hook session-start"
-          }
-        ]
-      },
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "klaude hook session-start"
-          }
-        ]
-      },
-      {
-        "matcher": "resume",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "klaude hook session-start"
-          }
-        ]
-      },
-      {
-        "matcher": "clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/claude-md-manager.mjs"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/claude-md-manager.mjs"
-          },
-          {
-            "type": "command",
-            "command": "klaude hook session-end"
-          }
-        ]
-      }
-    ]
+    "Notification": [],
+    "SessionStart": [],
+    "SessionEnd": []
   },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/hooks/statusline/statusline-wrapper.sh"
   },
-  "alwaysThinkingEnabled": true
+  "enabledPlugins": {
+    "frontend-design@claude-code-plugins": true,
+    "ralph-wiggum@claude-code-plugins": false,
+    "pr-review-toolkit@claude-code-plugins": false,
+    "hookify@claude-code-plugins": false,
+    "plugin-dev@claude-code-plugins": false,
+    "silas-toolkit@claude-code-plugins": true
+  },
+  "alwaysThinkingEnabled": false
 }

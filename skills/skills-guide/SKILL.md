@@ -1,6 +1,6 @@
 ---
 name: Skills Guide
-description: Package expertise into discoverable, reusable capabilities that extend Claude's functionality. Use when creating new Skills, understanding how Skills work, or organizing existing capabilities.
+description: Defines required structure, frontmatter format, and best practices for SKILL.md files. Use BEFORE creating or editing any skill - this is the spec to follow, not optional reference.
 ---
 
 # Skills Guide
