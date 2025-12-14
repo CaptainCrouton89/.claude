@@ -1,115 +1,66 @@
 #!/bin/bash
 
-# Statusline wrapper that shows model, token usage, and output style
-# Receives JSON input from stdin
+# Statusline wrapper - uses built-in context window info from v2.0.65+
+# Input fields: model, cwd, session_id, transcript_path, conversation_id,
+#               total_cost_usd, tokens_remaining, tokens_used, context_window_tokens, max_context_window_tokens
 
-# Read the JSON input from stdin
 input=$(cat)
 
-# Parse JSON and extract all needed information using Python
 parsed=$(echo "$input" | python3 -c "
 import json
 import sys
-import os
 
 data = json.load(sys.stdin)
 
-# Get model display name
+# Model display name
 model = data.get('model', {})
-if isinstance(model, dict):
-    model_name = model.get('display_name', 'unknown')
-else:
-    model_name = str(model)
+model_name = model.get('display_name', str(model)) if isinstance(model, dict) else str(model)
 
-# Get transcript path to read token usage
-transcript_path = data.get('transcript_path', '')
-tokens_used = 0
-total_tokens = 200000  # Default budget
+# Context window tokens (built-in since v2.0.65)
+context_tokens = data.get('context_window_tokens', 0)
+max_tokens = data.get('max_context_window_tokens', 200000)
 
-if transcript_path and os.path.exists(transcript_path):
-    try:
-        # Read all messages and sum up token usage
-        with open(transcript_path, 'r') as f:
-            for line in f:
-                try:
-                    msg = json.loads(line)
-                    # Look for usage data in message.usage
-                    if 'message' in msg and 'usage' in msg['message']:
-                        usage = msg['message']['usage']
-                        tokens_used += usage.get('input_tokens', 0)
-                        tokens_used += usage.get('output_tokens', 0)
-                        # Don't count cache tokens in the usage, they're just metadata
-                except:
-                    continue
-    except:
-        pass
+# Format with commas
+tokens_str = f'{context_tokens:,}'
+max_str = f'{max_tokens // 1000}k'
 
-# Get cwd
-cwd = data.get('cwd', '')
-
-# Format tokens with commas
-tokens_formatted = f'{tokens_used:,}'
-
-# Determine color based on token usage
-color = ''
-if tokens_used >= 175000:
+# Color based on % used
+pct = context_tokens / max_tokens if max_tokens > 0 else 0
+if pct >= 0.875:
     color = 'red'
-elif tokens_used >= 150000:
+elif pct >= 0.75:
     color = 'orange'
-elif tokens_used >= 100000:
+elif pct >= 0.5:
     color = 'yellow'
+else:
+    color = ''
 
-print(f'{model_name}|{tokens_formatted}|{color}|{cwd}')
+print(f'{model_name}|{tokens_str}|{max_str}|{color}|{data.get(\"cwd\", \"\")}')
 ")
 
-# Split the parsed output
-IFS='|' read -r model_name tokens_formatted color cwd <<< "$parsed"
+IFS='|' read -r model_name tokens_str max_str color cwd <<< "$parsed"
 
-# Determine settings file path
-if [ -n "$cwd" ]; then
-    settings_file="$cwd/.claude/settings.local.json"
-else
-    settings_file="$HOME/.claude/settings.local.json"
-fi
-
-# Get the current output style from settings.local.json
-output_style="Sr. Software Developer"  # Default
+# Output style from local settings
+output_style="Sr. Software Developer"
+settings_file="${cwd:-.}/.claude/settings.local.json"
+[ ! -f "$settings_file" ] && settings_file="$HOME/.claude/settings.local.json"
 if [ -f "$settings_file" ]; then
-    style=$(python3 -c "
-import json
-import sys
-try:
-    with open('$settings_file', 'r') as f:
-        data = json.load(f)
-        print(data.get('outputStyle', 'Sr. Software Developer'))
-except:
-    print('Sr. Software Developer')
-" 2>/dev/null)
-    if [ -n "$style" ]; then
-        output_style="$style"
-    fi
+    style=$(python3 -c "import json; print(json.load(open('$settings_file')).get('outputStyle',''))" 2>/dev/null)
+    [ -n "$style" ] && output_style="$style"
 fi
 
-# Apply color codes based on token usage
+# Color codes
 case "$color" in
-    red)
-        color_code="\033[31m"
-        ;;
-    orange)
-        color_code="\033[38;5;208m"
-        ;;
-    yellow)
-        color_code="\033[33m"
-        ;;
-    *)
-        color_code=""
-        ;;
+    red)    cc="\033[31m" ;;
+    orange) cc="\033[38;5;208m" ;;
+    yellow) cc="\033[33m" ;;
+    *)      cc="" ;;
 esac
-reset_code="\033[0m"
+reset="\033[0m"
 
-# Display model, token usage (with color), and output style
-if [ -n "$color_code" ]; then
-    echo -e "$model_name | ${color_code}${tokens_formatted} tokens${reset_code} | $output_style"
+# Output: model | tokens/max | style
+if [ -n "$cc" ]; then
+    echo -e "$model_name | ${cc}${tokens_str}/${max_str}${reset} | $output_style"
 else
-    echo "$model_name | ${tokens_formatted} tokens | $output_style"
+    echo "$model_name | ${tokens_str}/${max_str} | $output_style"
 fi
