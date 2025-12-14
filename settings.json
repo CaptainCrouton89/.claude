@@ -121,36 +121,17 @@
       "Bash(brew upgrade:*)",
       "Bash(brew list:*)",
       "Bash(mdutil:*)",
-      "Bash(launchctl:*)"
+      "Bash(launchctl:*)",
+      "Bash(klaude start:*)",
+      "Bash(klaude wait:*)",
+      "Bash(./start_dev.sh:*)"
     ],
     "deny": [],
     "ask": [],
-    "defaultMode": "default"
+    "defaultMode": "dontAsk"
   },
-  "model": "opus",
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": []
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/user-prompt-submit/activity-observer.js",
-            "timeout": 15000
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/user-prompt-submit/auto-copy-skills.mjs",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
+    "Notification": [],
     "PostToolUse": [
       {
         "matcher": "TodoWrite",
@@ -167,6 +148,35 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/post-tool-use/parallel.py"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": []
+      }
+    ],
+    "SessionEnd": [],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
           }
         ]
       }
@@ -189,9 +199,22 @@
         ]
       }
     ],
-    "Notification": [],
-    "SessionStart": [],
-    "SessionEnd": []
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/user-prompt-submit/activity-observer.js",
+            "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/user-prompt-submit/auto-copy-skills.mjs",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
   },
   "statusLine": {
     "type": "command",
@@ -199,11 +222,11 @@
   },
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true,
-    "ralph-wiggum@claude-code-plugins": false,
-    "pr-review-toolkit@claude-code-plugins": false,
     "hookify@claude-code-plugins": false,
     "plugin-dev@claude-code-plugins": false,
+    "pr-review-toolkit@claude-code-plugins": false,
+    "ralph-wiggum@claude-code-plugins": false,
     "silas-toolkit@claude-code-plugins": true
   },
-  "alwaysThinkingEnabled": false
+  "alwaysThinkingEnabled": true
 }

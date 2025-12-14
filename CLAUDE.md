@@ -15,3 +15,5 @@
 **File Storage**
 - Plans → `<cwd>/.claude/plans/<name>.md`
 - Context/skills → `<cwd>/.claude/`
+
+**Feature Workflow**: `/rpi/arch` → `/rpi/plan` → `/rpi/implement` → `/rpi/review` → `/rpi/fix`
