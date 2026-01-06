@@ -32,3 +32,4 @@ investigations/
 plugins/
 hooks-archive/
 stats-cache.json
+!**/.gitkeep
