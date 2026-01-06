@@ -33,3 +33,6 @@ plugins/
 hooks-archive/
 stats-cache.json
 !**/.gitkeep
+.current-agent-id
+hooks-state/
+.interact-handoff
