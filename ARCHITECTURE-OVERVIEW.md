@@ -13,7 +13,6 @@ Comprehensive Claude Code development environment with specialized agents, hooks
 ├── settings.json              # Main configuration (permissions, hooks, statusline)
 ├── CLAUDE.md                  # Code quality standards
 ├── ARCHITECTURE-OVERVIEW.md   # This document
-├── new-system-prompt-exact.md # Custom system prompt variant
 └── CLAUDE.md (in /hooks)      # Hook system documentation
 ```
 
@@ -110,7 +109,6 @@ agents/
 ├── frontend-engineer.md   # Frontend specialization
 ├── non-dev.md             # Non-developer tasks
 ├── advisor.md             # Strategic advising
-├── library-docs-writer.md # Documentation specialist
 └── statusline-setup.md    # Status line configuration
 ```
 
