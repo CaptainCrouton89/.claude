@@ -22,9 +22,8 @@ When users run planning commands (`/shared`, `/requirements`, `/parallel`, quick
 - `commands/plan/convert-to-context.md` - references `plan.quick.template.md`
 - `file-templates/shared.template.md` - Template for shared context documents
 - `file-templates/requirements.template.md` - Template for requirements documents
-- `file-templates/plan.quick.template.md` - Quick plan template (small scope)
-- `file-templates/plan.template.md` - Standard plan template (medium scope)
-- `file-templates/plan.comprehensive.template.md` - Comprehensive plan template (large scope)
+- `file-templates.archive/plan.quick.template.md` - Quick plan template (small scope)
+- `file-templates/plan.template.md` - Standard plan template (medium/large scope)
 - `file-templates/investigation.template.md` - Canonical investigation doc template
 
 ### Template Structure
@@ -33,7 +32,6 @@ When users run planning commands (`/shared`, `/requirements`, `/parallel`, quick
 - **Plan Templates**:
   - Quick: summary, steps, key files
   - Standard: summary, context, tasks, impacts, rollout
-  - Comprehensive: investigation artifacts, impact analysis, parallel tasks, rollout/rollback
 - **Investigation Template**: Context bundle capturing file references, data flows, patterns, tables, and integration points; used by async agents
 
 ## Async Agent Integration

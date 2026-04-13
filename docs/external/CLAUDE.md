@@ -1,6 +1,6 @@
 # External Library Documentation
 
-Auto-generated reference files created by the `library-docs-writer` agent during research phases.
+Reference files for external libraries, created during research phases.
 
 ## Purpose
 
@@ -31,6 +31,5 @@ Agents update these files asynchronously—no coordination needed. Files are saf
 
 ## Maintenance
 
-- Auto-created by `library-docs-writer` agent
 - Manual edits permitted if discoveries emerge during implementation
 - Delete and re-fetch if docs become stale (>3 months old)
